@@ -18,7 +18,8 @@ from duration_service import (
     calculate_path_duration,
     validate_path_duration,
     enforce_centralized_duration_on_roadmap,
-    format_duration_string
+    format_duration_string,
+    resolve_category
 )
 try:
     import importlib
@@ -461,14 +462,7 @@ def format_student_signals_context(profile: dict) -> str:
 
 
 def resolve_focus_category(focus: Optional[str]) -> str:
-    text = str(focus or "").lower()
-    if any(k in text for k in ["non_academic", "non-academic", "non academic", "mental", "wellness", "life counselling", "life counseling", "immediate guidance"]):
-        return "non_academic"
-    if any(k in text for k in ["jobs", "careers", "career-prep", "career prep", "technical roles", "non-technical", "profession", "placement"]):
-        return "jobs"
-    if any(k in text for k in ["practical", "skills", "skill", "internship"]):
-        return "practical"
-    return "academic"
+    return resolve_category(category=focus)
 
 
 def get_subsegment_rules(cat: str, sub_segment: Optional[str] = None) -> str:
@@ -1534,14 +1528,7 @@ CONTENT_SEGMENTS = [
 
 
 def resolve_focus_category(focus: Optional[str]) -> str:
-    text = str(focus or "").lower()
-    if any(k in text for k in ["non_academic", "non-academic", "non academic", "mental", "wellness", "life counselling", "life counseling", "immediate guidance"]):
-        return "non_academic"
-    if any(k in text for k in ["jobs", "careers", "career-prep", "career prep", "technical roles", "non-technical", "profession", "placement"]):
-        return "jobs"
-    if any(k in text for k in ["practical", "skills", "skill", "internship"]):
-        return "practical"
-    return "academic"
+    return resolve_category(category=focus)
 
 
 CATEGORY_VARIANTS = {
@@ -2841,9 +2828,16 @@ async def build_and_store_final_path(
     goal: str,
     profile: dict,
     path_type: str = "Academic & Research",
-    sub_segment: Optional[str] = None
+    sub_segment: Optional[str] = None,
+    category: Optional[str] = None
 ) -> dict:
-    cat = resolve_focus_category(path_type)
+    cat = resolve_category(
+        category=category or path_type,
+        sub_segment=sub_segment,
+        profile_context=profile,
+        current_position=current,
+        target_goal=goal
+    )
     
     # ── CENTRALIZED DETERMINISTIC DURATION SERVICE (SINGLE SOURCE OF TRUTH) ──
     duration_info = calculate_path_duration(
@@ -2913,6 +2907,10 @@ async def build_and_store_final_path(
     final_json = {
         "path_title": blueprint.get("path_title") or f"{path_type} Pathway to {goal}",
         "path_description": blueprint.get("path_description") or f"Detailed strategic blueprint guiding from {current} to {goal}.",
+        "category": cat,
+        "content_category": cat,
+        "track": cat,
+        "sub_segment": sub_segment,
         "readiness_score": final_readiness_score,
         "readiness_label": final_readiness_label,
         "total_duration": final_total_duration,
@@ -3325,7 +3323,8 @@ async def generate_path_stream(req: PathGenerationRequest):
                 final_json = await build_and_store_final_path(
                     bp, {}, [], [], current, goal, profile,
                     path_type=valid_option_names[i],
-                    sub_segment=sub_seg
+                    sub_segment=sub_seg,
+                    category=cat
                 )
                 final_json["option_name"] = valid_option_names[i]
                 accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
@@ -3431,7 +3430,8 @@ async def generate_path(req: PathGenerationRequest):
             final_json = await build_and_store_final_path(
                 bp, {}, [], [], current, goal, profile,
                 path_type=valid_opt_names[i],
-                sub_segment=sub_seg
+                sub_segment=sub_seg,
+                category=cat
             )
             final_json["option_name"] = valid_opt_names[i]
             accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
@@ -3490,8 +3490,16 @@ async def generate_path_audit(req: PathAuditRequest):
             path_audit_task, steps_audit_task, market_audit_task
         )
 
+        detected_cat = resolve_category(
+            category=getattr(req, "content_category", None) or getattr(req, "category", None),
+            sub_segment=getattr(req, "sub_segment", None),
+            profile_context=profile,
+            current_position=current,
+            target_goal=goal
+        )
         final_json = await build_and_store_final_path(
-            blueprint, path_audit, steps_audit, market_audit, current, goal, profile
+            blueprint, path_audit, steps_audit, market_audit, current, goal, profile,
+            category=detected_cat
         )
         return final_json
     except Exception as e:
@@ -4281,8 +4289,14 @@ async def save_path(req: SavePathRequest):
         
     # Enforce centralized deterministic duration on saved roadmap_data
     if isinstance(roadmap_data, dict):
-        cat = resolve_focus_category(roadmap_data.get("category") or roadmap_data.get("option_name"))
-        dur_info = calculate_path_duration(current, goal, profile, category=cat)
+        cat = resolve_category(
+            category=roadmap_data.get("category") or roadmap_data.get("content_category") or roadmap_data.get("track") or roadmap_data.get("option_name"),
+            sub_segment=roadmap_data.get("sub_segment"),
+            profile_context=profile,
+            current_position=current,
+            target_goal=goal
+        )
+        dur_info = calculate_path_duration(current, goal, profile, category=cat, sub_segment=roadmap_data.get("sub_segment"))
         roadmap_data = enforce_centralized_duration_on_roadmap(roadmap_data, dur_info)
         
     email = profile.get("email") if profile else None

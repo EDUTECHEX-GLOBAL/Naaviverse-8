@@ -791,6 +791,111 @@ def resolve_target_program_duration(parsed_goal: Dict[str, str]) -> Tuple[int, s
 
 # ─── MAIN CENTRALIZED DURATION CALCULATOR ────────────────────────────────────
 
+def resolve_category(
+    category: Optional[str] = None,
+    sub_segment: Optional[str] = None,
+    profile_context: Optional[Dict[str, Any]] = None,
+    current_position: Optional[str] = None,
+    target_goal: Optional[str] = None
+) -> str:
+    """
+    Authoritative, robust category resolution across the 4 primary tracks:
+    1. 'academic': Academics & Research, High School, Degrees, Admissions, Test Prep
+    2. 'practical': Practical Skills & Projects, Portfolios, Bootcamps, Certifications
+    3. 'jobs': Jobs & Careers, Job Search, Technical Roles, Placement, Interviews
+    4. 'non_academic': Non-Academic Counselling, Mental Wellbeing, Life Skills, Stress Management
+    """
+    candidates = []
+    if category:
+        candidates.append(str(category).lower().strip())
+    if sub_segment:
+        candidates.append(str(sub_segment).lower().strip())
+    if isinstance(profile_context, dict):
+        if profile_context.get("activeSegment"):
+            candidates.append(str(profile_context["activeSegment"]).lower().strip())
+        if profile_context.get("category"):
+            candidates.append(str(profile_context["category"]).lower().strip())
+        if profile_context.get("content_category"):
+            candidates.append(str(profile_context["content_category"]).lower().strip())
+
+    # 1. Non-Academic Counselling check (checked FIRST so 'life skills' matches counselling, not practical skills)
+    for text in candidates:
+        if any(k in text for k in [
+            "non_academic", "non-academic", "non academic",
+            "counselling", "counseling",
+            "mental", "wellbeing", "wellness", "well-being",
+            "life skills", "decision focus", "decision-making", "decision making",
+            "stress", "anxiety", "depression", "burnout",
+            "life coaching", "immediate guidance", "emotional", "mindset", "therapy"
+        ]):
+            return "non_academic"
+
+    # 2. Jobs & Careers check
+    for text in candidates:
+        if any(k in text for k in [
+            "jobs & careers", "jobs", "job", "career", "careers", "career-prep", "career prep",
+            "technical role", "technical roles", "non-technical role", "non-technical",
+            "profession", "placement", "campus placement",
+            "interview & networking", "interview prep", "interview", "networking",
+            "recruitment", "hiring", "employment", "job search", "internship to hire"
+        ]):
+            return "jobs"
+
+    # 3. Practical Skills & Projects check
+    for text in candidates:
+        if any(k in text for k in [
+            "practical & skills", "practical skills", "practical", "skills", "skill",
+            "project portfolio", "project", "portfolio",
+            "certification & bootcamp", "certification", "certifications", "bootcamp", "bootcamps",
+            "hands-on", "proof of work", "proof-of-work", "github", "coding challenge", "tooling", "framework"
+        ]):
+            return "practical"
+
+    # 4. Academics & Research check
+    for text in candidates:
+        if any(k in text for k in [
+            "academic & research", "academics", "academic",
+            "research & honors", "research", "honors",
+            "test prep & admissions", "test prep", "admissions",
+            "undergraduate", "postgraduate", "bachelor", "master", "phd", "doctorate",
+            "degree", "school", "high school", "cbse", "icse", "grade"
+        ]):
+            return "academic"
+
+    # 5. Check target_goal and current_position
+    combined_endpoints = f"{str(current_position or '').lower()} {str(target_goal or '').lower()}"
+
+    # Non-academic endpoints
+    if any(k in combined_endpoints for k in [
+        "mental health", "stress management", "stress and confusion", "decision-making", "decision making",
+        "emotional", "burnout", "wellbeing", "wellness", "anxiety", "counseling", "counselling"
+    ]):
+        return "non_academic"
+
+    # Jobs endpoints
+    if any(k in combined_endpoints for k in [
+        "job", "career", "hiring", "placement", "interview", "sde-", "sde1", "sde2",
+        "software engineer role", "developer role", "at google", "at amazon", "at microsoft", "fresher placement"
+    ]):
+        return "jobs"
+
+    # Practical endpoints
+    if any(k in combined_endpoints for k in [
+        "portfolio", "github", "bootcamp", "certification", "learn react", "learn python", "hands-on project",
+        "proof of work", "mastering docker", "full stack web development"
+    ]):
+        return "practical"
+
+    # Academic endpoints
+    if any(k in combined_endpoints for k in [
+        "bachelor", "b.tech", "btech", "bsc", "b.sc", "master", "m.tech", "msc", "phd", "doctorate",
+        "admissions", "vit", "mit", "stanford", "grade 9", "grade 10", "grade 11", "grade 12", "cbse", "icse"
+    ]):
+        return "academic"
+
+    return "academic"
+
+
 def calculate_path_duration(
     current_position: str,
     target_goal: str,
@@ -821,27 +926,31 @@ def calculate_path_duration(
     curr_str = (current_position or "").strip()
     goal_str = (target_goal or "").strip()
     prof = profile_context or {}
-    cat = (category or "academic").lower().strip()
     
-    # Normalize category
-    if any(k in cat for k in ["non_academic", "non-academic", "counselling", "counseling", "wellbeing", "mental"]):
-        cat = "non_academic"
-    elif any(k in cat for k in ["practical", "skills", "project"]):
-        cat = "practical"
-    elif any(k in cat for k in ["job", "career", "employment", "profession"]):
-        cat = "jobs"
-    else:
-        cat = "academic"
+    # ── AUTHORITATIVE CATEGORY RESOLUTION ─────────────────────────────────────
+    cat = resolve_category(
+        category=category,
+        sub_segment=sub_segment,
+        profile_context=prof,
+        current_position=curr_str,
+        target_goal=goal_str
+    )
 
     calculation_stages: List[Dict[str, Any]] = []
 
     # ═════════════════════════════════════════════════════════════════════════
-    # 1. NON-ACADEMIC & COUNSELING DURATION LOGIC
+    # 1. NON-ACADEMIC & COUNSELING DURATION LOGIC (DYNAMIC: 2, 3, 4, 5, 6 MONTHS)
     # ═════════════════════════════════════════════════════════════════════════
     if cat == "non_academic":
-        sub_low = (sub_segment or "").lower()
+        curr_low = curr_str.lower()
         goal_low = goal_str.lower()
-        if "immediate" in sub_low or "crisis" in sub_low:
+        sub_low = (sub_segment or "").lower()
+        combined_text = f"{curr_low} {goal_low} {sub_low}"
+
+        # Case A: Urgent / Acute / Crisis / Exam Stress / Fast Reset (2 months)
+        if any(k in combined_text for k in [
+            "immediate", "crisis", "acute", "panic", "exam stress", "urgent", "quick relief", "burnout reset", "sos"
+        ]):
             calculation_stages.append({
                 "stage": "Immediate Emotional De-escalation & Stabilization",
                 "months": 1,
@@ -849,29 +958,107 @@ def calculate_path_duration(
                 "notes": "Urgent emotional relief, grounding practices, and support contact establishment"
             })
             calculation_stages.append({
-                "stage": "Cognitive Restructuring & Coping Strategies",
+                "stage": "Acute Stress Coping Mechanisms & Mindset Reset",
                 "months": 1,
                 "stage_type": "active_coping",
                 "notes": "Building behavioral coping mechanisms and stress reduction framework"
             })
-        else:
+
+        # Case B: Focused Decision-Making / Clarity / Time Management (3 months)
+        elif any(k in combined_text for k in [
+            "decision-making", "decision making", "confusion", "clarity", "career choice", "educational choice",
+            "time management", "prioritization", "procrastination", "daily focus"
+        ]) and not any(k in combined_text for k in ["chronic", "deep", "lifestyle", "long-term", "comprehensive"]):
             calculation_stages.append({
-                "stage": "Diagnostic Emotional & Stress Pattern Assessment",
+                "stage": "Diagnostic Emotional & Decision Pattern Assessment",
                 "months": 1,
                 "stage_type": "assessment",
-                "notes": "Self-awareness, trigger identification, and routine calibration"
+                "notes": "Objective analysis of cognitive bottlenecks, confusion triggers, and value priorities"
             })
             calculation_stages.append({
-                "stage": "Active Behavioral Counseling & Mindset Practice",
+                "stage": "Cognitive Reframing & Structured Decision Protocols",
                 "months": 1,
-                "stage_type": "active_practice",
-                "notes": "Implementing mindfulness, focus cycles, and resilience frameworks"
+                "stage_type": "decision_framework",
+                "notes": "Practical decision-making matrices, bias elimination, and actionable options assessment"
             })
             calculation_stages.append({
-                "stage": "Long-Term Habit Sustainability & Autonomy",
+                "stage": "Action Plan Implementation & Habit Calibration",
                 "months": 1,
+                "stage_type": "habit_calibration",
+                "notes": "Executing chosen path, self-monitoring routines, and stress-free execution habits"
+            })
+
+        # Case C: Stress Management & Daily Wellness Integration (4 months)
+        elif any(k in combined_text for k in [
+            "stress management", "stress", "anxiety", "burnout", "work-life balance", "mindfulness", "routine"
+        ]) and not any(k in combined_text for k in ["chronic", "severe", "trauma", "long-term"]):
+            calculation_stages.append({
+                "stage": "Stress Pattern Identification & Emotional Baseline Audit",
+                "months": 1,
+                "stage_type": "baseline_audit",
+                "notes": "Identifying physiological and psychological stress triggers and daily cycle patterns"
+            })
+            calculation_stages.append({
+                "stage": "Active Cognitive Restructuring & Mindset Tools",
+                "months": 1,
+                "stage_type": "cognitive_restructuring",
+                "notes": "Implementing cognitive behavioral tools, anxiety management, and mindfulness cycles"
+            })
+            calculation_stages.append({
+                "stage": "Daily Routine Alignment & Boundary Setting",
+                "months": 1,
+                "stage_type": "routine_alignment",
+                "notes": "Creating sustainable sleep, study/work boundaries, and restorative practices"
+            })
+            calculation_stages.append({
+                "stage": "Resilience Hardening & Sustainable Self-Regulation",
+                "months": 1,
+                "stage_type": "resilience_hardening",
+                "notes": "Consolidation of self-regulation techniques and long-term emotional resilience"
+            })
+
+        # Case D: Deep Emotional Transformation / Confidence / Imposter Syndrome (5 months)
+        elif any(k in combined_text for k in [
+            "confidence", "self-esteem", "imposter syndrome", "social anxiety", "overwhelm", "emotional resilience", "relationship"
+        ]):
+            calculation_stages.append({
+                "stage": "Comprehensive Emotional & Relational Assessment",
+                "months": 1,
+                "stage_type": "assessment",
+                "notes": "In-depth mapping of core beliefs, trigger patterns, and relational dynamics"
+            })
+            calculation_stages.append({
+                "stage": "Deep Mindset Restructuring & Behavioral Exposure",
+                "months": 2,
+                "stage_type": "behavioral_practice",
+                "notes": "Gradual behavioral exposure, cognitive disputation, and self-worth cultivation"
+            })
+            calculation_stages.append({
+                "stage": "Autonomous Wellbeing & Long-Term Integration",
+                "months": 2,
                 "stage_type": "sustainability",
-                "notes": "Consolidation of self-regulation habits and academic wellness routine"
+                "notes": "Independent emotional self-governance, crisis prevention plan, and enduring confidence"
+            })
+
+        # Case E: Comprehensive Lifestyle Wellness / Life Coaching (6 months)
+        else:
+            calculation_stages.append({
+                "stage": "Holistic Wellbeing Audit & Core Values Mapping",
+                "months": 2,
+                "stage_type": "holistic_audit",
+                "notes": "Diagnostic assessment across emotional, psychological, and lifestyle dimensions"
+            })
+            calculation_stages.append({
+                "stage": "Deep Behavioral Reconditioning & Resilience Practice",
+                "months": 2,
+                "stage_type": "behavioral_reconditioning",
+                "notes": "Intensive counseling practices, guided reflection, and emotional reframing"
+            })
+            calculation_stages.append({
+                "stage": "Long-Term Habit Sustainability & Autonomous Wellbeing",
+                "months": 2,
+                "stage_type": "sustainability",
+                "notes": "Consolidation of lifelong wellness architecture and emotional autonomy"
             })
 
         total_months = sum(s["months"] for s in calculation_stages)
@@ -884,62 +1071,190 @@ def calculate_path_duration(
         }
 
     # ═════════════════════════════════════════════════════════════════════════
-    # 2. PRACTICAL SKILLS & PROJECTS DURATION LOGIC
+    # 2. PRACTICAL SKILLS & PROJECTS DURATION LOGIC (DYNAMIC: 2, 3, 4, 5, 6, 8, 10 MONTHS)
     # ═════════════════════════════════════════════════════════════════════════
     if cat == "practical":
         curr_low = curr_str.lower()
-        if any(k in curr_low for k in ["beginner", "novice", "zero", "starter", "no experience"]):
-            calculation_stages.append({
-                "stage": "Foundational Concepts & Core Tooling",
-                "months": 2,
-                "stage_type": "skill_foundation",
-                "notes": "Mastering syntax, development environments, and foundational theory"
-            })
-            calculation_stages.append({
-                "stage": "Guided Implementations & Practical Mini-Projects",
-                "months": 2,
-                "stage_type": "guided_projects",
-                "notes": "Hands-on application through structured, real-world mini-projects"
-            })
-            calculation_stages.append({
-                "stage": "Independent Capstone & Production Portfolio Development",
-                "months": 2,
-                "stage_type": "capstone_portfolio",
-                "notes": "Building end-to-end deployable proof-of-work project and technical portfolio"
-            })
-        elif any(k in curr_low for k in ["advanced", "experienced"]):
-            calculation_stages.append({
-                "stage": "Advanced Systems Architecture & Production Patterns",
-                "months": 2,
-                "stage_type": "advanced_systems",
-                "notes": "Deep dive into performance optimization, distributed systems, or specialized domain"
-            })
-            calculation_stages.append({
-                "stage": "Open Source Contribution & Production-Grade Capstone",
-                "months": 2,
-                "stage_type": "capstone",
-                "notes": "Publishing production-ready implementation, open-source work, and benchmark report"
-            })
+        goal_low = goal_str.lower()
+        combined_text = f"{curr_low} {goal_low}"
+
+        is_beginner = any(k in curr_low for k in ["beginner", "novice", "zero", "starter", "no experience", "fresh"])
+        is_advanced = any(k in curr_low for k in ["advanced", "experienced", "proficient", "lead", "architect"])
+
+        # Scope 1: Fast Tool / Syntax / Crash Course (2 or 3 months)
+        # e.g., Git, Docker basics, SQL basics, Figma, Bash, Tailwind, Prompt Engineering
+        if any(k in combined_text for k in [
+            "git", "github", "docker basics", "sql basics", "html/css", "figma", "bash", "tailwind",
+            "prompt engineering", "markdown", "excel", "linux basics", "regex", "api basics"
+        ]) or any(k in combined_text for k in ["crash course", "quick start", "tooling fundamentals"]):
+            if is_advanced or not is_beginner:
+                # 2 months
+                calculation_stages.append({
+                    "stage": "Tooling Setup & Core Syntax Fundamentals",
+                    "months": 1,
+                    "stage_type": "tooling_syntax",
+                    "notes": "Targeted syntax mastery, workflow automation, and environment setup"
+                })
+                calculation_stages.append({
+                    "stage": "Applied Implementation & Proof-of-Work Project",
+                    "months": 1,
+                    "stage_type": "applied_project",
+                    "notes": "Building deployable proof-of-work project and workflow validation"
+                })
+            else:
+                # 3 months
+                calculation_stages.append({
+                    "stage": "Foundational Syntax & Tooling Environment",
+                    "months": 1,
+                    "stage_type": "skill_foundation",
+                    "notes": "Mastering syntax, environment configuration, and basic operations"
+                })
+                calculation_stages.append({
+                    "stage": "Guided Mini-Projects & Practical Implementations",
+                    "months": 1,
+                    "stage_type": "guided_projects",
+                    "notes": "Hands-on application through structured, real-world mini-projects"
+                })
+                calculation_stages.append({
+                    "stage": "Deployable Proof-of-Work Project & Portfolio Verification",
+                    "months": 1,
+                    "stage_type": "capstone_verification",
+                    "notes": "Building and publishing deployable proof-of-work implementation"
+                })
+
+        # Scope 2: Advanced Deep Technology / AI / Systems / Distributed Computing (8 or 10 months)
+        # e.g., Machine Learning, Deep Learning, Distributed Systems, Cloud Architecture, Kubernetes, Rust/C++
+        elif any(k in combined_text for k in [
+            "machine learning", "deep learning", "ai", "artificial intelligence", "nlp", "computer vision",
+            "distributed systems", "cloud architecture", "kubernetes", "rust", "c++ systems", "microservices",
+            "blockchain", "cybersecurity", "system design", "operating systems", "compiler"
+        ]):
+            if is_beginner:
+                # 10 months
+                calculation_stages.append({
+                    "stage": "Comprehensive Theoretical & Algorithmic Foundations",
+                    "months": 3,
+                    "stage_type": "theory_foundations",
+                    "notes": "Mastering mathematical, algorithmic, and low-level architectural principles"
+                })
+                calculation_stages.append({
+                    "stage": "Core Architectural Engineering & Large-Scale Systems Build",
+                    "months": 3,
+                    "stage_type": "system_build",
+                    "notes": "Developing scalable, high-throughput system components with advanced paradigms"
+                })
+                calculation_stages.append({
+                    "stage": "Production Deployment, Testing Suites & Enterprise Capstone",
+                    "months": 4,
+                    "stage_type": "enterprise_capstone",
+                    "notes": "Production hardening, benchmark verification, CI/CD pipeline, and open-source release"
+                })
+            else:
+                # 8 months
+                calculation_stages.append({
+                    "stage": "Advanced Systems Foundations & Architecture",
+                    "months": 2,
+                    "stage_type": "advanced_architecture",
+                    "notes": "Deep dive into performance optimization, distributed patterns, and design trade-offs"
+                })
+                calculation_stages.append({
+                    "stage": "Complex Domain Implementations & Distributed Patterns",
+                    "months": 3,
+                    "stage_type": "domain_implementation",
+                    "notes": "Architecting resilient services, state management, and real-time processing"
+                })
+                calculation_stages.append({
+                    "stage": "Production Hardening, Benchmarking & Open-Source Capstone",
+                    "months": 3,
+                    "stage_type": "capstone_verification",
+                    "notes": "Rigorous benchmarking, security review, documentation, and portfolio verification"
+                })
+
+        # Scope 3: Standard Frameworks & Web/Mobile Development (4, 5, or 6 months)
+        # e.g., React, Node, Python, Django, FastAPI, Spring Boot, Flutter, AWS, Full-Stack
         else:
-            # Intermediate baseline (6 months)
-            calculation_stages.append({
-                "stage": "Core Skill Strengthening & Domain Fluency",
-                "months": 2,
-                "stage_type": "skill_strengthening",
-                "notes": "Strengthening intermediate paradigms, tooling, and best practices"
-            })
-            calculation_stages.append({
-                "stage": "End-to-End System Build & Integration",
-                "months": 2,
-                "stage_type": "system_build",
-                "notes": "Developing full-stack or end-to-end practical solution"
-            })
-            calculation_stages.append({
-                "stage": "Production Hardening & Portfolio Verification",
-                "months": 2,
-                "stage_type": "portfolio_verification",
-                "notes": "Deployment, documentation, testing, and portfolio readiness"
-            })
+            if is_advanced:
+                # 4 months
+                calculation_stages.append({
+                    "stage": "Advanced Paradigms & Architectural Patterns",
+                    "months": 1,
+                    "stage_type": "advanced_patterns",
+                    "notes": "Production-grade design patterns, state architecture, and performance tuning"
+                })
+                calculation_stages.append({
+                    "stage": "End-to-End System Build & Architecture",
+                    "months": 1,
+                    "stage_type": "system_build",
+                    "notes": "Architecting full-scale application with comprehensive test coverage"
+                })
+                calculation_stages.append({
+                    "stage": "Production Hardening & Portfolio Verification",
+                    "months": 2,
+                    "stage_type": "portfolio_verification",
+                    "notes": "Deployment, documentation, security review, and live production showcase"
+                })
+            elif is_beginner:
+                # 6 months
+                calculation_stages.append({
+                    "stage": "Foundational Concepts & Core Tooling",
+                    "months": 2,
+                    "stage_type": "skill_foundation",
+                    "notes": "Mastering syntax, development environments, and foundational theory"
+                })
+                calculation_stages.append({
+                    "stage": "Guided Implementations & Practical System Builds",
+                    "months": 2,
+                    "stage_type": "guided_projects",
+                    "notes": "Hands-on application through structured, real-world mini-projects"
+                })
+                calculation_stages.append({
+                    "stage": "Independent Capstone & Production Portfolio Development",
+                    "months": 2,
+                    "stage_type": "capstone_portfolio",
+                    "notes": "Building end-to-end deployable proof-of-work project and technical portfolio"
+                })
+            else:
+                # Intermediate standard (4 or 5 months based on scope)
+                if any(k in combined_text for k in ["full-stack", "full stack", "portfolio", "cloud", "aws"]):
+                    # 5 months
+                    calculation_stages.append({
+                        "stage": "Core Skill Strengthening & Domain Fluency",
+                        "months": 1,
+                        "stage_type": "skill_strengthening",
+                        "notes": "Strengthening intermediate paradigms, tooling, and best practices"
+                    })
+                    calculation_stages.append({
+                        "stage": "Guided System Implementation & Feature Integration",
+                        "months": 2,
+                        "stage_type": "system_build",
+                        "notes": "Developing full-featured components and integrating backend services"
+                    })
+                    calculation_stages.append({
+                        "stage": "End-to-End Capstone Project & Portfolio Verification",
+                        "months": 2,
+                        "stage_type": "portfolio_verification",
+                        "notes": "Production deployment, automated testing, and portfolio readiness"
+                    })
+                else:
+                    # 4 months
+                    calculation_stages.append({
+                        "stage": "Core Skill Strengthening & Domain Fluency",
+                        "months": 1,
+                        "stage_type": "skill_strengthening",
+                        "notes": "Strengthening intermediate paradigms, tooling, and best practices"
+                    })
+                    calculation_stages.append({
+                        "stage": "Guided Component Architecture & Hands-on Builds",
+                        "months": 1,
+                        "stage_type": "component_architecture",
+                        "notes": "Building modular components with clean architecture"
+                    })
+                    calculation_stages.append({
+                        "stage": "End-to-End System Project & Portfolio Verification",
+                        "months": 2,
+                        "stage_type": "portfolio_verification",
+                        "notes": "Deployment, documentation, testing, and portfolio readiness"
+                    })
 
         total_months = sum(s["months"] for s in calculation_stages)
         return {
@@ -951,61 +1266,204 @@ def calculate_path_duration(
         }
 
     # ═════════════════════════════════════════════════════════════════════════
-    # 3. JOBS & CAREERS DURATION LOGIC
+    # 3. JOBS & CAREERS DURATION LOGIC (DYNAMIC: 2, 3, 4, 5, 6, 8, 10, 12 MONTHS)
     # ═════════════════════════════════════════════════════════════════════════
     if cat == "jobs":
         curr_low = curr_str.lower()
         goal_low = goal_str.lower()
-        
-        is_large_transition = (
-            ("senior" in goal_low or "lead" in goal_low or "manager" in goal_low) and
-            any(k in curr_low for k in ["junior", "entry", "student", "intern", "graduate"])
-        ) or any(k in curr_low for k in ["switch", "transition", "non-tech"])
+        combined_text = f"{curr_low} {goal_low}"
 
-        if is_large_transition:
+        is_career_switch = any(k in combined_text for k in [
+            "career switch", "career change", "transition", "pivot", "non-tech", "change field", "switch career"
+        ])
+        is_senior_target = any(k in goal_low for k in ["senior", "lead", "staff", "manager", "architect", "director", "head of"])
+        is_from_junior = any(k in curr_low for k in ["junior", "entry", "student", "intern", "graduate", "fresher"])
+
+        # Case A: Targeted Interview Sprint / Job-Ready Placement (2 months)
+        if any(k in combined_text for k in [
+            "interview sprint", "quick placement", "immediate job search", "mock interview", "interview practice",
+            "offer negotiation", "recruiter outreach", "urgent hire"
+        ]) and not is_career_switch:
             calculation_stages.append({
-                "stage": "Prerequisite Technical Skills & Domain Pivot",
-                "months": 3,
-                "stage_type": "skill_gap_closure",
-                "notes": "Targeted closing of critical skill gaps required for destination role"
+                "stage": "Target Role Sourcing & Resume/Portfolio Refinement",
+                "months": 1,
+                "stage_type": "role_sourcing",
+                "notes": "High-impact resume polish, LinkedIn alignment, and targeted company shortlist"
             })
             calculation_stages.append({
-                "stage": "Enterprise Proof-of-Work Projects & System Design",
+                "stage": "Technical Mock Interviews, Live Coding & Offer Negotiation",
+                "months": 1,
+                "stage_type": "interview_offer",
+                "notes": "Intensive mock technical rounds, behavioral practice, and compensation negotiation"
+            })
+
+        # Case B: Fast-Track Campus Placement / SDE Interview Prep (3 months)
+        elif any(k in combined_text for k in [
+            "campus placement", "placement prep", "sde interview", "coding interview", "fresher placement", "off-campus"
+        ]) and not is_career_switch:
+            calculation_stages.append({
+                "stage": "Target Role Alignment & High-Impact Portfolio Refresh",
+                "months": 1,
+                "stage_type": "role_alignment",
+                "notes": "Sharpening core competencies, portfolio curation, and resume optimization"
+            })
+            calculation_stages.append({
+                "stage": "Data Structures, System Design & Behavioral Interview Drills",
+                "months": 1,
+                "stage_type": "interview_drills",
+                "notes": "Timed coding challenges, algorithmic problem-solving, and STAR behavioral answers"
+            })
+            calculation_stages.append({
+                "stage": "Active Recruitment Pipeline & Offer Finalization",
+                "months": 1,
+                "stage_type": "recruitment_pipeline",
+                "notes": "Company application rounds, referral sourcing, and offer evaluation"
+            })
+
+        # Case C: Cross-Discipline Career Switch or Major Pivot (10 or 12 months)
+        elif is_career_switch:
+            if any(k in curr_low for k in ["non-tech", "unrelated", "complete beginner", "zero experience"]):
+                # 12 months (Comprehensive Non-Tech to Tech Pivot)
+                calculation_stages.append({
+                    "stage": "Prerequisite Technical Skills & Domain Pivot",
+                    "months": 3,
+                    "stage_type": "skill_gap_closure",
+                    "notes": "Targeted closing of critical skill gaps required for destination role"
+                })
+                calculation_stages.append({
+                    "stage": "Enterprise Proof-of-Work Projects & System Design",
+                    "months": 3,
+                    "stage_type": "enterprise_projects",
+                    "notes": "Building commercial-grade portfolio projects demonstrating competence"
+                })
+                calculation_stages.append({
+                    "stage": "Resume Optimization, Professional Branding & Cold Outreach",
+                    "months": 3,
+                    "stage_type": "career_branding",
+                    "notes": "Targeted resume crafting, LinkedIn optimization, and referral networking"
+                })
+                calculation_stages.append({
+                    "stage": "Technical Interview Drills, Behavioral Prep & Offer Negotiation",
+                    "months": 3,
+                    "stage_type": "interview_offer",
+                    "notes": "Live mock interviews, system design rounds, and offer negotiation"
+                })
+            else:
+                # 10 months (Career Switch with Transferable Skills)
+                calculation_stages.append({
+                    "stage": "Prerequisite Domain Foundations & Technical Immersion",
+                    "months": 3,
+                    "stage_type": "domain_immersion",
+                    "notes": "Bridging core domain knowledge and industry-standard toolchain"
+                })
+                calculation_stages.append({
+                    "stage": "Commercial Proof-of-Work Projects & Tooling Proficiency",
+                    "months": 3,
+                    "stage_type": "proof_of_work",
+                    "notes": "Developing full-scale projects meeting target industry expectations"
+                })
+                calculation_stages.append({
+                    "stage": "Professional Career Branding & Referral Networking Strategy",
+                    "months": 2,
+                    "stage_type": "branding_networking",
+                    "notes": "Resume positioning for new domain, portfolio showcase, and informational interviews"
+                })
+                calculation_stages.append({
+                    "stage": "Targeted Application Blitz, Technical Drills & Offer Securing",
+                    "months": 2,
+                    "stage_type": "application_blitz",
+                    "notes": "Active recruitment pipeline, technical interview rounds, and offer selection"
+                })
+
+        # Case D: Senior / Lead Target Transition from Lower Level (8 months)
+        elif is_senior_target and is_from_junior:
+            calculation_stages.append({
+                "stage": "Senior Competency Alignment & Architectural Paradigms",
+                "months": 2,
+                "stage_type": "senior_competency",
+                "notes": "High-level system architecture, technical leadership, and domain mastery"
+            })
+            calculation_stages.append({
+                "stage": "Enterprise-Scale Portfolio Projects & System Design Mastery",
                 "months": 3,
                 "stage_type": "enterprise_projects",
-                "notes": "Building commercial-grade portfolio projects demonstrating senior-level competence"
+                "notes": "Building commercial-grade distributed systems and design document portfolios"
             })
             calculation_stages.append({
-                "stage": "Resume Optimization, Professional Branding & Cold Outreach",
+                "stage": "Executive Branding, Referral Outreach & Deep Technical Interviews",
                 "months": 3,
-                "stage_type": "career_branding",
-                "notes": "Targeted resume crafting, LinkedIn optimization, and referral networking"
+                "stage_type": "interview_cycles",
+                "notes": "Targeted outreach to engineering leaders, architecture rounds, and compensation negotiation"
             })
-            calculation_stages.append({
-                "stage": "Technical Interview Drills, Behavioral Prep & Offer Negotiation",
-                "months": 3,
-                "stage_type": "interview_offer",
-                "notes": "Live mock interviews, system design rounds, and offer negotiation"
-            })
+
+        # Case E: Standard Role Transition / Mid-Level Hiring (4, 5, or 6 months)
         else:
-            calculation_stages.append({
-                "stage": "Target Role Competency Alignment & Portfolio Refresh",
-                "months": 2,
-                "stage_type": "role_alignment",
-                "notes": "Sharpening domain skills and curating relevant project evidence"
-            })
-            calculation_stages.append({
-                "stage": "Targeted Company Sourcing & Referral Applications",
-                "months": 2,
-                "stage_type": "application_sourcing",
-                "notes": "Active recruitment pipeline building and warm introduction strategy"
-            })
-            calculation_stages.append({
-                "stage": "Interview Cycles, Assessment Centers & Offer Finalization",
-                "months": 2,
-                "stage_type": "interview_finalization",
-                "notes": "Completing interview rounds, practical take-homes, and contract signing"
-            })
+            if is_from_junior or any(k in goal_low for k in ["entry", "junior", "associate"]):
+                # 4 months
+                calculation_stages.append({
+                    "stage": "Role Competency Alignment & Resume Optimization",
+                    "months": 1,
+                    "stage_type": "role_alignment",
+                    "notes": "Aligning technical skills with target job specifications and resume crafting"
+                })
+                calculation_stages.append({
+                    "stage": "Technical Assessment Drills & Coding Challenge Preparation",
+                    "months": 1,
+                    "stage_type": "assessment_drills",
+                    "notes": "Practicing company-specific coding assessments and take-home assignments"
+                })
+                calculation_stages.append({
+                    "stage": "Targeted Company Sourcing & Referral Outreach",
+                    "months": 1,
+                    "stage_type": "company_sourcing",
+                    "notes": "Active recruitment pipeline building and alumni/peer networking"
+                })
+                calculation_stages.append({
+                    "stage": "Interview Cycles, Assessment Centers & Offer Finalization",
+                    "months": 1,
+                    "stage_type": "interview_finalization",
+                    "notes": "Completing interview rounds, technical interviews, and contract signing"
+                })
+            elif any(k in goal_low for k in ["senior", "lead"]):
+                # 6 months
+                calculation_stages.append({
+                    "stage": "Target Role Competency Alignment & Portfolio Refresh",
+                    "months": 2,
+                    "stage_type": "role_alignment",
+                    "notes": "Sharpening advanced domain skills and curating relevant project evidence"
+                })
+                calculation_stages.append({
+                    "stage": "Targeted Company Sourcing & Referral Applications",
+                    "months": 2,
+                    "stage_type": "application_sourcing",
+                    "notes": "Active recruitment pipeline building and warm introduction strategy"
+                })
+                calculation_stages.append({
+                    "stage": "Interview Cycles, Assessment Centers & Offer Finalization",
+                    "months": 2,
+                    "stage_type": "interview_finalization",
+                    "notes": "Completing interview rounds, system design challenges, and contract signing"
+                })
+            else:
+                # 5 months (Standard mid-level career transition)
+                calculation_stages.append({
+                    "stage": "Target Role Competency Gap Closure & Domain Prep",
+                    "months": 1,
+                    "stage_type": "competency_closure",
+                    "notes": "Auditing requirements for target role and closing essential competency gaps"
+                })
+                calculation_stages.append({
+                    "stage": "Commercial-Grade Proof-of-Work Projects & System Architecture",
+                    "months": 2,
+                    "stage_type": "commercial_projects",
+                    "notes": "Strengthening GitHub profile and portfolio with production-grade project"
+                })
+                calculation_stages.append({
+                    "stage": "Recruitment Pipeline Building, Mock Interviews & Offer Securing",
+                    "months": 2,
+                    "stage_type": "pipeline_offer",
+                    "notes": "Direct recruiter applications, referrals, live interviews, and offer selection"
+                })
 
         total_months = sum(s["months"] for s in calculation_stages)
         return {

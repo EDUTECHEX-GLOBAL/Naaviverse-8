@@ -582,8 +582,7 @@ const AccDashboard = () => {
   };
 
   const handleAllCustomerLicenses = () => {
-    const userDetails = JSON.parse(localStorage.getItem("partner"));
-    const email = userDetails?.email;
+    const email = getCounsellorEmail();
 
     if (!email) return;
 
@@ -1108,11 +1107,22 @@ const AccDashboard = () => {
   useEffect(() => {
     resetpop();
 
-    if (accsideNav === "CRM" && crmMenu === "Followers") {
-      handleFollowerPerAccountants();
-    }
-    else if (accsideNav === "CRM" && crmMenu === "Purchases") {
-      handleAllCustomerLicenses();
+    if (accsideNav === "CRM") {
+      const email = getCounsellorEmail();
+      if (email) {
+        setClientLoading(true);
+        axios
+          .get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
+          .then((res) => {
+            setCrmClientData(res.data?.data || []);
+            setClientLoading(false);
+          })
+          .catch((err) => {
+            console.log("CRM CLIENT ERROR:", err);
+            setClientLoading(false);
+          });
+        handleAllCustomerLicenses();
+      }
     }
     else if (accsideNav === "Marketplace" && servicesMenu === "Services") {
       const userDetails = getPartner();
@@ -1551,23 +1561,7 @@ const AccDashboard = () => {
     });
   };
 
-useEffect(() => {
-  const email = getCounsellorEmail();
-  if (!email) return;
 
-  setClientLoading(true);   // ← sets isClientLoading to true
-
-  axios.get(`${BASE_URL}/api/crm/clients?creatoremail=${email}`)
-    .then(res => {
-      console.log("CRM DATA:", res.data);   // ← add this to confirm data shape
-      setCrmClientData(res.data?.data || []);
-      setClientLoading(false);
-    })
-    .catch(err => {
-      console.log("CRM CLIENT ERROR:", err);
-      setClientLoading(false);
-    });
-}, []);
 
   function customDateFormat(date) {
     if (date instanceof Date && !isNaN(date.valueOf())) {

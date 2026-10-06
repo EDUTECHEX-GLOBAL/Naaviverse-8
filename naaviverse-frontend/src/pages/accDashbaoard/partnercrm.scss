@@ -1,434 +1,1058 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-// ── Tokens ────────────────────────────────────────────────
-$font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-$bg: #f8fafc;
-$card: #ffffff;
-$text: #0f172a;
-$muted: #64748b;
-$faint: #94a3b8;
-$border: #e2e8f0;
+// ─── DESIGN TOKENS ──────────────────────────────────────────
+$font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$text-title: #0f172a;
+$text-main: #1e293b;
+$text-body: #334155;
+$text-sub: #64748b;
+$text-muted: #94a3b8;
+$radius-xs: 4px;
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
 
-// ── Root ──────────────────────────────────────────────────
-.crm-root {
+// ─── ROOT CONTAINER ─────────────────────────────────────────
+.pcrm {
   font-family: $font;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 50%, #eff6ff 100%);
+  min-height: 100%;
   height: 100%;
-  padding: 18px 24px 32px;
-  color: $text;
+  padding: 16px 20px 36px;
+  color: $text-main;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  &::-webkit-scrollbar { display: none; }
-  * { box-sizing: border-box; }
-}
 
-// ── Inline Stats Row ──────────────────────────────────────
-.crm-stats-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 12px 18px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  flex-wrap: wrap;
-}
-
-.crm-stat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &__icon {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #2563eb;
-    background: #eff6ff;
-    border-radius: 6px;
-
-    svg {
-      width: 15px;
-      height: 15px;
-    }
+  &::-webkit-scrollbar {
+    display: none;
   }
 
-  &__val {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $text;
-    letter-spacing: -0.01em;
-  }
-
-  &__label {
-    font-size: 0.72rem;
-    color: $faint;
-    font-weight: 500;
-  }
-
-  // Divider after each stat except last
-  &:not(:last-child)::after {
-    content: '';
-    width: 1px;
-    height: 18px;
-    background: #e2e8f0;
-    margin-left: 10px;
+  * {
+    box-sizing: border-box;
   }
 }
 
-// ── Section Header Navigation Bar ────────────────────────────
-.crm-nav-bar {
+// ─── HEADER ─────────────────────────────────────────────────
+.pcrm-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__title {
+    font-size: 1.22rem;
+    font-weight: 800;
+    color: $text-title;
+    margin: 0;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+  }
+
+  &__sub {
+    font-size: 0.74rem;
+    color: $text-sub;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 }
 
-.crm-section-tabs {
-  display: flex;
+// ─── FILTER SELECT & VIEW TOGGLE ────────────────────────────
+.pcrm-filter-wrap {
+  position: relative;
+}
+
+.pcrm-filter-select {
+  font-family: $font;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $text-body;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: $radius-sm;
+  padding: 6px 12px;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+
+  &:hover, &:focus {
+    border-color: #94a3b8;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.pcrm-view-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  background: rgba(226, 232, 240, 0.85);
+  padding: 3px;
+  border-radius: $radius-md;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  gap: 3px;
 }
 
-.crm-section-tab {
-  padding: 6px 18px !important;
-  font-size: 0.78rem !important;
-  font-weight: 500 !important;
-  font-family: $font !important;
-  color: #64748b !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 20px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  outline: none !important;
+.pcrm-view-btn {
+  font-family: $font;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $text-sub;
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
 
-  &:hover:not(.crm-section-tab--active) {
-    color: #0f172a !important;
-    background: #f1f5f9 !important;
-    border-color: #cbd5e1 !important;
+  &:hover {
+    color: $text-title;
   }
 
   &--active {
-    color: #2563eb !important;
-    background: #eff6ff !important;
-    border-color: #bfdbfe !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08) !important;
+    background: #ffffff;
+    color: $text-title;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
   }
 }
 
-// ── Right Side Filter Select Dropdown ─────────────────────────
-.crm-filter-select-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+// ─── STATS ROW (LIGHT PASTEL CARDS) ─────────────────────────
+.pcrm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
 
-.crm-filter-label {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.crm-filter-select {
-  padding: 6px 28px 6px 12px !important;
-  font-size: 0.78rem !important;
-  font-weight: 500 !important;
-  font-family: $font !important;
-  color: #0f172a !important;
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 20px !important;
-  outline: none !important;
-  cursor: pointer !important;
-  transition: all 0.15s ease !important;
-  appearance: none !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 10px center !important;
-
-  &:hover, &:focus {
-    border-color: #2563eb !important;
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-// ══════════════════════════════════════════════════════════
-//  CLIENTS — Card List
-// ══════════════════════════════════════════════════════════
-.crm-client-list {
+.pcrm-stat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: space-between;
+  min-height: 116px;
+  cursor: default;
+  border: none;
+  color: #ffffff;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  // ── Decorative background overlapping circles (matching Purple template) ──
+  &__bg-circle-1 {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    bottom: -35px;
+    right: -25px;
+    pointer-events: none;
+  }
+
+  &__bg-circle-2 {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    bottom: -50px;
+    right: 40px;
+    pointer-events: none;
+  }
+
+  // ── Exact Gradients & Box Shadows from Purple Admin Template ──
+  &--coral {
+    background: linear-gradient(to right, #ffbf96, #fe7096);
+    box-shadow: 0 4px 16px rgba(254, 112, 150, 0.25);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(254, 112, 150, 0.35);
+    }
+  }
+
+  &--blue {
+    background: linear-gradient(to right, #90caf9, #047edf 99%);
+    box-shadow: 0 4px 16px rgba(4, 126, 223, 0.25);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(4, 126, 223, 0.35);
+    }
+  }
+
+  &--green {
+    background: linear-gradient(to right, #84d9d2, #07cdae);
+    box-shadow: 0 4px 16px rgba(7, 205, 174, 0.25);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(7, 205, 174, 0.35);
+    }
+  }
+
+  &--purple {
+    background: linear-gradient(to right, #da8cff, #9a55ff);
+    box-shadow: 0 4px 16px rgba(154, 85, 255, 0.25);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(154, 85, 255, 0.35);
+    }
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 4px;
+  }
+
+  &__label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #ffffff;
+    opacity: 0.95;
+    letter-spacing: 0;
+  }
+
+  &__icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    opacity: 0.9;
+    flex-shrink: 0;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__value {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
+    margin: 4px 0 6px 0;
+  }
+
+  &__sub {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #ffffff;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
 }
 
-.crm-client-card {
+// ─── BOARD / LIST LAYOUT ────────────────────────────────────
+.pcrm-layout {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+}
+
+// ─── KANBAN BOARD ───────────────────────────────────────────
+.pcrm-board {
+  flex: 1;
+  min-width: 0;
+  transition: all 0.2s ease;
+
+  &__columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &--with-panel &__columns {
+    @media (max-width: 1250px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// ─── COLUMN (PASTEL TINTED BOXES) ───────────────────────────
+.pcrm-col {
+  border-radius: $radius-lg;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 480px;
+  border-width: 1.5px;
+  border-style: solid;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: box-shadow 0.2s ease;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  &__accent {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  &__count {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    flex: 1;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: 40px 12px;
+    font-size: 0.74rem;
+    color: $text-muted;
+    font-style: italic;
+  }
+}
+
+// ─── CLIENT CARD ────────────────────────────────────────────
+.pcrm-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  transition: all 0.15s ease;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: $radius-md;
+  padding: 11px 13px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 
   &:hover {
     border-color: #cbd5e1;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  }
+
+  &--selected {
+    border-color: #0ea5e9 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.22), 0 6px 18px rgba(14, 165, 233, 0.12) !important;
   }
 
   &--skel {
-    padding: 12px 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  &__top {
+    display: flex;
+    align-items: center;
+    gap: 9px;
   }
 
   &__avatar {
     width: 32px;
     height: 32px;
-    border-radius: 7px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.68rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    color: #fff;
     flex-shrink: 0;
+    border: 1px solid transparent;
   }
 
   &__info {
-    flex: 1;
-    min-width: 0;
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1;
     gap: 1px;
   }
 
   &__name {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: $text;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $text-title;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.25;
   }
 
   &__email {
     font-size: 0.68rem;
-    color: $faint;
+    color: $text-sub;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.25;
   }
 
-  &__meta {
-    display: flex;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  &__detail {
-    font-size: 0.72rem;
-    color: $muted;
-    white-space: nowrap;
-  }
-
-  &__right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    flex-shrink: 0;
-    min-width: 80px;
-  }
-
-  &__date {
-    font-size: 0.68rem;
-    color: $muted;
-    white-space: nowrap;
-  }
-
-  &__purchases {
-    font-size: 0.64rem;
-    font-weight: 500;
-    color: $faint;
-
-    &.has {
-      color: #2563eb;
-      font-weight: 600;
-    }
-  }
-}
-
-// Purchase list
-.crm-purchase-list {
-  background: $card;
-  border: 1px solid $border;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.crm-purchase-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px solid #f8fafc;
-  transition: background 0.12s;
-
-  &:last-child { border-bottom: none; }
-  &:hover { background: #fafbfd; }
-
-  &__avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.62rem;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
-  }
-
-  &__main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  &__client {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: $text;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__product {
-    font-size: 0.68rem;
-    color: $faint;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__amount {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: $text;
-    white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 70px;
-    text-align: right;
-  }
-
-  &__date {
-    font-size: 0.7rem;
-    color: $muted;
-    white-space: nowrap;
-    flex-shrink: 0;
-    min-width: 80px;
-    text-align: right;
-  }
-
-  &__status {
+  &__path {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.66rem;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    text-transform: capitalize;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: $radius-sm;
+    max-width: 100%;
+    border-width: 1px;
+    border-style: solid;
   }
 
-  &__dot {
-    width: 5px;
-    height: 5px;
+  &__path-accent {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     flex-shrink: 0;
   }
-}
 
-// ── Empty State ───────────────────────────────────────────
-.crm-empty-state {
-  padding: 48px 24px;
-  text-align: center;
-
-  &__title {
-    font-size: 0.85rem;
+  &__path-name {
+    font-size: 0.68rem;
     font-weight: 600;
-    color: $text;
-    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  &__sub {
-    font-size: 0.76rem;
-    color: $faint;
-    margin: 0;
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  &__steps {
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: $radius-xs;
+    font-size: 0.67rem;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  &__purchases {
+    font-size: 0.67rem;
+    color: $text-muted;
+    font-weight: 500;
+
+    &--has {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: $radius-xs;
+    }
   }
 }
 
-// ── Responsive ────────────────────────────────────────────
-@media (max-width: 768px) {
-  .crm-root {
-    padding: 14px 14px 28px;
+// ─── DETAIL PANEL (RIGHT SIDEBAR) ───────────────────────────
+.pcrm-detail {
+  width: 320px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: $radius-lg;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 16px;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    z-index: 100;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   }
 
-  .crm-stats-row {
+  &__top {
+    display: flex;
+    align-items: center;
     gap: 10px;
+    position: relative;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
   }
 
-  .crm-stat {
-    &__val { font-size: 0.88rem; }
-    &__label { font-size: 0.66rem; }
+  &__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+    flex-shrink: 0;
   }
 
-  .crm-client-card {
-    flex-wrap: wrap;
+  &__user {
+    flex: 1;
+    min-width: 0;
+  }
 
-    &__meta { display: none; }
+  &__name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: $text-title;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
 
-    &__right {
-      flex-direction: row;
-      gap: 8px;
-      min-width: auto;
+  &__email {
+    font-size: 0.7rem;
+    color: $text-sub;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
+
+  &__close {
+    background: none;
+    border: none;
+    font-size: 0.84rem;
+    color: $text-muted;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: $radius-xs;
+    transition: all 0.15s ease;
+
+    &:hover {
+      color: $text-title;
+      background: #f1f5f9;
     }
   }
 
-  .crm-purchase-row {
-    flex-wrap: wrap;
+  &__section {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
-
-    &__date { display: none; }
   }
-}
 
-@media (max-width: 480px) {
-  .crm-stats-row {
+  &__label {
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: $text-muted;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &__path-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: $radius-sm;
+    padding: 10px;
+    display: flex;
     flex-direction: column;
     gap: 6px;
   }
 
-  .crm-stat::after {
-    display: none !important;
+  &__path-name {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: $text-main;
   }
 
-  .crm-client-card__right {
-    width: 100%;
-    flex-direction: row;
+  &__progress-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #10b981);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  &__path-meta {
+    font-size: 0.66rem;
+    color: $text-sub;
+  }
+
+  &__contact-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: $text-body;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      color: $text-sub;
+      flex-shrink: 0;
+    }
+  }
+
+  &__joined {
+    font-size: 0.66rem;
+    color: $text-muted;
+    margin-top: 2px;
+  }
+
+  &__purchase-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: $radius-sm;
+    padding: 8px 10px;
+  }
+
+  &__purchase-val {
+    font-size: 0.72rem;
+    color: $text-sub;
+
+    &--has {
+      color: #047857;
+      font-weight: 700;
+    }
+  }
+
+  &__pur-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  &__pur-item {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    padding: 6px 8px;
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: $radius-sm;
+  }
+
+  &__pur-name {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: $text-main;
+    display: block;
+  }
+
+  &__pur-date {
+    font-size: 0.62rem;
+    color: $text-muted;
+    display: block;
+  }
+
+  &__pur-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__pur-amt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: $text-title;
+  }
+
+  &__pur-status {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  &__btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: $radius-sm;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &--primary {
+      background: #0ea5e9;
+      color: #ffffff;
+      border: none;
+
+      &:hover {
+        background: #0284c7;
+      }
+    }
+
+    &--outline {
+      background: #ffffff;
+      color: $text-body;
+      border: 1px solid #cbd5e1;
+
+      &:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+      }
+    }
+  }
+}
+
+// ─── LIST VIEW ──────────────────────────────────────────────
+.pcrm-list-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pcrm-list-header {
+  display: grid;
+  grid-template-columns: 32px 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: $text-muted;
+  letter-spacing: 0.05em;
+
+  &__avatar {
+    width: 28px;
+  }
+}
+
+.pcrm-list-row {
+  display: grid;
+  grid-template-columns: 32px 1.5fr 1.5fr 0.8fr 1fr 1fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  &--selected {
+    border-color: #0ea5e9 !important;
+    background: #f0f9ff !important;
+  }
+
+  &--skel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.68rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 1px;
+  }
+
+  &__name {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: $text-title;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
+
+  &__email {
+    font-size: 0.66rem;
+    color: $text-sub;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+  }
+
+  &__path {
+    font-size: 0.72rem;
+    color: $text-body;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__steps {
+    font-size: 0.7rem;
+    color: $text-sub;
+    font-weight: 600;
+  }
+
+  &__status {
+    font-size: 0.64rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    width: fit-content;
+
+    &--not_started {
+      background: #ede9fe;
+      color: #5b21b6;
+      border: 1px solid #ddd6fe;
+    }
+
+    &--in_progress {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    &--completed {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+  }
+
+  &__pur {
+    font-size: 0.72rem;
+
+    &--has {
+      color: #047857;
+      font-weight: 700;
+    }
+
+    &--none {
+      color: $text-muted;
+    }
+  }
+
+  &__date {
+    font-size: 0.68rem;
+    color: $text-muted;
+    text-align: right;
+  }
+}
+
+// ─── PURCHASES TAB ──────────────────────────────────────────
+.pcrm-purchases {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pcrm-pur-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: $radius-md;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    border-color: #cbd5e1;
+  }
+
+  &--skel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 0.74rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 3px;
+  }
+
+  &__client {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: $text-title;
+  }
+
+  &__product {
+    font-size: 0.72rem;
+    color: $text-body;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__cat {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    background: #ede9fe;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+    padding: 2px 6px;
+    border-radius: $radius-xs;
+  }
+
+  &__amount {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: $text-title;
+  }
+
+  &__date {
+    font-size: 0.68rem;
+    color: $text-muted;
+  }
+
+  &__status {
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+}
+
+// ─── EMPTY STATE ────────────────────────────────────────────
+.pcrm-empty {
+  text-align: center;
+  padding: 48px 16px;
+
+  &__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $text-body;
+    margin: 0 0 4px 0;
+  }
+
+  &__sub {
+    font-size: 0.74rem;
+    color: $text-muted;
+    margin: 0;
   }
 }

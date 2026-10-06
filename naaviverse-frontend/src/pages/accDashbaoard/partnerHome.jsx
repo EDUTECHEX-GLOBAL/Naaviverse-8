@@ -55,13 +55,15 @@ export default function PartnerHome({ setispopular }) {
   const [statsError, setStatsError] = useState(null);
   const [pathUsers, setPathUsers] = useState([]);
   const [pathUsersLoading, setPathUsersLoading] = useState(false);
-  const [showPathHint, setShowPathHint] = useState(() => {
+  const [showGuideNote, setShowGuideNote] = useState(() => {
     try {
-      return localStorage.getItem("dismissed_partner_path_hint") !== "true";
+      return localStorage.getItem("dont_show_add_path_hint") !== "true";
     } catch {
       return true;
     }
   });
+  const [isGuideCollapsed, setIsGuideCollapsed] = useState(true);
+  const [activeGuideStep, setActiveGuideStep] = useState(1);
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;
@@ -76,7 +78,7 @@ export default function PartnerHome({ setispopular }) {
         try {
           const raw = localStorage.getItem(`read_notifs_${email}`);
           if (raw) readIds = new Set(JSON.parse(raw));
-        } catch {}
+        } catch { }
 
         const formatted = res.data.notifications.map(n => ({
           ...n,
@@ -95,6 +97,20 @@ export default function PartnerHome({ setispopular }) {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    };
+    if (showNotif) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showNotif]);
+
   const markAllRead = () => {
     setNotifications(p => p.map(n => ({ ...n, unread: false })));
     try {
@@ -105,7 +121,7 @@ export default function PartnerHome({ setispopular }) {
         allIds.forEach(id => existing.add(id));
         localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
-    } catch {}
+    } catch { }
   };
 
   const markRead = (id) => {
@@ -117,7 +133,7 @@ export default function PartnerHome({ setispopular }) {
         existing.add(id);
         localStorage.setItem(`read_notifs_${email}`, JSON.stringify([...existing]));
       }
-    } catch {}
+    } catch { }
   };
 
   const handleNotifAction = (n) => {
@@ -157,7 +173,7 @@ export default function PartnerHome({ setispopular }) {
           try {
             const raw = localStorage.getItem(`read_notifs_${email}`);
             if (raw) readIds = new Set(JSON.parse(raw));
-          } catch {}
+          } catch { }
 
           const formattedNotifs = res.data.data.notifications.map(act => ({
             ...act,
@@ -614,123 +630,209 @@ export default function PartnerHome({ setispopular }) {
   return (
     <div className="ph-root">
       <style>{`@keyframes ph-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      {/* ── HEADER ── */}
       <div className="ph-header">
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-            <div className="ph-welcome" style={{ margin: 0 }}>
-              Welcome back, <span className="ph-accent">{partnerName}</span>
-            </div>
-            <div ref={notifRef} className="ph-notif-wrap">
-              <button
-                type="button"
-                className="ph-bell-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowNotif(p => !p);
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
-              </button>
-              {showNotif && (
-                <div className="ph-notif-dd">
-                  <div className="ph-notif-dd-head">
-                    <span className="ph-notif-dd-title">Notifications</span>
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
-                      <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
-                    </div>
-                  </div>
-                  <div className="ph-notif-dd-list">
-                    {notifications.length === 0 ? (
-                      <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
-                        No new notifications
-                      </div>
-                    ) : (
-                      notifications.slice(0, 6).map(n => {
-                        const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
-                        return (
-                          <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
-                            <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
-                            <div className="ph-notif-dd-body">
-                              <div className="ph-notif-dd-item-title">{n.title}</div>
-                              <div className="ph-notif-dd-item-desc">{n.desc}</div>
-                              <div className="ph-notif-dd-item-time">{n.time}</div>
-                            </div>
-                            <div className="ph-notif-dd-right">
-                              {n.unread && <div className="ph-unread-dot" />}
-                              <button
-                                type="button"
-                                className="ph-notif-view-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleNotifAction(n);
-                                }}
-                              >
-                                View
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                  <div className="ph-notif-dd-footer">
-                    <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
-                  </div>
-                </div>
-              )}
-            </div>
+        <div className="ph-header-left">
+          <div className="ph-welcome">
+            Welcome back, <span className="ph-accent">{partnerName}</span>
           </div>
           <div className="ph-sub">Partner overview · updated just now</div>
         </div>
+
         <div className="ph-header-right">
           <div className="ph-date-badge">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
             {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
           </div>
-          <div className="ph-add-btn-wrap">
-            {showPathHint && (
-              <div
-                className="ph-floating-path-hint"
-                onClick={() => setispopular && setispopular(true)}
-                title="Click here to create a path"
-              >
-                <span className="ph-hint-sparkle">✨</span>
-                <span className="ph-hint-text">Click here to create a path</span>
-                <span className="ph-hint-arrow-down">↓</span>
-                <button
-                  type="button"
-                  className="ph-hint-close-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowPathHint(false);
-                    try {
-                      localStorage.setItem("dismissed_partner_path_hint", "true");
-                    } catch {}
-                  }}
-                  title="Dismiss message"
-                >
-                  ×
-                </button>
-                <div className="ph-hint-tail" />
+
+          {/* ── NOTIFICATION BELL IN TOOLBAR ── */}
+          <div ref={notifRef} className="ph-notif-wrap">
+            <button
+              type="button"
+              className="ph-bell-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNotif(p => !p);
+              }}
+              title="Notifications"
+              aria-label="View notifications"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
+            </button>
+            {showNotif && (
+              <div className="ph-notif-dd">
+                <div className="ph-notif-dd-head">
+                  <span className="ph-notif-dd-title">Notifications</span>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
+                    <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
+                  </div>
+                </div>
+                <div className="ph-notif-dd-list">
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+                      No new notifications
+                    </div>
+                  ) : (
+                    notifications.slice(0, 6).map(n => {
+                      const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
+                      return (
+                        <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
+                          <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
+                          <div className="ph-notif-dd-body">
+                            <div className="ph-notif-dd-item-title">{n.title}</div>
+                            <div className="ph-notif-dd-item-desc">{n.desc}</div>
+                            <div className="ph-notif-dd-item-time">{n.time}</div>
+                          </div>
+                          <div className="ph-notif-dd-right">
+                            {n.unread && <div className="ph-unread-dot" />}
+                            <button
+                              type="button"
+                              className="ph-notif-view-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNotifAction(n);
+                              }}
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+                <div className="ph-notif-dd-footer">
+                  <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
+                </div>
               </div>
             )}
-            <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-              </svg>
-              Add New
-            </button>
           </div>
+
+          {/* ── ADD NEW BUTTON ── */}
+          <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+            Add New
+          </button>
         </div>
       </div>
 
+      {/* ── TOGGLE NOTE: MINIMAL PATH GUIDE ── */}
+      {showGuideNote && (
+        <div className={`ph-toggle-note ${isGuideCollapsed ? "ph-toggle-note--collapsed" : "ph-toggle-note--expanded"}`}>
+          <div className="ph-tn-bar">
+            <div className="ph-tn-bar-left" onClick={() => setIsGuideCollapsed(p => !p)}>
+              <span className="ph-tn-icon">✨</span>
+              <span className="ph-tn-title">How to create a path in 3 simple steps</span>
+            </div>
+            <div className="ph-tn-bar-right">
+              <button
+                type="button"
+                className="ph-tn-toggle-btn"
+                onClick={() => setIsGuideCollapsed(p => !p)}
+              >
+                <span>{isGuideCollapsed ? "Show guide" : "Hide guide"}</span>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  style={{ transform: isGuideCollapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.2s" }}
+                >
+                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="ph-tn-dont-show-btn"
+                onClick={() => {
+                  try {
+                    localStorage.setItem("dont_show_add_path_hint", "true");
+                  } catch {}
+                  setShowGuideNote(false);
+                }}
+                title="Never show this guide again"
+              >
+                Don't show again
+              </button>
+              <button
+                type="button"
+                className="ph-tn-close-btn"
+                onClick={() => setShowGuideNote(false)}
+                title="Dismiss"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {!isGuideCollapsed && (
+            <div className="ph-tn-minimal-body">
+              <div className="ph-tn-steps-row">
+                <div className="ph-tn-mini-step">
+                  <span className="ph-tn-step-num">1</span>
+                  <div className="ph-tn-step-text">
+                    <strong>Create a path</strong>
+                    <span>Name it & set a goal</span>
+                  </div>
+                </div>
+                <span className="ph-tn-step-arrow">→</span>
+                <div className="ph-tn-mini-step">
+                  <span className="ph-tn-step-num">2</span>
+                  <div className="ph-tn-step-text">
+                    <strong>Add steps</strong>
+                    <span>Courses, sessions & tasks</span>
+                  </div>
+                </div>
+                <span className="ph-tn-step-arrow">→</span>
+                <div className="ph-tn-mini-step">
+                  <span className="ph-tn-step-num">3</span>
+                  <div className="ph-tn-step-text">
+                    <strong>Publish</strong>
+                    <span>Live on marketplace</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="ph-tn-minimal-footer">
+                <button
+                  type="button"
+                  className="ph-tn-cta-btn"
+                  onClick={() => setispopular && setispopular(true)}
+                >
+                  Create a path →
+                </button>
+                <span className="ph-tn-minimal-tip">💡 Start with a name and outcome. You can fine-tune modules anytime later.</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="ph-section-label">
-        OVERVIEW · LAST 30 DAYS
-        <span className="ph-export-link" onClick={fetchStats} style={{ cursor: "pointer" }}>{statsLoading ? "Loading…" : "↻ Refresh"}</span>
+        <span>OVERVIEW · LAST 30 DAYS</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {!showGuideNote && (
+            <button
+              type="button"
+              className="ph-reopen-guide-btn"
+              onClick={() => {
+                setShowGuideNote(true);
+                setIsGuideCollapsed(false);
+              }}
+              title="Show guide to create a path"
+            >
+              <span>✨ How to create a path</span>
+            </button>
+          )}
+          <span className="ph-export-link" onClick={fetchStats} style={{ cursor: "pointer" }}>{statsLoading ? "Loading…" : "↻ Refresh"}</span>
+        </div>
       </div>
 
       {/* ── 3 STAT CARDS ── */}
