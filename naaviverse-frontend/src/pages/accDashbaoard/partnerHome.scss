@@ -58,7 +58,7 @@
     radial-gradient(ellipse at 94% 90%, rgba(139, 92, 246, .10) 0%, transparent 48%),
     radial-gradient(ellipse at 55% 50%, rgba(59, 130, 246, .06) 0%, transparent 55%);
   padding: 16px 20px 24px;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   box-sizing: border-box;
 
   @media (max-width: 480px) {
@@ -99,7 +99,7 @@
 }
 
 .ph-welcome {
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 16px;
   font-weight: 700;
   color: var(--ph-slate-900);
@@ -187,7 +187,7 @@
   align-items: center;
   justify-content: center;
   border: 2px solid white;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
 }
 
 // ── Notification Dropdown ──────────────────────────────────────────────────────
@@ -253,7 +253,7 @@
   border-radius: var(--ph-r-full);
   border: none;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   white-space: nowrap;
   flex-shrink: 0;
 
@@ -271,7 +271,7 @@
   border-radius: var(--ph-r-full);
   border: 1px solid #ffe4e6;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   white-space: nowrap;
   flex-shrink: 0;
 
@@ -361,7 +361,7 @@
   font-weight: 600;
   border: none;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
 
   &:hover {
     background: var(--ph-slate-900);
@@ -402,264 +402,126 @@
   position: relative;
 }
 
-// ── Toggle Note: Minimal Path Creation Guide ──────────────────────────────────
-.ph-toggle-note {
-  background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 70%, #f5f3ff 100%);
-  border: 1px solid rgba(13, 148, 136, 0.2);
-  border-radius: var(--ph-r-md);
-  padding: 8px 14px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
+.ph-add-btn-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: visible;
+}
 
-  &--expanded {
-    padding: 10px 14px 12px;
+@keyframes phFloatBob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
   }
 }
 
-.ph-tn-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+@keyframes phGlowPulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(13, 148, 136, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 6px 22px rgba(13, 148, 136, 0.55), 0 0 0 2px rgba(45, 212, 191, 0.45);
+  }
 }
 
-.ph-tn-bar-left {
+.ph-floating-path-hint {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  right: 0;
   display: flex;
   align-items: center;
   gap: 7px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.ph-tn-icon {
-  font-size: 13px;
-  line-height: 1;
-}
-
-.ph-tn-title {
-  font-family: var(--ph-font);
-  font-size: 12px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.ph-tn-bar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ph-tn-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: var(--ph-font);
-  color: #0f766e;
-  background: white;
-  border: 1px solid rgba(13, 148, 136, 0.28);
-  padding: 3px 9px;
-  border-radius: var(--ph-r-full);
-  cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: #f0fdfa;
-    border-color: #0d9488;
-    color: #115e59;
-  }
-}
-
-.ph-tn-dont-show-btn {
-  font-size: 11px;
-  font-weight: 500;
-  font-family: var(--ph-font);
-  color: #64748b;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  padding: 2px 4px;
-  transition: color 0.15s ease;
-
-  &:hover {
-    color: #0f172a;
-  }
-}
-
-.ph-tn-close-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(100, 116, 139, 0.08);
-  border: none;
-  color: #64748b;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-  }
-}
-
-.ph-tn-minimal-body {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: phFadeIn 0.2s ease-out;
-}
-
-@keyframes phFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.ph-tn-steps-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.ph-tn-mini-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  padding: 6px 12px;
-  border-radius: var(--ph-r-md);
-  flex: 1;
-  min-width: 140px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-  }
-}
-
-.ph-tn-step-num {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #0d9488;
-  color: white;
-  font-size: 10.5px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.ph-tn-step-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-
-  strong {
-    font-size: 11.5px;
-    font-weight: 700;
-    color: #0f172a;
-    line-height: 1.25;
-  }
-
-  span {
-    font-size: 10px;
-    color: #64748b;
-    line-height: 1.25;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-.ph-tn-step-arrow {
-  color: #94a3b8;
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-
-  @media (max-width: 600px) {
-    display: none;
-  }
-}
-
-.ph-tn-minimal-footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.ph-tn-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #0d9488;
-  color: white;
-  border: none;
-  font-family: var(--ph-font);
-  font-size: 11px;
-  font-weight: 700;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 55%, #0284c7 100%);
+  color: #ffffff;
   padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  box-shadow: 0 1px 3px rgba(13, 148, 136, 0.2);
-
-  &:hover {
-    background: #0f766e;
-    transform: translateY(-0.5px);
-  }
-}
-
-.ph-tn-minimal-tip {
-  font-size: 10.5px;
-  color: #64748b;
-}
-
-.ph-reopen-guide-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: var(--ph-font);
-  color: #0f766e;
-  background: #f0fdfa;
-  border: 1px solid #99f6e4;
-  padding: 3px 8px;
   border-radius: var(--ph-r-full);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif !important;
+  letter-spacing: 0.1px;
+  white-space: nowrap;
   cursor: pointer;
-  transition: all 0.15s ease;
+  z-index: 50;
+  animation: phFloatBob 2.8s ease-in-out infinite, phGlowPulse 2.8s ease-in-out infinite;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
 
   &:hover {
-    background: #ccfbf1;
-    color: #115e59;
+    transform: translateY(-3px) scale(1.02);
+    background: linear-gradient(135deg, #115e59 0%, #0f766e 55%, #0369a1 100%);
+  }
+
+  .ph-hint-sparkle {
+    font-size: 12px;
+    display: inline-flex;
+    line-height: 1;
+  }
+
+  .ph-hint-text {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .ph-hint-arrow-down {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    opacity: 0.9;
+    font-weight: 700;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover .ph-hint-arrow-down {
+    transform: translateY(2px);
+    opacity: 1;
+  }
+
+  .ph-hint-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    margin-left: 2px;
+    padding: 0;
+    transition: background 0.15s, transform 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(1.1);
+    }
+  }
+
+  .ph-hint-tail {
+    position: absolute;
+    bottom: -6px;
+    right: 32px;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #0d9488;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.12));
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10.5px;
+    padding: 5px 10px;
+    gap: 5px;
+
+    .ph-hint-tail {
+      right: 24px;
+    }
   }
 }
 
@@ -674,7 +536,7 @@
   padding: 7px 14px;
   font-size: 12px;
   font-weight: 700;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   box-shadow: 0 3px 10px rgba(13, 148, 136, .28);
   transition: all .18s;
@@ -901,7 +763,7 @@
 }
 
 .ph-stat-val {
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 22px;
   font-weight: 700;
   line-height: 1;
@@ -946,7 +808,7 @@
   border: none;
   font-size: 11px;
   font-weight: 700;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   display: inline-block;
   transition: all .18s;
@@ -985,7 +847,7 @@
 }
 
 .ph-card-title {
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
   font-weight: 700;
   color: var(--ph-slate-800);
@@ -998,7 +860,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   padding: 0;
   white-space: nowrap;
 
@@ -1067,7 +929,7 @@
   border: none;
   font-size: 11px;
   font-weight: 600;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   background: transparent;
   color: var(--ph-slate-600);
@@ -1196,7 +1058,7 @@
   font-weight: 600;
   color: var(--ph-teal-600);
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   transition: all .15s;
 
   &:hover {
@@ -1508,7 +1370,7 @@ table {
   color: var(--ph-slate-600);
   font-size: 11px;
   font-weight: 600;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   transition: all .18s;
   white-space: nowrap;
@@ -1581,7 +1443,7 @@ table {
 }
 
 .ph-dsc-val {
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 18px;
   font-weight: 800;
   line-height: 1;
@@ -1708,7 +1570,7 @@ table {
 
 .ph-notif-page-title {
   flex: 1;
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 16px;
   font-weight: 700;
   color: var(--ph-slate-800);
@@ -1771,7 +1633,7 @@ table {
   border-radius: var(--ph-r-md);
   border: none;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   background: transparent;
@@ -1966,7 +1828,7 @@ table {
   padding: 0;
   font-size: 12px;
   font-weight: 500;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   color: var(--ph-slate-500);
   cursor: pointer;
   transition: color 0.2s ease;
@@ -2006,7 +1868,7 @@ table {
 
 .ph-page-header-content {
   h2 {
-    font-family: var(--ph-display);
+    font-family: 'Poppins', sans-serif !important;
     font-size: 18px;
     font-weight: 700;
     color: var(--ph-slate-800);
@@ -2040,7 +1902,7 @@ table {
   border-radius: var(--ph-r-full);
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   background: transparent;
   border: 1px solid var(--ph-slate-200);
   color: var(--ph-slate-600);
@@ -2071,7 +1933,7 @@ table {
   color: white;
   font-size: 12px;
   font-weight: 600;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -2096,7 +1958,7 @@ table {
   font-weight: 600;
   color: var(--ph-slate-600);
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   transition: all 0.2s;
   white-space: nowrap;
 
@@ -2326,7 +2188,7 @@ table {
   border-radius: var(--ph-r-full);
   padding: 2px 9px;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   transition: all 0.15s ease;
 
   &:hover {
@@ -2357,7 +2219,7 @@ table {
 }
 
 .ph-notif-page-title {
-  font-family: var(--ph-display);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 17px;
   font-weight: 700;
   color: var(--ph-slate-800);
@@ -2411,7 +2273,7 @@ table {
   margin-bottom: 3px;
   border: none;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12.5px;
   font-weight: 600;
   text-align: left;
@@ -2542,11 +2404,10 @@ table {
   border-radius: var(--ph-r-full);
   padding: 4px 12px;
   cursor: pointer;
-  font-family: var(--ph-font);
+  font-family: 'Poppins', sans-serif !important;
   transition: all 0.15s ease;
 
   &:hover {
     background: var(--ph-teal-600);
-    color: #ffffff;
   }
 }

@@ -1,36 +1,22 @@
-
-
-
+/* Gordita font-face mapped to Poppins for comprehensive typography unification */
 
 @font-face {
-    font-family: 'gorditabold';
-    src: url('gordita-bold-webfont.woff2') format('woff2'),
-         url('gordita-bold-webfont.woff') format('woff');
-    font-weight: normal;
+    font-family: 'Poppins', sans-serif !important;
+    src: local('Poppins Bold'), local('Poppins-Bold'), local('Poppins');
+    font-weight: 700;
     font-style: normal;
-
 }
 
-
-
-
 @font-face {
-    font-family: 'gorditamedium';
-    src: url('gordita-medium-webfont.woff2') format('woff2'),
-         url('gordita-medium-webfont.woff') format('woff');
-    font-weight: normal;
+    font-family: 'Poppins', sans-serif !important;
+    src: local('Poppins Medium'), local('Poppins-Medium'), local('Poppins');
+    font-weight: 500;
     font-style: normal;
-
 }
 
-
-
-
 @font-face {
-    font-family: 'gorditaregular';
-    src: url('gordita-regular-webfont.woff2') format('woff2'),
-         url('gordita-regular-webfont.woff') format('woff');
-    font-weight: normal;
+    font-family: 'Poppins', sans-serif !important;
+    src: local('Poppins Regular'), local('Poppins-Regular'), local('Poppins');
+    font-weight: 400;
     font-style: normal;
-
 }

@@ -34,13 +34,13 @@ $font: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-se
     flex-direction: column;
     height: 100%;
     overflow-y: auto;
-    font-family: $font;
+    font-family: 'Poppins', sans-serif !important;
     color: $ink;
     background: $bg;
 
     * {
         box-sizing: border-box;
-        font-family: $font;
+        font-family: 'Poppins', sans-serif !important;
     }
 }
 

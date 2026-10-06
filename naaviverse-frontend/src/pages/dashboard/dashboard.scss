@@ -7,6 +7,7 @@
   display: flex;
   text-transform: capitalize !important;
   overflow: hidden;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .dashboard-screens {
@@ -19,6 +20,7 @@
   min-width: 0; /* prevents flex blowout */
   position: relative;
   background: #f6f5ff;
+  font-family: 'Poppins', sans-serif !important;
 
   .row-1 {
     display: flex;
@@ -593,10 +595,16 @@
 
   .dashboard-body {
     /* Sidebar is a fixed overlay on mobile — body is just the content area */
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    overflow: hidden !important;
+
+    > div:first-child {
+      display: contents !important;
+    }
   }
 
   .dashboard-screens {

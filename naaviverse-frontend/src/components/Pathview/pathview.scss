@@ -113,7 +113,7 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 0.78rem;
       color: $text-dark;
       width: 100%;
-      font-family: inherit;
+      font-family: 'Poppins', sans-serif !important;
 
       &::placeholder {
         color: $text-light;

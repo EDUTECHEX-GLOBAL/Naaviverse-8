@@ -16,7 +16,7 @@
   border-bottom: 1px solid #eef2f6;
   backdrop-filter: blur(14px);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Poppins', sans-serif !important;
   box-sizing: border-box;
 }
 
@@ -41,7 +41,7 @@
   align-items: center;
   gap: 6px;
   transition: all 0.2s ease;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   flex-shrink: 0;
 
   &:hover {
@@ -361,81 +361,77 @@
     }
   }
 
-  /* Row 2: Green FROM bar (left) and Red TO bar (right) side-by-side directly below Row 1 */
+  /* Row 2: Unified capsule searchbar (like normal tab box shape) directly below Row 1 */
   .uth-route-searchbar {
     order: 2 !important;
     width: 100% !important;
     flex: 0 0 auto !important;
     margin: 44px 0 0 0 !important;
     display: flex !important;
-    align-items: stretch !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    height: auto !important;
-    max-width: none !important;
-    gap: 10px !important;
-    overflow: visible !important;
+    align-items: center !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    padding: 0 12px !important;
+    gap: 8px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
 
     &:hover {
-      box-shadow: none !important;
-      border-color: transparent !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+      border-color: #cbd5e1 !important;
     }
   }
 
   .uth-route-segment {
     display: flex !important;
     align-items: center !important;
-    gap: 9px !important;
-    border-radius: 14px !important;
-    padding: 6px 12px 6px 8px !important;
-    height: 50px !important;
-    min-height: 50px !important;
+    gap: 8px !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    min-height: unset !important;
     flex: 1 1 0 !important;
     min-width: 0 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
     box-sizing: border-box !important;
     transition: all 0.2s ease !important;
 
     &.uth-from-segment {
-      background: #f0fdf4 !important;
-      border: 1px solid #bbf7d0 !important;
+      background: transparent !important;
+      border: none !important;
 
       .uth-search-point {
         background: #16a34a !important;
       }
 
       .uth-search-copy .uth-label {
-        color: #16a34a !important;
-      }
-
-      &:hover {
-        border-color: #86efac !important;
+        color: #94a3b8 !important;
       }
     }
 
     &.uth-to-segment {
-      background: #fef2f2 !important;
-      border: 1px solid #fecaca !important;
+      background: transparent !important;
+      border: none !important;
 
       .uth-search-point {
         background: #ef4444 !important;
       }
 
       .uth-search-copy .uth-label {
-        color: #ef4444 !important;
-      }
-
-      &:hover {
-        border-color: #fca5a5 !important;
+        color: #94a3b8 !important;
       }
     }
 
     .uth-search-point {
-      width: 34px !important;
-      height: 34px !important;
-      min-width: 34px !important;
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
       border-radius: 50% !important;
       display: flex !important;
       align-items: center !important;
@@ -449,8 +445,8 @@
 
       .uth-mobile-icon {
         display: block !important;
-        width: 16px !important;
-        height: 16px !important;
+        width: 14px !important;
+        height: 14px !important;
         fill: #ffffff !important;
       }
     }
@@ -462,19 +458,20 @@
       min-width: 0 !important;
       flex: 1 1 0 !important;
       overflow: hidden !important;
+      gap: 1px !important;
 
       .uth-label {
-        font-size: 10.5px !important;
+        font-size: 10px !important;
         font-weight: 700 !important;
         line-height: 1.1 !important;
-        margin-bottom: 2px !important;
-        letter-spacing: 0.05em !important;
+        letter-spacing: 0.06em !important;
         text-transform: uppercase !important;
+        color: #94a3b8 !important;
         display: block !important;
       }
 
       .uth-value {
-        font-size: 13.5px !important;
+        font-size: 12.5px !important;
         font-weight: 700 !important;
         color: #0f172a !important;
         white-space: nowrap !important;
@@ -496,7 +493,16 @@
   }
 
   .uth-divider {
-    display: none !important;
+    display: block !important;
+    width: 1px !important;
+    height: 22px !important;
+    background: #e2e8f0 !important;
+    flex-shrink: 0 !important;
+    margin: 0 2px !important;
+
+    &:last-of-type {
+      display: none !important;
+    }
   }
 
   .uth-search-copy.uth-steps-copy {
@@ -579,34 +585,38 @@
   }
 
   .uth-route-searchbar {
+    height: 44px !important;
+    min-height: 44px !important;
     margin: 40px 0 0 0 !important;
-    gap: 8px !important;
+    gap: 6px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
   }
 
   .uth-route-segment {
-    gap: 8px !important;
-    padding: 5px 10px 5px 7px !important;
-    height: 48px !important;
-    min-height: 48px !important;
-    border-radius: 12px !important;
+    gap: 6px !important;
+    padding: 0 !important;
+    height: 100% !important;
+    min-height: unset !important;
+    border-radius: 0 !important;
 
     .uth-search-point {
-      width: 32px !important;
-      height: 32px !important;
-      min-width: 32px !important;
+      width: 26px !important;
+      height: 26px !important;
+      min-width: 26px !important;
 
       .uth-mobile-icon {
-        width: 15px !important;
-        height: 15px !important;
+        width: 13px !important;
+        height: 13px !important;
       }
     }
 
     .uth-search-copy {
       .uth-label {
-        font-size: 9.5px !important;
+        font-size: 9px !important;
       }
       .uth-value {
-        font-size: 12.5px !important;
+        font-size: 11.5px !important;
       }
     }
   }

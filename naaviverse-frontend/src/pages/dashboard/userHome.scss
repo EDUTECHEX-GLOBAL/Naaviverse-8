@@ -48,7 +48,7 @@
     radial-gradient(ellipse 70% 40% at 5% 0%, rgba(59, 130, 246, .09) 0%, transparent 55%),
     radial-gradient(ellipse 50% 50% at 95% 100%, rgba(99, 102, 241, .06) 0%, transparent 55%);
   padding: 0 28px 48px;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   box-sizing: border-box;
   overflow-y: auto;
 
@@ -246,7 +246,7 @@
     font-weight: 600;
     color: var(--uh-blue-mid);
     cursor: pointer;
-    font-family: var(--uh-f);
+    font-family: 'Poppins', sans-serif !important;
 
     &:hover {
       text-decoration: underline;
@@ -466,7 +466,11 @@
   color: white;
   font-size: 11px;
   font-weight: 600;
+<<<<<<< HEAD
   font-family: var(--uh-f);
+=======
+  font-family: 'Poppins', sans-serif !important;
+>>>>>>> origin/feature/login
   padding: 6px 12px;
   border-radius: 99px;
   cursor: pointer;
@@ -496,7 +500,7 @@
   border: 1px solid var(--uh-line);
   border-radius: var(--uh-r-md);
   cursor: pointer;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 500;
   color: var(--uh-ink-2);
@@ -616,7 +620,7 @@
   font-weight: 600;
   color: var(--uh-blue-mid);
   cursor: pointer;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   text-align: center;
   transition: all .15s;
 
@@ -729,7 +733,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   font-size: 11.5px;
   font-weight: 500;
   color: var(--uh-ink-4);
@@ -1282,7 +1286,7 @@
     background: var(--uh-blue-pale);
     color: var(--uh-blue-mid);
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
     font-weight: 600;
     transition: all 0.14s;
 
@@ -1318,7 +1322,7 @@
     color: var(--uh-blue-mid);
     cursor: pointer;
     outline: none;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
   }
 }
 
@@ -1659,7 +1663,7 @@
   border-radius: 99px;
   padding: 3px 9px;
   cursor: pointer;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   transition: all .14s;
 
   &:hover {
@@ -1793,7 +1797,7 @@
   color: white;
   font-size: 13px;
   font-weight: 600;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   transition: background .16s;
 
@@ -2075,7 +2079,7 @@
   border-radius: 99px;
   font-size: 13px;
   font-weight: 600;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   cursor: pointer;
   transition: background .16s;
 
@@ -2152,7 +2156,7 @@
   font-weight: 600;
   color: var(--uh-blue-mid);
   cursor: pointer;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   text-align: center;
   transition: all .2s ease;
 
@@ -2185,7 +2189,7 @@
   color: var(--uh-blue-mid);
   font-size: 11.5px;
   font-weight: 600;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   padding: 5px 12px;
   border-radius: 99px;
   cursor: pointer;
@@ -2227,7 +2231,7 @@
   font-weight: 600;
   color: var(--uh-blue-mid);
   cursor: pointer;
-  font-family: var(--uh-f);
+  font-family: 'Poppins', sans-serif !important;
   padding: 4px 10px;
   border-radius: 99px;
   transition: all 0.2s ease;

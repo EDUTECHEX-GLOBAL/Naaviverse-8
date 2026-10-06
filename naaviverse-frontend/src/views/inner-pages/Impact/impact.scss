@@ -233,7 +233,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   margin-bottom: 20px;
   text-transform: uppercase;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   transition: none;
 
   &:hover {
@@ -252,7 +252,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   transition: all 0.22s ease;
 
   &:hover {
@@ -459,7 +459,7 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   opacity: 0.06;
   line-height: 1;
   letter-spacing: -0.04em;
-  font-family: Georgia, serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .imp-story-tag {

@@ -28,3 +28,16 @@
 @import "./scss/habilidades";
 @import "./scss/style";
 @import "./scss/responsive";
+
+/* ── Global Poppins Typography Enforcer ── */
+body, h1, h2, h3, h4, h5, h6, p, a, span, button, input, select, textarea, label, li {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Ensure icon fonts remain intact */
+.bi, [class^="bi-"], [class*=" bi-"] {
+  font-family: bootstrap-icons !important;
+}
+.fa, .fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
+  font-family: "Font Awesome 5 Free", "FontAwesome" !important;
+}

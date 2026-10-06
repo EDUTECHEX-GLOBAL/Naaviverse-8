@@ -1,7 +1,7 @@
 @import "../../../static/scss/mixin";
 
 .monthName{
-    font-family: 'Montserrat';
+    font-family: 'Poppins', sans-serif !important;
     font-style: normal;
     font-weight: 700;
     font-size: 18px;
@@ -16,7 +16,7 @@
 }
 
 .dayName{
-    font-family: 'Montserrat';
+    font-family: 'Poppins', sans-serif !important;
     font-style: normal;
     font-weight: 700;
     font-size: 18px;
@@ -97,7 +97,7 @@
         min-width: 392px;
         border-right: 0.5px solid #E7E7E7;
         padding: 30px;
-        font-family: 'Montserrat';
+        font-family: 'Poppins', sans-serif !important;
         font-style: normal;
         line-height: 160%;
         letter-spacing: 0.002em;

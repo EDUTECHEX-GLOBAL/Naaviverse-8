@@ -105,7 +105,7 @@ $radius-pill: 100px;
     line-height: 1.4;
     transition: border-color 0.14s, box-shadow 0.14s, background 0.14s;
     box-sizing: border-box;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
 
     &::placeholder { color: $ink-faint; font-size: 12px; }
 
@@ -180,7 +180,7 @@ $radius-pill: 100px;
     background-position: right 8px center;
     background-size: 10px;
     box-sizing: border-box;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
     width: 100%;
     transition: border-color 0.14s, box-shadow 0.14s;
 
@@ -321,7 +321,7 @@ $radius-pill: 100px;
     transition: border-color 0.14s, box-shadow 0.14s;
     box-sizing: border-box;
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
 
     &:focus { outline: none; border-color: $teal; background: $bg-card; box-shadow: 0 0 0 3px rgba(42,157,143,0.1); }
     &:hover:not(:disabled) { border-color: $border-mid; background: $bg-card; }
@@ -452,7 +452,7 @@ $radius-pill: 100px;
   color: $ink;
   background: $bg-base;
   box-sizing: border-box;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   -moz-appearance: textfield;
   transition: all 0.14s ease;
 
@@ -474,7 +474,7 @@ $radius-pill: 100px;
   transition: all 0.14s ease;
   border: none;
   letter-spacing: 0.02em;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
 
   &-cancel {
     background: $bg-base;

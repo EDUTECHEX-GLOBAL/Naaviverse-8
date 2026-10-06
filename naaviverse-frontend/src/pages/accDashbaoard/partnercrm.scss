@@ -12,11 +12,10 @@ $radius-sm: 6px;
 $radius-md: 10px;
 $radius-lg: 14px;
 
-// ─── ROOT CONTAINER ─────────────────────────────────────────
-.pcrm {
-  font-family: $font;
-  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 50%, #eff6ff 100%);
-  min-height: 100%;
+// ── Root ──────────────────────────────────────────────────
+.crm-root {
+  font-family: 'Poppins', sans-serif !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
   height: 100%;
   padding: 16px 20px 36px;
   color: $text-main;
@@ -106,18 +105,18 @@ $radius-lg: 14px;
   gap: 3px;
 }
 
-.pcrm-view-btn {
-  font-family: $font;
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: $text-sub;
-  background: transparent;
-  border: none;
-  padding: 6px 14px;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  outline: none;
+.crm-section-tab {
+  padding: 6px 18px !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  font-family: 'Poppins', sans-serif !important;
+  color: #64748b !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 20px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  outline: none !important;
 
   &:hover {
     color: $text-title;
@@ -138,8 +137,31 @@ $radius-lg: 14px;
   gap: 14px;
   margin-bottom: 22px;
 
-  @media (max-width: 900px) {
-    grid-template-columns: repeat(2, 1fr);
+.crm-filter-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.crm-filter-select {
+  padding: 6px 28px 6px 12px !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  font-family: 'Poppins', sans-serif !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 20px !important;
+  outline: none !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+
+  &:hover, &:focus {
+    border-color: #2563eb !important;
   }
 }
 
@@ -1055,4 +1077,5 @@ $radius-lg: 14px;
     color: $text-muted;
     margin: 0;
   }
+}
 }

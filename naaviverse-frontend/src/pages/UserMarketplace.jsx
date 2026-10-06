@@ -708,12 +708,13 @@ const MarketplaceFilterBar = ({
     <div className="mkt-filter-bar-sticky" ref={barRef}>
       <div className="mkt-filter-pills-row">
         {/* Sort Pill */}
-        <div className="mkt-pill-wrap">
+        <div className="mkt-pill-wrap mkt-pill-wrap--dropdown mkt-pill-wrap--sort">
           <button
             className={`mkt-pill-btn ${filterState.sort !== "relevance" ? "active" : ""}`}
             onClick={() => setOpenDropdown(openDropdown === "sort" ? null : "sort")}
           >
-            <span>Sort ▾</span>
+            <span className="mkt-btn-label">Sort</span>
+            <span className="mkt-btn-arrow">▾</span>
           </button>
           {openDropdown === "sort" && (
             <div className="mkt-pill-popover">
@@ -726,7 +727,7 @@ const MarketplaceFilterBar = ({
               ].map((opt) => (
                 <div
                   key={opt.key}
-                  className={`mkt-popover-item ${filterState.sort === opt.key ? "selected" : ""}`}
+                  className={`mkt-popover-item ${filterState.sort === opt.key ? "is-selected selected" : ""}`}
                   onClick={() => {
                     onFilterChange({ ...filterState, sort: opt.key });
                     setOpenDropdown(null);
@@ -740,19 +741,20 @@ const MarketplaceFilterBar = ({
         </div>
 
         {/* Category Pill (Multi-select) */}
-        <div className="mkt-pill-wrap">
+        <div className="mkt-pill-wrap mkt-pill-wrap--dropdown mkt-pill-wrap--category">
           <button
             className={`mkt-pill-btn ${selectedCatCount > 0 ? "active" : ""}`}
             onClick={() => setOpenDropdown(openDropdown === "category" ? null : "category")}
           >
-            <span>
-              Category {selectedCatCount > 0 && `(${selectedCatCount})`} ▾
+            <span className="mkt-btn-label">
+              Category {selectedCatCount > 0 ? `(${selectedCatCount})` : ""}
             </span>
+            <span className="mkt-btn-arrow">▾</span>
           </button>
           {openDropdown === "category" && (
-            <div className="mkt-pill-popover mkt-pill-popover--wide">
+            <div className="mkt-pill-popover">
               <div
-                className={`mkt-popover-item ${selectedCatCount === 0 ? "selected" : ""}`}
+                className={`mkt-popover-item ${selectedCatCount === 0 ? "is-selected selected" : ""}`}
                 onClick={() => handleCategoryToggle("all")}
               >
                 <span className="mkt-popover-title">All Categories</span>
@@ -766,7 +768,7 @@ const MarketplaceFilterBar = ({
               ].map((cat) => (
                 <div
                   key={cat.key}
-                  className={`mkt-popover-item ${isCatActive(cat.key) ? "selected" : ""}`}
+                  className={`mkt-popover-item ${isCatActive(cat.key) ? "is-selected selected" : ""}`}
                   onClick={() => handleCategoryToggle(cat.key)}
                 >
                   <span className="mkt-popover-chk">
@@ -781,17 +783,18 @@ const MarketplaceFilterBar = ({
         </div>
 
         {/* Rating Pill (Google Maps Style) */}
-        <div className="mkt-pill-wrap">
+        <div className="mkt-pill-wrap mkt-pill-wrap--dropdown mkt-pill-wrap--rating">
           <button
             className={`mkt-pill-btn ${filterState.minRating > 0 ? "active" : ""}`}
             onClick={() => setOpenDropdown(openDropdown === "rating" ? null : "rating")}
           >
-            <span>
-              Rating {filterState.minRating > 0 && `(${filterState.minRating}+ ★)`} ▾
+            <span className="mkt-btn-label">
+              Rating {filterState.minRating > 0 ? `(${filterState.minRating}+ ★)` : ""}
             </span>
+            <span className="mkt-btn-arrow">▾</span>
           </button>
           {openDropdown === "rating" && (
-            <div className="mkt-pill-popover mkt-pill-popover--rating">
+            <div className="mkt-pill-popover">
               {[
                 { val: 0, label: "Any rating", stars: "" },
                 { val: 2.0, label: "2.0", stars: "★★☆☆☆" },
@@ -803,7 +806,7 @@ const MarketplaceFilterBar = ({
               ].map((r) => (
                 <div
                   key={r.val}
-                  className={`mkt-popover-item mkt-popover-item--rating ${filterState.minRating === r.val ? "selected" : ""}`}
+                  className={`mkt-popover-item mkt-popover-item--rating ${filterState.minRating === r.val ? "is-selected selected" : ""}`}
                   onClick={() => {
                     onFilterChange({ ...filterState, minRating: r.val });
                     setOpenDropdown(null);
@@ -824,12 +827,15 @@ const MarketplaceFilterBar = ({
         </div>
 
         {/* Price Pill */}
-        <div className="mkt-pill-wrap">
+        <div className="mkt-pill-wrap mkt-pill-wrap--dropdown mkt-pill-wrap--price">
           <button
             className={`mkt-pill-btn ${filterState.priceRange !== "all" ? "active" : ""}`}
             onClick={() => setOpenDropdown(openDropdown === "price" ? null : "price")}
           >
-            <span>Price {filterState.priceRange !== "all" && `(${filterState.priceRange})`} ▾</span>
+            <span className="mkt-btn-label">
+              Price {filterState.priceRange !== "all" ? `(${filterState.priceRange})` : ""}
+            </span>
+            <span className="mkt-btn-arrow">▾</span>
           </button>
           {openDropdown === "price" && (
             <div className="mkt-pill-popover">
@@ -842,7 +848,7 @@ const MarketplaceFilterBar = ({
               ].map((p) => (
                 <div
                   key={p.key}
-                  className={`mkt-popover-item ${filterState.priceRange === p.key ? "selected" : ""}`}
+                  className={`mkt-popover-item ${filterState.priceRange === p.key ? "is-selected selected" : ""}`}
                   onClick={() => {
                     onFilterChange({ ...filterState, priceRange: p.key });
                     setOpenDropdown(null);

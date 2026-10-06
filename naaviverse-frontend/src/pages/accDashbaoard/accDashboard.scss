@@ -3390,7 +3390,9 @@ body:has(.step-popup-overlay) {
 // MOBILE — ≤768px
 // ============================================
 @media (max-width: 768px) {
-  .dashboard-body {
+  body:has(.mobile-topbar) .dashboard-body,
+  .mobile-topbar ~ .dashboard-main .dashboard-body,
+  .mobile-topbar + .dashboard-main .dashboard-body {
     background: #ffffff !important;
     flex-direction: row !important;
     padding-top: 56px !important;

@@ -97,7 +97,7 @@ $font-mono: "Space Mono", monospace;
     radial-gradient(circle at 18% 18%, rgba(198, 161, 91, 0.12), transparent 45%),
     radial-gradient(circle at 84% 80%, rgba(111, 95, 224, 0.08), transparent 45%),
     $ground;
-  font-family: $font-body;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 // faint structural grid — reads as "console", not decoration
@@ -163,7 +163,7 @@ $font-mono: "Space Mono", monospace;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-family: $font-mono;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 10.5px;
   letter-spacing: 0.7px;
   text-transform: uppercase;
@@ -182,7 +182,7 @@ $font-mono: "Space Mono", monospace;
   margin-bottom: 18px;
 
   .welcome-title {
-    font-family: $font-display;
+    font-family: 'Poppins', sans-serif !important;
     font-size: 25px;
     font-weight: 600;
     color: $text-primary;
@@ -272,7 +272,7 @@ $font-mono: "Space Mono", monospace;
   border: none;
   outline: none;
   background: transparent;
-  font-family: $font-body;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 14px;
   color: $text-primary;
 
@@ -283,7 +283,7 @@ $font-mono: "Space Mono", monospace;
 
 .otp-box .input-inp {
   letter-spacing: 5px;
-  font-family: $font-mono;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .eye-icon {
@@ -333,7 +333,7 @@ $font-mono: "Space Mono", monospace;
   border-radius: 10px;
   border: none;
   outline: none;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   background: linear-gradient(135deg, $brass-soft 0%, $brass-deep 100%);
   color: #ffffff;
   font-weight: 700;
@@ -389,7 +389,7 @@ $font-mono: "Space Mono", monospace;
   margin-top: 22px;
   padding-top: 16px;
   border-top: 1px solid #efe9da;
-  font-family: $font-mono;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 10.5px;
   color: $text-muted;
   letter-spacing: 0.2px;

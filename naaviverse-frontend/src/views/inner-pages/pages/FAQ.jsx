@@ -31,28 +31,28 @@ const FAQ = () => {
                                 <div className="col-xl-4 col-lg-3">
                                     <ul className="faq-list-item style-none md-mb-60">
                                         <li className="active">
-                                            <a href="#">1. <span>Makreting</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>1. <span>Makreting</span>
+                                            </button>
                                         </li>
                                         <li>
-                                            <a href="#">2. <span>Buying</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>2. <span>Buying</span>
+                                            </button>
                                         </li>
                                         <li>
-                                            <a href="#">3. <span>User Manual</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>3. <span>User Manual</span>
+                                            </button>
                                         </li>
                                         <li>
-                                            <a href="#">4. <span>Payments</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>4. <span>Payments</span>
+                                            </button>
                                         </li>
                                         <li>
-                                            <a href="#">5. <span>Terms &amp; Conditions</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>5. <span>Terms &amp; Conditions</span>
+                                            </button>
                                         </li>
                                         <li>
-                                            <a href="#">6. <span>Account</span>
-                                            </a>
+                                            <button type="button" style={{background: 'none', border: 'none', padding: 0, color: 'inherit', textAlign: 'left', font: 'inherit', cursor: 'pointer'}}>6. <span>Account</span>
+                                            </button>
                                         </li>
                                     </ul>
                                 </div>
