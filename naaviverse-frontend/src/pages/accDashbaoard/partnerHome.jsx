@@ -55,15 +55,9 @@ export default function PartnerHome({ setispopular }) {
   const [statsError, setStatsError] = useState(null);
   const [pathUsers, setPathUsers] = useState([]);
   const [pathUsersLoading, setPathUsersLoading] = useState(false);
-<<<<<<< HEAD
-  const [showGuideNote, setShowGuideNote] = useState(() => {
-    try {
-      return localStorage.getItem("dont_show_add_path_hint") !== "true";
-=======
   const [showPathHint, setShowPathHint] = useState(() => {
     try {
       return localStorage.getItem("dismissed_partner_path_hint") !== "true";
->>>>>>> origin/feature/login
     } catch {
       return true;
     }
@@ -144,23 +138,23 @@ export default function PartnerHome({ setispopular }) {
     }
   };
 
-  const handleNotifAction = (n) => {
-    markRead(n.id);
-    setShowNotif(false);
+  // const handleNotifAction = (n) => {
+  //   markRead(n.id);
+  //   setShowNotif(false);
 
-    const tab = n.targetTab || (n.type === "path" ? "Paths" : n.type === "purchase" ? "CRM" : "Home");
-    if (tab === "Paths" && setaccsideNav) {
-      setaccsideNav("Paths");
-    } else if (tab === "CRM" && setaccsideNav) {
-      setaccsideNav("CRM");
-    } else if (tab === "Marketplace" && setaccsideNav) {
-      setaccsideNav("Marketplace");
-    } else if (tab === "Feedback" && setaccsideNav) {
-      setaccsideNav("Feedback");
-    } else {
-      setView("home");
-    }
-  };
+  //   const tab = n.targetTab || (n.type === "path" ? "Paths" : n.type === "purchase" ? "CRM" : "Home");
+  //   if (tab === "Paths" && setaccsideNav) {
+  //     setaccsideNav("Paths");
+  //   } else if (tab === "CRM" && setaccsideNav) {
+  //     setaccsideNav("CRM");
+  //   } else if (tab === "Marketplace" && setaccsideNav) {
+  //     setaccsideNav("Marketplace");
+  //   } else if (tab === "Feedback" && setaccsideNav) {
+  //     setaccsideNav("Feedback");
+  //   } else {
+  //     setView("home");
+  //   }
+  // };
 
   useEffect(() => {
     const h = e => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false); };
