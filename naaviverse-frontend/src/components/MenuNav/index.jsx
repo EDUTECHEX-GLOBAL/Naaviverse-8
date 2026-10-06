@@ -32,9 +32,12 @@ const MenuNav = ({
   // ── Admin only below this point ──────────────────────────────────────────
 
   const handleLogout = () => {
+    import('../LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.clear();
     navigate("/admin/login");
-  };
+});
+    });  };
 
   const handleNavigateProfile = () => {
     setShowDrop(false);

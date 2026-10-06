@@ -132,7 +132,7 @@ body {
 .admin-dashboard {
   display: flex;
   height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 /* Sidebar Offcanvas for Mobile */
@@ -419,7 +419,7 @@ tbody tr:hover {
   overflow: hidden;
   background: #f6f8fb;
   color: #172033;
-  font-family: 'DM Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .admin-main-shell {

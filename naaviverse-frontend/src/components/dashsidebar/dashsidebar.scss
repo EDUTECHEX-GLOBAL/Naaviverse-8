@@ -795,12 +795,46 @@ div:has(> .user-dashboard-sidebar) {
       top: 22px !important;
       width: 32px !important;
       height: 32px !important;
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+      padding: 0 !important;
 
       span {
-        width: 14px;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        margin: 0 !important;
+        width: 14px !important;
+        height: 2px !important;
+        background: #1e293b !important;
+        border-radius: 2px !important;
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease, background 0.15s ease !important;
+      }
+
+      span:nth-child(1) {
+        transform: translate(-50%, -50%) rotate(45deg) !important;
+      }
+
+      span:nth-child(2) {
+        opacity: 0 !important;
+        transform: translate(-50%, -50%) scale(0) !important;
+        pointer-events: none !important;
+      }
+
+      span:nth-child(3) {
+        transform: translate(-50%, -50%) rotate(-45deg) !important;
+      }
+
+      &:hover,
+      &:active {
+        background: #f1f5f9 !important;
+        border-color: #cbd5e1 !important;
+
+        span {
+          background: #0f172a !important;
+        }
       }
     }
   }
@@ -847,6 +881,18 @@ div:has(> .user-dashboard-sidebar) {
 
     span {
       width: 18px;
+    }
+
+    &.open {
+      top: 22px !important;
+      left: calc(240px - 44px) !important;
+      width: 32px !important;
+      height: 32px !important;
+
+      span {
+        width: 14px !important;
+        height: 2px !important;
+      }
     }
   }
 }

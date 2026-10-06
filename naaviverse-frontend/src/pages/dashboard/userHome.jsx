@@ -76,11 +76,11 @@ const Ring = ({ pct, size = 52, stroke = 4, color = "#60a5fa", bg = "rgba(96,165
 // ── Static data ────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { key: "wallet", label: "My Wallet", icon: "wallet" },
-  { key: "purchases", label: "Purchases", icon: "market" },
-  { key: "subscriptions", label: "Subscriptions", icon: "credit" },
-  { key: "mypath", label: "My Path", icon: "steps" },
-  { key: "paths", label: "Explore Paths", icon: "map" },
+  { key: "wallet", label: "My Wallet", icon: "wallet", path: "/dashboard/users/wallet" },
+  { key: "purchases", label: "Purchases", icon: "market", path: "/dashboard/users/purchases" },
+  { key: "subscriptions", label: "Subscriptions", icon: "credit", path: "/dashboard/users/transactions" },
+  { key: "mypath", label: "My Path", icon: "steps", path: "/dashboard/users/my-journey" },
+  { key: "paths", label: "Explore Paths", icon: "map", path: "/dashboard/users/paths" },
 ];
 
 // ── Notif Config (Exact match to Admin Notifications system) ───────────────────
@@ -1253,12 +1253,6 @@ export default function UserHome({ initialView = "home" }) {
             <Icon type="calendar" size={11} color="#3b82f6" />
             {today}
           </span>
-          {(credits?.daysLeft ?? 0) <= 10 && (
-            <span className="uh-expiry-chip">
-              <span className="uh-expiry-dot" />
-              {credits?.daysLeft ?? 0}d left
-            </span>
-          )}
           <div className="uh-notif-wrap" ref={notifRef} style={{ position: "relative" }}>
             <button className="notif-bell-btn" onClick={() => setShowNotif((v) => !v)}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -1274,6 +1268,18 @@ export default function UserHome({ initialView = "home" }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {unread > 0 && <span className="notif-dd-count">{unread} New</span>}
                     <button className="notif-mark-all-btn" onClick={markAllRead}>Mark all read</button>
+                    <button 
+                      onClick={() => setShowNotif(false)} 
+                      style={{ background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "4px", borderRadius: "50%", color: "#94a3b8", transition: "color 0.2s" }}
+                      onMouseEnter={(e) => e.currentTarget.style.color = "#1e293b"}
+                      onMouseLeave={(e) => e.currentTarget.style.color = "#94a3b8"}
+                      aria-label="Close notifications"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
                   </div>
                 </div>
                 <div className="notif-dd-list">
@@ -1363,7 +1369,7 @@ export default function UserHome({ initialView = "home" }) {
 
         <div className="uh-quick-tiles">
           {TABS.map(t => (
-            <button key={t.key} className={`uh-quick-tile ${activeTab === t.key ? "active" : ""}`} onClick={() => setActiveTab(t.key)}>
+            <button key={t.key} className={`uh-quick-tile ${activeTab === t.key ? "active" : ""}`} onClick={() => navigate(t.path)}>
               <div className="uh-qt-icon"><Icon type={t.icon} size={16} color={activeTab === t.key ? "#2563eb" : "#64748b"} /></div>
               <span>{t.label}</span>
               <Icon type="arrow-r" size={11} color={activeTab === t.key ? "#2563eb" : "#94a3b8"} />

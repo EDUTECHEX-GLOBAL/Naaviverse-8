@@ -11,6 +11,7 @@ import { GlobalContexProvider } from "./globalContext";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { CoinContextProvider } from "./context/CoinContext";
 import VaultPageContextProvider from "./context/VaultPageContext";
+import LogoutManager from "./components/LogoutModal/LogoutManager";
 import { store } from "./app/store.ts";
 import { Provider } from "react-redux";
 import { saveState } from "./app/browser-storage.ts";
@@ -46,6 +47,7 @@ root.render(
                       <HelmetProvider>
                         <Provider store={store}>
                           <App />
+                          <LogoutManager />
                         </Provider>
                       </HelmetProvider>
                     </React.StrictMode>

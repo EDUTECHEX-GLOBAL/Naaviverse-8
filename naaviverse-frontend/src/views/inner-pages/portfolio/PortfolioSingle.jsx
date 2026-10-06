@@ -80,13 +80,13 @@ const PortfolioSingle = () => {
                                         </div>
                                         <ul className="d-flex social-icon style-none mt-20">
                                             <li>
-                                                <a href="#"><i className="fab fa-pinterest"/></a>
+                                                <a href="https://pinterest.com" target="_blank" rel="noopener noreferrer"><i className="fab fa-pinterest"/></a>
                                             </li>
                                             <li>
-                                                <a href="#"><i className="fab fa-twitter"/></a>
+                                                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"><i className="fab fa-twitter"/></a>
                                             </li>
                                             <li>
-                                                <a href="#"><i className="fab fa-linkedin-in"/></a>
+                                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"><i className="fab fa-linkedin-in"/></a>
                                             </li>
                                         </ul>
                                     </div>
@@ -97,13 +97,14 @@ const PortfolioSingle = () => {
                                 <div className="img-meta">
                                     <img src="images/gallery/img_21.jpg" alt="" className="w-100"/>
                                     <div className="hover-state tran3s">
-                                        <a
+                                        <button
+                                            type="button"
                                             className="fancybox tran3s"
                                             data-fancybox
                                             title="Click for large view"
-                                            href="#"
+                                            style={{background: 'none', border: 'none', padding: 0}}
                                             onClick={() => setIsOpen(!isOpen)}
-                                            tabIndex={0}><i className="bi bi-plus"/></a>
+                                            tabIndex={0}><i className="bi bi-plus"/></button>
                                     </div>
                                 </div>
                             </div>

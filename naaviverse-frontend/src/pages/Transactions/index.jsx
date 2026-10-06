@@ -96,9 +96,12 @@ const Transactions = () => {
   };
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.clear();
     navigate("/");
-  };
+});
+    });  };
 
   const handleCategories = () => {
     setIsCatLoading(true);

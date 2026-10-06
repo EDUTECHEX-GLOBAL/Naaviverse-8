@@ -50,7 +50,7 @@ $radius-lg: 14px;
   outline: none;
   background: #fff;
   color: $ink;
-  font-family: $font;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 0.82rem;
   font-weight: 500;
   padding: 8px 11px;
@@ -75,7 +75,7 @@ $radius-lg: 14px;
   min-height: 100vh;
   position: relative;
   color: $ink;
-  font-family: $font;
+  font-family: 'Poppins', sans-serif !important;
   background-color: $bg;
   background-image: radial-gradient(900px 480px at 8% -8%, rgba($green, 0.07), transparent 60%),
     radial-gradient(760px 420px at 100% 0%, rgba($blue, 0.06), transparent 55%),
@@ -83,7 +83,7 @@ $radius-lg: 14px;
 
   * {
     box-sizing: border-box;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
   }
 }
 

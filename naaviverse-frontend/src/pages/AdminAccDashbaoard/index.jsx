@@ -643,9 +643,12 @@ const AccDashboard = () => {
   }, []);
 
   const handleLogout = () => {
+    import('../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
+      triggerLogout(() => {
     localStorage.clear();
     navigate("/");
-  };
+});
+    });  };
 
   const handleFileInputChange = (e) => {
     if (e.target.files?.[0]) {

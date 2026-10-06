@@ -84,8 +84,8 @@
     "zustand": "^4.4.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "node --max-old-space-size=4096 node_modules/react-scripts/scripts/start.js",
+    "build": "node --max-old-space-size=4096 node_modules/react-scripts/scripts/build.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

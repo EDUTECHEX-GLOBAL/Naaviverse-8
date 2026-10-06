@@ -287,7 +287,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   flex: 1;
   border: none;
   background: transparent;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
   color: $ink;
   outline: none;
@@ -328,7 +328,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   border: none;
   background: transparent;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   color: $gray600;
@@ -359,7 +359,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   color: #1d4ed8;
   border: 1.5px solid #bfdbfe;
   border-radius: $radius-sm;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -405,7 +405,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   color: #ffffff;
   border: none;
   border-radius: $radius-sm;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -466,7 +466,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   background: #ffffff;
   color: $gray600;
   cursor: pointer;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
@@ -538,7 +538,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   background: #ffffff;
   border: 1px solid $gray200;
   border-radius: $radius-sm;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   color: $gray800;
@@ -583,7 +583,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   border: 1px solid #fca5a5;
   border-radius: $radius-sm;
   color: #ef4444;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -875,7 +875,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   color: #ffffff;
   border: none;
   border-radius: 7px;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -1702,9 +1702,13 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
     border-radius: 10px;
     border: 1px solid #e2e8f0;
     margin-bottom: 8px;
-    padding: 6px 10px;
-    gap: 6px;
+    padding: 10px 10px;
+    gap: 10px;
     box-shadow: 0 2px 8px rgba(22, 25, 43, 0.04);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
   }
 }
 
@@ -1715,20 +1719,88 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    gap: 4px;
-    flex: 1 1 auto;
+    display: contents;
   }
 }
 
 .mkt-pill-wrap {
   position: relative;
+
+  &--dropdown {
+    .mkt-pill-btn {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .mkt-pill-popover {
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      left: 0;
+      right: 0;
+      box-sizing: border-box;
+    }
+  }
+
+  &--sort {
+    width: 200px;
+  }
+
+  &--category {
+    width: 200px;
+  }
+
+  &--rating {
+    width: 150px;
+  }
+
+  &--price {
+    width: 165px;
+  }
+
+  @media (max-width: 768px) {
+    width: calc(50% - 5px) !important;
+    flex: 0 0 auto;
+
+    &--dropdown {
+      .mkt-pill-popover {
+        width: calc(200% + 10px) !important;
+        min-width: calc(200% + 10px) !important;
+        max-width: calc(200% + 10px) !important;
+      }
+    }
+
+    &:nth-child(even) .mkt-pill-popover {
+      left: auto !important;
+      right: 0 !important;
+    }
+  }
+}
+
+.mkt-btn-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.mkt-btn-arrow {
+  font-size: 11px;
+  color: #64748b;
+  margin-left: 6px;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+
+  .active & {
+    color: #3E7BFA;
+  }
 }
 
 .mkt-pill-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
+  height: 36px;
   padding: 0 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -1738,12 +1810,13 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   color: #16192B;
   cursor: pointer;
   transition: all 0.15s ease;
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
-    height: 28px;
-    padding: 0 8px;
+    height: 30px;
+    padding: 0 10px;
     font-size: 11px;
-    border-radius: 14px;
+    border-radius: 15px;
     gap: 4px;
   }
 
@@ -1768,6 +1841,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   min-width: 200px;
   width: max-content;
   max-width: 280px;
+  box-sizing: border-box;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -1800,13 +1874,22 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 12px;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  height: auto !important;
+  min-height: 32px;
+  line-height: 1.3 !important;
+  padding: 6px 12px;
   font-size: 13px;
   font-weight: 500;
   color: #16192B;
   border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: background 0.12s, color 0.12s;
 
   &:hover {
@@ -1818,9 +1901,15 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
     }
   }
 
+  &.is-selected,
   &.selected {
-    background: #EAF1FF;
-    color: #3E7BFA;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    background: #EAF1FF !important;
+    color: #3E7BFA !important;
     font-weight: 600;
 
     .mkt-popover-title {
@@ -1902,32 +1991,42 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
 
 /* Rating option row matching Google Maps screenshot */
 .mkt-popover-item--rating {
-  padding: 7px 12px;
+  padding: 4px 8px !important;
+  min-height: unset !important;
+  height: auto !important;
+  font-size: 12px;
+  line-height: 1.2 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .mkt-rating-any-label {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 500;
   color: #16192B;
+  line-height: 1.2 !important;
 }
 
 .mkt-rating-option-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  line-height: 1.2 !important;
 }
 
 .mkt-rating-num {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   color: #16192B;
-  width: 22px;
+  width: 18px;
+  line-height: 1.2 !important;
 }
 
 .mkt-rating-stars-gold {
   color: #F5B324;
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  line-height: 1.2 !important;
 }
 
 .mkt-clear-pill-btn {
@@ -1955,14 +2054,20 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   font-size: 12.5px;
   font-weight: 600;
   color: #6B7280;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 
   @media (max-width: 768px) {
     font-size: 11px;
-    white-space: nowrap;
   }
 }
 
 .mkt-filter-meta-right {
+  display: flex;
+  align-items: center;
+
   @media (max-width: 768px) {
     flex-shrink: 0;
     margin-left: auto;
@@ -2300,7 +2405,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   color: #2563eb;
   border: 1px solid #bfdbfe;
   border-radius: $radius-sm;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif !important;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -2380,7 +2485,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
     color: #ffffff;
     border: none;
     border-radius: 6px;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif !important;
     font-size: 11.5px;
     font-weight: 700;
     cursor: pointer;
@@ -2441,7 +2546,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
       background: none;
       border: none;
       padding: 0;
-      font-family: inherit;
+      font-family: 'Poppins', sans-serif !important;
       font-size: 11px;
       color: #64748b;
       cursor: pointer;
@@ -2467,7 +2572,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
       background: #fefce8;
       border: 1px solid #fde047;
       border-radius: 5px;
-      font-family: inherit;
+      font-family: 'Poppins', sans-serif !important;
       font-size: 10.5px;
       font-weight: 700;
       color: #92400e;
