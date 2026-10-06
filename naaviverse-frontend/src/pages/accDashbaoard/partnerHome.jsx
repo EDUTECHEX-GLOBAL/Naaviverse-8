@@ -62,6 +62,14 @@ export default function PartnerHome({ setispopular }) {
       return true;
     }
   });
+  const [showGuideNote, setShowGuideNote] = useState(() => {
+    try {
+      return localStorage.getItem("dont_show_add_path_hint") !== "true";
+    } catch {
+      return true;
+    }
+  });
+  const [isGuideCollapsed, setIsGuideCollapsed] = useState(false);
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;

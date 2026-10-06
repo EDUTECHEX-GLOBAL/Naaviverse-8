@@ -9,13 +9,6 @@ import Dashsidebar from "../../../components/dashsidebar/dashsidebar";
 import searchic from "../../../static/images/dashboard/searchic.svg";
 import downarrow from "../../../static/images/dashboard/downarrow.svg";
 import profile from "../../../static/images/dashboard/profile.svg";
-import sidearrow from "../../../static/images/dashboard/sidearrow.svg";
-import logout from "../../../static/images/dashboard/logout.svg";
-import settings from "../../../static/images/dashboard/settings.svg";
-import support from "../../../static/images/dashboard/support.svg";
-import accounts from "../../../static/images/dashboard/accounts.svg";
-import vaults from "../../../static/images/dashboard/vaults.svg";
-import profilea from "../../../static/images/dashboard/profilea.svg";
 
 const MallProduct = () => {
   let navigate = useNavigate();
@@ -28,7 +21,7 @@ const MallProduct = () => {
     let product = localStorage.getItem("product");
     setIndex(JSON.parse(product));
     // console.log(JSON.parse(product), "product details");
-  }, []);
+  }, [setIndex]);
 
   function filterItem(text) {
     let filterItem = mallCoindata?.filter((eachitem) => {
@@ -37,14 +30,6 @@ const MallProduct = () => {
     setfilteredcoins(filterItem);
   }
 
-  const handleLogout = () => {
-    import('../../../components/LogoutModal/LogoutManager').then(({ triggerLogout }) => {
-      triggerLogout(() => {
-    setBuy("step1");
-    localStorage.clear();
-    navigate("/");
-});
-    });  };
 
   return (
     <div className="dashboard-main">
@@ -384,7 +369,6 @@ const MallProduct = () => {
                           <div
                             style={{
                               width: "100%",
-                              height: "20%",
                               height: "17%",
                               display: "flex",
                               flexDirection: "column",

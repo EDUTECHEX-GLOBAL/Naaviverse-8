@@ -364,6 +364,31 @@ const LevelOneModal = ({
     }
   };
 
+  // Typeahead support: when user types first two letters (e.g. "IN", "US") or country name, jump immediately
+  const phoneTypeaheadQueryRef = useRef("");
+  const phoneTypeaheadTimerRef = useRef(null);
+
+  const handlePhoneCodeKeyDown = (e) => {
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      clearTimeout(phoneTypeaheadTimerRef.current);
+      phoneTypeaheadQueryRef.current += e.key.toLowerCase();
+      const q = phoneTypeaheadQueryRef.current;
+
+      const found =
+        dialCodeOptions.find((opt) => opt.isoCode.toLowerCase().startsWith(q)) ||
+        dialCodeOptions.find((opt) => opt.name.toLowerCase().startsWith(q)) ||
+        dialCodeOptions.find((opt) => opt.code.replace(/\+/g, "").startsWith(q));
+
+      if (found) {
+        handlePhoneCountryChange(found.isoCode);
+      }
+
+      phoneTypeaheadTimerRef.current = setTimeout(() => {
+        phoneTypeaheadQueryRef.current = "";
+      }, 700);
+    }
+  };
+
   // Handler for phone digits input: allow numbers, spaces, dashes (-), parentheses (())
   const handlePhoneDigitsChange = (e) => {
     const raw = e.target.value;

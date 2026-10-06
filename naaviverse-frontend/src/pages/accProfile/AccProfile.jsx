@@ -1449,16 +1449,6 @@ const AccProfile = () => {
     setPathSteps({ ...pathSteps, the_ids: pathSteps?.the_ids?.filter((obj) => obj.step_id !== stepId) });
   };
 
-  const handleEdit = (field, currentValue) => {
-    setEditMode(field);
-    setEditValue(currentValue || "");
-  };
-
-  const saveEdit = () => {
-    if (!editValue.trim()) { setEditMode(null); return; }
-    editData(editMode, editValue);
-    setEditMode(null);
-  };
 
   // ─── JSX ────────────────────────────────────────────────────────────────────
 
