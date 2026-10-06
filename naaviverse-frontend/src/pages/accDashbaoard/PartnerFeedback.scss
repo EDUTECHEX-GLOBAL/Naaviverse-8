@@ -285,9 +285,9 @@ $text-muted: #94a3b8;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   background: #ffffff;
-  font-family: 'Poppins', sans-serif !important;
-  font-size: 0.78rem;
-  color: #0f172a;
+  font-family: $font;
+  font-size: 0.72rem;
+  color: $text-title;
   outline: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   transition: all 0.12s ease;
@@ -678,102 +678,5 @@ $text-muted: #94a3b8;
 @keyframes pfSpin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-// ── Error ───────────────────────────────────────────────────────────────────
-.pf-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 56px 0;
-  text-align: center;
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-  border-radius: 12px;
-
-  p {
-    color: #be123c;
-    font-size: 0.82rem;
-    margin: 0;
-  }
-
-  button {
-    padding: 6px 16px;
-    border-radius: 6px;
-    border: none;
-    background: #e11d48;
-    color: #fff;
-    font-family: 'Poppins', sans-serif !important;
-    font-size: 0.78rem;
-    font-weight: 500;
-    cursor: pointer;
-  }
-}
-
-// ── Empty State ─────────────────────────────────────────────────────────────
-.pf-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 60px 0;
-  text-align: center;
-
-  h3 {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #0f172a;
-    margin: 0;
-  }
-
-  p {
-    font-size: 0.8rem;
-    color: #64748b;
-    margin: 0;
-    max-width: 320px;
-    line-height: 1.5;
-    font-weight: 400;
-  }
-}
-
-// ── Responsive ──────────────────────────────────────────────────────────────
-@media (max-width: 900px) {
-  .pf-header,
-  .pf-controls,
-  .pf-content {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
-
-@media (max-width: 600px) {
-  .pf-controls {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 14px 12px 0;
-  }
-
-  .pf-search-wrap {
-    width: 100%;
-  }
-
-  .pf-header {
-    padding: 16px 12px 0;
-  }
-
-  .pf-title {
-    font-size: 1.12rem;
-  }
-
-  .pf-subtitle {
-    font-size: 0.74rem;
-  }
-
-  .pf-content {
-    padding: 14px 12px 28px;
   }
 }

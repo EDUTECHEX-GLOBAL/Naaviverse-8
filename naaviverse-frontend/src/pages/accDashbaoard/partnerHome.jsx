@@ -55,13 +55,6 @@ export default function PartnerHome({ setispopular }) {
   const [statsError, setStatsError] = useState(null);
   const [pathUsers, setPathUsers] = useState([]);
   const [pathUsersLoading, setPathUsersLoading] = useState(false);
-  const [showPathHint, setShowPathHint] = useState(() => {
-    try {
-      return localStorage.getItem("dismissed_partner_path_hint") !== "true";
-    } catch {
-      return true;
-    }
-  });
   const [showGuideNote, setShowGuideNote] = useState(() => {
     try {
       return localStorage.getItem("dont_show_add_path_hint") !== "true";
@@ -69,7 +62,8 @@ export default function PartnerHome({ setispopular }) {
       return true;
     }
   });
-  const [isGuideCollapsed, setIsGuideCollapsed] = useState(false);
+  const [isGuideCollapsed, setIsGuideCollapsed] = useState(true);
+  const [activeGuideStep, setActiveGuideStep] = useState(1);
 
   const notifRef = useRef(null);
   const unread = notifications.filter(n => n.unread).length;
@@ -84,7 +78,7 @@ export default function PartnerHome({ setispopular }) {
         try {
           const raw = localStorage.getItem(`read_notifs_${email}`);
           if (raw) readIds = new Set(JSON.parse(raw));
-        } catch {}
+        } catch { }
 
         const formatted = res.data.notifications.map(n => ({
           ...n,
@@ -102,6 +96,20 @@ export default function PartnerHome({ setispopular }) {
     const interval = setInterval(fetchNotifications, 20000);
     return () => clearInterval(interval);
   }, [fetchNotifications]);
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setShowNotif(false);
+      }
+    };
+    if (showNotif) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [showNotif]);
 
   const markAllRead = () => {
     setNotifications(p => p.map(n => ({ ...n, unread: false })));
@@ -146,24 +154,6 @@ export default function PartnerHome({ setispopular }) {
     }
   };
 
-  // const handleNotifAction = (n) => {
-  //   markRead(n.id);
-  //   setShowNotif(false);
-
-  //   const tab = n.targetTab || (n.type === "path" ? "Paths" : n.type === "purchase" ? "CRM" : "Home");
-  //   if (tab === "Paths" && setaccsideNav) {
-  //     setaccsideNav("Paths");
-  //   } else if (tab === "CRM" && setaccsideNav) {
-  //     setaccsideNav("CRM");
-  //   } else if (tab === "Marketplace" && setaccsideNav) {
-  //     setaccsideNav("Marketplace");
-  //   } else if (tab === "Feedback" && setaccsideNav) {
-  //     setaccsideNav("Feedback");
-  //   } else {
-  //     setView("home");
-  //   }
-  // };
-
   useEffect(() => {
     const h = e => { if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false); };
     document.addEventListener("mousedown", h);
@@ -183,7 +173,7 @@ export default function PartnerHome({ setispopular }) {
           try {
             const raw = localStorage.getItem(`read_notifs_${email}`);
             if (raw) readIds = new Set(JSON.parse(raw));
-          } catch {}
+          } catch { }
 
           const formattedNotifs = res.data.data.notifications.map(act => ({
             ...act,
@@ -642,121 +632,93 @@ export default function PartnerHome({ setispopular }) {
       <style>{`@keyframes ph-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
       {/* ── HEADER ── */}
       <div className="ph-header">
-        <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "4px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", width: "100%" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
-              <div className="ph-welcome" style={{ margin: 0 }}>
-                Welcome back, <span className="ph-accent">{partnerName}</span>
-              </div>
-            </div>
-            
-            <div className="ph-header-right">
-              <div className="ph-date-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
-                {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              </div>
-              
-              <div className="ph-add-btn-wrap">
-                {showPathHint && (
-                  <div
-                    className="ph-floating-path-hint"
-                    onClick={() => setispopular && setispopular(true)}
-                    title="Click here to create a path"
-                  >
-                    <span className="ph-hint-sparkle">✨</span>
-                    <span className="ph-hint-text">Click here to create a path</span>
-                    <span className="ph-hint-arrow-down">↓</span>
-                    <button
-                      type="button"
-                      className="ph-hint-close-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowPathHint(false);
-                        try {
-                          localStorage.setItem("dismissed_partner_path_hint", "true");
-                        } catch {}
-                      }}
-                      title="Dismiss message"
-                    >
-                      ×
-                    </button>
-                    <div className="ph-hint-tail" />
-                  </div>
-                )}
-                <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                  </svg>
-                  Add New
-                </button>
-              </div>
-
-              <div ref={notifRef} className="ph-notif-wrap">
-                <button
-                  type="button"
-                  className="ph-bell-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowNotif(p => !p);
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
-                </button>
-                {showNotif && (
-                  <div className="ph-notif-dd">
-                    <div className="ph-notif-dd-head">
-                      <span className="ph-notif-dd-title">Notifications</span>
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
-                        <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
-                      </div>
-                    </div>
-                    <div className="ph-notif-dd-list">
-                      {notifications.length === 0 ? (
-                        <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
-                          No new notifications
-                        </div>
-                      ) : (
-                        notifications.slice(0, 6).map(n => {
-                          const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
-                          return (
-                            <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
-                              <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
-                              <div className="ph-notif-dd-body">
-                                <div className="ph-notif-dd-item-title">{n.title}</div>
-                                <div className="ph-notif-dd-item-desc">{n.desc}</div>
-                                <div className="ph-notif-dd-item-time">{n.time}</div>
-                              </div>
-                              <div className="ph-notif-dd-right">
-                                {n.unread && <div className="ph-unread-dot" />}
-                                <button
-                                  type="button"
-                                  className="ph-notif-view-btn"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleNotifAction(n);
-                                  }}
-                                >
-                                  View
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                    <div className="ph-notif-dd-footer">
-                      <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
+        <div className="ph-header-left">
+          <div className="ph-welcome">
+            Welcome back, <span className="ph-accent">{partnerName}</span>
           </div>
           <div className="ph-sub">Partner overview · updated just now</div>
+        </div>
+
+        <div className="ph-header-right">
+          <div className="ph-date-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" /><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" /></svg>
+            {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          </div>
+
+          {/* ── NOTIFICATION BELL IN TOOLBAR ── */}
+          <div ref={notifRef} className="ph-notif-wrap">
+            <button
+              type="button"
+              className="ph-bell-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowNotif(p => !p);
+              }}
+              title="Notifications"
+              aria-label="View notifications"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {unread > 0 && <span className="ph-bell-badge">{unread}</span>}
+            </button>
+            {showNotif && (
+              <div className="ph-notif-dd">
+                <div className="ph-notif-dd-head">
+                  <span className="ph-notif-dd-title">Notifications</span>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    {unread > 0 && <span className="ph-notif-new-badge">{unread} new</span>}
+                    <button className="ph-mark-all-btn" onClick={(e) => { e.stopPropagation(); markAllRead(); }}>Mark all read</button>
+                  </div>
+                </div>
+                <div className="ph-notif-dd-list">
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: "24px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
+                      No new notifications
+                    </div>
+                  ) : (
+                    notifications.slice(0, 6).map(n => {
+                      const cfg = NOTIF_CFG[n.type] || NOTIF_CFG.system;
+                      return (
+                        <div key={n.id} className={`ph-notif-dd-item ${n.unread ? "unread" : ""}`} onClick={() => handleNotifAction(n)}>
+                          <div className="ph-notif-dd-icon" style={{ background: cfg.bg }}>{cfg.icon}</div>
+                          <div className="ph-notif-dd-body">
+                            <div className="ph-notif-dd-item-title">{n.title}</div>
+                            <div className="ph-notif-dd-item-desc">{n.desc}</div>
+                            <div className="ph-notif-dd-item-time">{n.time}</div>
+                          </div>
+                          <div className="ph-notif-dd-right">
+                            {n.unread && <div className="ph-unread-dot" />}
+                            <button
+                              type="button"
+                              className="ph-notif-view-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleNotifAction(n);
+                              }}
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+                <div className="ph-notif-dd-footer">
+                  <button className="ph-view-all-notif-btn" onClick={(e) => { e.stopPropagation(); setShowNotif(false); setView("notifications"); }}>View all notifications →</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── ADD NEW BUTTON ── */}
+          <button className="ph-add-btn" onClick={() => setispopular && setispopular(true)}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+            Add New
+          </button>
         </div>
       </div>
 
