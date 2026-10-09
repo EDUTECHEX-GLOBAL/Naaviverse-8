@@ -3488,7 +3488,9 @@ body:has(.step-popup-overlay) {
   }
 
   // ── Universal mobile fix for all services-main / content areas across all partner sections ──
-  .services-main,
+  body:has(.mobile-topbar) .services-main,
+  .dashboard-screens--partner .services-main,
+  .dashboard-root--partner .services-main,
   .crm-main,
   .services-main--mypaths {
     width: 100% !important;
@@ -3506,16 +3508,21 @@ body:has(.step-popup-overlay) {
     box-sizing: border-box !important;
   }
 
-  // Prevent double top-padding when .mypaths or .mp-root is inside .services-main / .services-main--mypaths
+  // Prevent double top-padding when .mypaths or .mp-root is inside .services-main / .services-main--mypaths, and ensure .uh-root has 0 top padding
   .services-main .mypaths,
   .services-main--mypaths .mypaths,
   .services-main .mp-root,
-  .dashboard-screens .services-main .mypaths {
+  .dashboard-screens .services-main .mypaths,
+  .services-main .uh-root,
+  .services-main:has(.uh-root),
+  .dashboard-screens:has(.uh-root) .services-main,
+  .dashboard-screens .services-main:has(.uh-root) {
     padding-top: 0 !important;
     margin-top: 0 !important;
   }
 
-  .dashboard-screens:has(.services-main),
+  body:has(.mobile-topbar) .dashboard-screens:has(.services-main),
+  .dashboard-screens--partner:has(.services-main),
   .dashboard-screens:has(.services-main--mypaths),
   .dashboard-screens:has(.mypaths),
   .dashboard-screens:has(.pcrm),
