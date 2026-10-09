@@ -73,7 +73,7 @@
   flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    padding: 14px 0 12px;
+    padding: 6px 0 10px;
     gap: 8px 12px;
   }
 }
@@ -2309,6 +2309,22 @@
 
 /* ── Mobile Responsive Adjustments (≤ 768px) ── */
 @media (max-width: 768px) {
+  /* Remove excessive top space above 'Your Naavi Journey' on mobile */
+  .services-main:has(.uh-root),
+  .dashboard-screens .services-main:has(.uh-root) {
+    padding-top: 0 !important;
+  }
+
+  .uh-root {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .uh-header {
+    padding-top: 6px !important;
+    margin-top: 0 !important;
+  }
+
   /* Wallet Summary: clean 2x2 grid instead of 4 squished, tall pillars */
   .uh-wallet-summary {
     grid-template-columns: repeat(2, 1fr) !important;

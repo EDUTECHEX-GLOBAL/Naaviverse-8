@@ -619,7 +619,7 @@
 
   .services-main {
     width: 100% !important;
-    padding-top: 0;
+    padding-top: 0 !important;
     height: auto !important;
     min-height: calc(100% - 76px);
   }
