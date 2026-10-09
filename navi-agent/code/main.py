@@ -141,6 +141,14 @@ class CategoryValidationRequest(BaseModel):
     current_position: str
     destination_goal: str
 
+class ObserverAuditRequest(BaseModel):
+    roadmap_data: dict
+    current_position: str
+    target_goal: str
+    profile: Optional[dict] = None
+    category: Optional[str] = "academic"
+    sub_segment: Optional[str] = None
+
 
 class AdminStepRequest(BaseModel):
     path_id: str
@@ -3333,6 +3341,18 @@ async def generate_path_stream(req: PathGenerationRequest):
                 final_json["accuracy_color"] = accuracy["accuracy_color"]
                 final_json["accuracy_breakdown"] = accuracy["breakdown"]
                 final_json["accuracy_details"] = accuracy["details"]
+                try:
+                    from observer_agent import observer_agent
+                    final_json["observer_report"] = observer_agent.observe(
+                        roadmap=final_json,
+                        current_position=current,
+                        target_goal=goal,
+                        profile=profile,
+                        category=cat,
+                        sub_segment=sub_seg
+                    )
+                except Exception as obs_err:
+                    print(f"[Observer Audit Notice] {obs_err}")
                 final_alternatives.append(final_json)
 
             completed.append("ready")
@@ -3369,6 +3389,46 @@ async def api_validate_category_consistency(req: CategoryValidationRequest):
         selected_category=req.category,
         current_position=req.current_position,
         destination_goal=req.destination_goal
+    )
+
+@app.post("/api/observer/observe")
+async def api_observer_audit(req: ObserverAuditRequest):
+    from observer_agent import observer_agent
+    return observer_agent.observe(
+        roadmap=req.roadmap_data,
+        current_position=req.current_position,
+        target_goal=req.target_goal,
+        profile=req.profile,
+        category=req.category,
+        sub_segment=req.sub_segment
+    )
+
+@app.get("/api/observer/paths/{path_id}")
+async def api_observer_audit_path_id(path_id: str):
+    from observer_agent import observer_agent
+    try:
+        obj_id = ObjectId(path_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid path ID format")
+
+    doc = await pending_paths_collection.find_one({"_id": obj_id})
+    if not doc:
+        doc = await published_paths_collection.find_one({"_id": obj_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Career path not found")
+
+    roadmap_data = doc.get("roadmap_data") or {}
+    current = doc.get("current_position") or ""
+    goal = doc.get("target_goal") or ""
+    profile = doc.get("profile") or {}
+    category = profile.get("activeSegment") or "academic"
+
+    return observer_agent.observe(
+        roadmap=roadmap_data,
+        current_position=current,
+        target_goal=goal,
+        profile=profile,
+        category=category
     )
 
 @app.post("/api/path")
@@ -4431,6 +4491,61 @@ def marketplace_item_category(item: dict) -> str:
     return "vendors"
 
 
+CANONICAL_PLATFORM_URLS = {
+    "khan academy": "https://www.khanacademy.org",
+    "coursera": "https://www.coursera.org",
+    "edx": "https://www.edx.org",
+    "udemy": "https://www.udemy.com",
+    "mit opencourseware": "https://ocw.mit.edu",
+    "mit": "https://web.mit.edu",
+    "stanford online": "https://online.stanford.edu",
+    "harvard online": "https://online-learning.harvard.edu",
+    "nptel": "https://nptel.ac.in",
+    "swayam": "https://swayam.gov.in",
+    "freecodecamp": "https://www.freecodecamp.org",
+    "codecademy": "https://www.codecademy.com",
+    "leetcode": "https://leetcode.com",
+    "hackerrank": "https://www.hackerrank.com",
+    "github": "https://github.com",
+    "kaggle": "https://www.kaggle.com",
+    "youtube": "https://www.youtube.com",
+    "ncert": "https://ncert.nic.in",
+    "duolingo": "https://www.duolingo.com",
+    "british council": "https://www.britishcouncil.org",
+    "ielts": "https://www.ielts.org",
+    "toefl": "https://www.ets.org/toefl",
+    "gre": "https://www.ets.org/gre",
+    "sat": "https://satsuite.collegeboard.org",
+    "college board": "https://www.collegeboard.org",
+    "linkedin learning": "https://www.linkedin.com/learning",
+    "brilliant": "https://brilliant.org",
+    "datacamp": "https://www.datacamp.com",
+    "udacity": "https://www.udacity.com",
+    "pluralsight": "https://www.pluralsight.com",
+    "vellore institute of technology": "https://vit.ac.in",
+    "vit": "https://vit.ac.in",
+    "bits pilani": "https://www.bits-pilani.ac.in",
+    "yale": "https://www.yale.edu",
+    "oxford": "https://www.ox.ac.uk",
+    "cambridge": "https://www.cam.ac.uk"
+}
+
+def resolve_marketplace_url(item: dict) -> str:
+    raw_url = str(item.get("url") or item.get("website") or item.get("link") or "").strip()
+    if raw_url.startswith("http://") or raw_url.startswith("https://"):
+        return raw_url
+
+    name = str(item.get("name") or "").strip().lower()
+    for key, url in CANONICAL_PLATFORM_URLS.items():
+        if key in name:
+            return url
+
+    if name:
+        import urllib.parse
+        return f"https://www.google.com/search?q={urllib.parse.quote_plus(name + ' official website')}"
+    return "https://www.google.com"
+
+
 def normalize_marketplace_item(item: dict, category: Optional[str] = None, section: Optional[str] = None) -> dict:
     normalized = dict(item or {})
     resolved_category = category or marketplace_item_category(normalized)
@@ -4446,6 +4561,10 @@ def normalize_marketplace_item(item: dict, category: Optional[str] = None, secti
     normalized.setdefault("structure", marketplace_section_structure(resolved_section or "", resolved_category))
     normalized.setdefault("discount", normalized.get("discount") or "")
     normalized.setdefault("tags", normalized.get("tags") or [])
+    
+    url = resolve_marketplace_url(normalized)
+    normalized["url"] = url
+    normalized["website"] = url
     return normalized
 
 

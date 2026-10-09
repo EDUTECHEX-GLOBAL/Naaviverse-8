@@ -10,6 +10,7 @@ import { useCoinContextData } from "../../context/CoinContext";
 import { GlobalContex } from "../../globalContext";
 import { useStore } from "../../components/store/store.ts";
 import logActivity from "../../utils/activityLogger";
+import UserPathRequestModal from "../UserPathRequestModal/UserPathRequestModal";
 
 import "./mapspage.scss";
 
@@ -74,6 +75,62 @@ const PathComponent = () => {
     try { return JSON.parse(localStorage.getItem("user") || "{}"); }
     catch { return {}; }
   })();
+
+  // ── Custom Path Request states ──
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
+  const [requestModalInitialGoal, setRequestModalInitialGoal] = useState("");
+  const [requestModalTab, setRequestModalTab] = useState("request");
+  const [userPathRequests, setUserPathRequests] = useState([]);
+
+  const fetchUserRequests = async () => {
+    const email = user?.email || userProfile?.email;
+    if (!email) return;
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/api/path-requests/my-requests?email=${encodeURIComponent(email)}`
+      );
+      if (res.data?.status) {
+        setUserPathRequests(res.data.data || []);
+      }
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    fetchUserRequests();
+  }, [user?.email, userProfileId]);
+
+  const handleOpenRequestModal = (goal = "") => {
+    setRequestModalInitialGoal(goal || "");
+    setRequestModalTab("request");
+    setRequestModalOpen(true);
+  };
+
+  const handleOpenMyRequests = () => {
+    setRequestModalInitialGoal("");
+    setRequestModalTab("my_requests");
+    setRequestModalOpen(true);
+    fetchUserRequests();
+  };
+
+  const handleSelectCreatedPath = async (createdPathId, pathName) => {
+    const email = user?.email;
+    if (!email || !createdPathId) return;
+    try {
+      localStorage.setItem("selectedPathId", createdPathId);
+      localStorage.setItem("selectedPathOwner", email);
+      localStorage.setItem("selectedPathName", pathName || "Custom Path");
+      window.dispatchEvent(new Event("naavi:path-selected"));
+      localStorage.removeItem("selectedStepId");
+      localStorage.removeItem("selectedStepNumber");
+      await axios.post(`${BASE_URL}/api/userpaths/selectpath`, { email, pathId: createdPathId });
+    } catch (err) {
+      console.error("Select created path error:", err.response?.data || err.message);
+    } finally {
+      setRequestModalOpen(false);
+      setsideNav("My Journey");
+      navigate("/dashboard/users/my-journey");
+    }
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -266,6 +323,10 @@ const PathComponent = () => {
               loading={loading}
               onAdjustCoordinates={() => setCoordsOpen(true)}
               onViewPath={handleViewPath}
+              onRequestPath={handleOpenRequestModal}
+              onOpenMyRequests={handleOpenMyRequests}
+              myRequestsCount={userPathRequests.length}
+              readyRequestsCount={userPathRequests.filter((r) => r.status === "created").length}
             />
           </div>
         </div>
@@ -483,6 +544,19 @@ const PathComponent = () => {
           Apply & Find Paths
         </button>
       </div>
+
+      {/* ── Custom Path Request Modal (User ↔ Super Admin) ── */}
+      <UserPathRequestModal
+        isOpen={requestModalOpen}
+        onClose={() => {
+          setRequestModalOpen(false);
+          fetchUserRequests();
+        }}
+        initialGoal={requestModalInitialGoal}
+        userProfile={userProfile}
+        initialTab={requestModalTab}
+        onSelectCreatedPath={handleSelectCreatedPath}
+      />
     </div>
   );
 };

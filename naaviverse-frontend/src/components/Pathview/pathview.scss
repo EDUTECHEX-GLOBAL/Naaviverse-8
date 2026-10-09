@@ -175,6 +175,77 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     &:active { transform: translateY(0); }
   }
 
+  /* Compact Request Path button */
+  &__request-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 31px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $transition;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+
+    &:hover {
+      background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    }
+
+    &:active { transform: translateY(0); }
+  }
+
+  &__myrequests-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 31px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    background: #ffffff;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: $transition;
+    white-space: nowrap;
+    flex-shrink: 0;
+    line-height: 1;
+
+    .myrequests-pill {
+      font-size: 0.68rem;
+      padding: 0.1rem 0.45rem;
+      border-radius: 10px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+
+      &.ready {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #bbf7d0;
+      }
+    }
+
+    &:hover {
+      border-color: #cbd5e1;
+      color: #0f172a;
+      background: #f8fafc;
+    }
+  }
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
@@ -606,3 +677,77 @@ $transition:  all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   padding: 32px;
 }
+
+/* ── Pathview Empty & Request Box ── */
+.pathview-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2.75rem 1.5rem;
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1.5px dashed rgba(108, 92, 231, 0.2);
+  color: $text-mid;
+
+  &__icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.65rem;
+  }
+
+  p {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 0.3rem;
+  }
+
+  small {
+    font-size: 0.825rem;
+    color: $text-light;
+    display: block;
+    margin-bottom: 1.25rem;
+  }
+
+  &__request-box {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(180deg, #fbfcfe 0%, #f6f5ff 100%);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(108, 92, 231, 0.06);
+
+    .request-box__title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: $text-dark;
+      margin: 0 0 0.35rem;
+    }
+
+    .request-box__sub {
+      font-size: 0.8rem;
+      color: $text-mid;
+      line-height: 1.45;
+      margin: 0 0 1rem;
+    }
+
+    .request-box__btn {
+      padding: 0.6rem 1.25rem;
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: $transition;
+      box-shadow: 0 3px 10px rgba(79, 70, 229, 0.28);
+
+      &:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #3730a3 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 5px 14px rgba(79, 70, 229, 0.36);
+      }
+    }
+  }
+}

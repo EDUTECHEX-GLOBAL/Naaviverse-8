@@ -5,7 +5,16 @@ import "./pathview.scss";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 const ITEMS_PER_PAGE = 6;
 
-const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
+const Pathview = memo(({
+  paths,
+  loading,
+  onAdjustCoordinates,
+  onViewPath,
+  onRequestPath,
+  onOpenMyRequests,
+  myRequestsCount = 0,
+  readyRequestsCount = 0,
+}) => {
   const {
     setPathItemSelected,
     setPathItemStep,
@@ -187,6 +196,33 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
             </svg>
             Adjust Coordinates
           </button>
+
+          {/* New Request Path action button */}
+          <button
+            className="pathview-topbar__request-btn"
+            onClick={() => onRequestPath && onRequestPath(searchQuery)}
+            title="Can't find your path? Request Super Admin to curate it"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Request Path
+          </button>
+
+          {/* User's Request Tracker button */}
+          {myRequestsCount > 0 && (
+            <button
+              className="pathview-topbar__myrequests-btn"
+              onClick={() => onOpenMyRequests && onOpenMyRequests()}
+              title="View your custom path requests"
+            >
+              My Requests
+              <span className={`myrequests-pill ${readyRequestsCount > 0 ? "ready" : ""}`}>
+                {readyRequestsCount > 0 ? `${readyRequestsCount} Ready!` : myRequestsCount}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -232,6 +268,22 @@ const Pathview = memo(({ paths, loading, onAdjustCoordinates, onViewPath }) => {
             <div className="pathview-empty__icon">🔍</div>
             <p>No paths found matching your criteria.</p>
             <small>Try adjusting your coordinates or search term.</small>
+
+            <div className="pathview-empty__request-box">
+              <p className="request-box__title">
+                {searchQuery ? `Looking for "${searchQuery}"?` : "Can't find your target university or degree?"}
+              </p>
+              <p className="request-box__sub">
+                Request this path and our Super Admin team will curate the academic roadmap, prerequisites, and resource steps for you.
+              </p>
+              <button
+                type="button"
+                className="request-box__btn"
+                onClick={() => onRequestPath && onRequestPath(searchQuery)}
+              >
+                Request Custom Path →
+              </button>
+            </div>
           </div>
         )}
       </div>

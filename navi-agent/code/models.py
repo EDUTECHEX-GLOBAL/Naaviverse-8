@@ -48,6 +48,8 @@ class MarketplaceProvider(BaseModel):
     tags: List[str] = Field(default_factory=list)
     section: Optional[str] = None
     view: Optional[str] = None
+    url: Optional[str] = None
+    website: Optional[str] = None
 
 
 class ViewMarketplace(BaseModel):

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AssistanceRequestDetailsModal from "../../AdminDashboard/components/AssistanceRequestDetailsModal";
 import AssistanceDetailsPage from "../../AdminDashboard/components/AssistanceDetailsPage";
+import SuperAdminCreatePathModal from "../../AdminDashboard/components/SuperAdminCreatePathModal";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -399,7 +400,7 @@ export default function Dashboard() {
   // ── Approvals state ───────────────────────────────────────────────────────
   const [tab, setTab] = useState("all");
   const [selected, setSelected] = useState(null);
-  const [roleView, setRoleView] = useState("partner");
+  const [roleView, setRoleView] = useState("partner"); // "partner" | "user" | "pathRequests"
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [partnerScope, setPartnerScope] = useState("all"); // "all" | "internal" | "external"
   const [showScopeDropdown, setShowScopeDropdown] = useState(false);
@@ -409,6 +410,57 @@ export default function Dashboard() {
   const [fullUserData, setFullUserData] = useState(null);
   const [loadingUserDetail, setLoadingUserDetail] = useState(false);
   const [selectedActivityUser, setSelectedActivityUser] = useState(null);
+
+  // ── User Path Requests state ──────────────────────────────────────────────
+  const [pathRequests, setPathRequests] = useState([]);
+  const [pathRequestsLoading, setPathRequestsLoading] = useState(false);
+  const [pathRequestsTab, setPathRequestsTab] = useState("all");
+  const [pathRequestsCounts, setPathRequestsCounts] = useState({
+    total: 0,
+    pending: 0,
+    in_progress: 0,
+    created: 0,
+    rejected: 0,
+  });
+  const [selectedPathRequest, setSelectedPathRequest] = useState(null);
+  const [isCreatePathModalOpen, setIsCreatePathModalOpen] = useState(false);
+
+  const fetchPathRequests = useCallback(async (tabStatus = pathRequestsTab) => {
+    try {
+      setPathRequestsLoading(true);
+      const params = {};
+      if (tabStatus && tabStatus !== "all") params.status = tabStatus;
+      const res = await axios.get(`${BASE_URL}/api/path-requests/all`, { params });
+      if (res.data?.status) {
+        setPathRequests(res.data.data || []);
+        if (res.data.counts) setPathRequestsCounts(res.data.counts);
+      }
+    } catch (err) {
+      console.error("Error fetching path requests:", err);
+    } finally {
+      setPathRequestsLoading(false);
+    }
+  }, [pathRequestsTab]);
+
+  useEffect(() => {
+    fetchPathRequests();
+    const interval = setInterval(() => fetchPathRequests(), 15000);
+    return () => clearInterval(interval);
+  }, [fetchPathRequests]);
+
+  const updatePathRequestStatus = async (id, newStatus) => {
+    try {
+      const res = await axios.put(`${BASE_URL}/api/path-requests/${id}/status`, { status: newStatus });
+      if (res.data?.status) {
+        fetchPathRequests(pathRequestsTab);
+        if (selectedPathRequest && (selectedPathRequest._id === id || selectedPathRequest.id === id)) {
+          setSelectedPathRequest((prev) => ({ ...prev, status: newStatus }));
+        }
+      }
+    } catch (err) {
+      console.error("Error updating path request status:", err);
+    }
+  };
 
   const dropdownRef = useRef(null);
   const scopeDropdownRef = useRef(null);
@@ -422,11 +474,15 @@ export default function Dashboard() {
       .finally(() => setLoadingData(false));
   };
 
-  useEffect(() => { if (view === "approvals") fetchApprovals("Partner", setPartnerData); }, [view]);
+  useEffect(() => { if (view === "approvals" && roleView === "partner") fetchApprovals("Partner", setPartnerData); }, [view, roleView]);
   useEffect(() => {
     if (view === "approvals" && roleView === "user" && userData.length === 0)
       fetchApprovals("User", setUserData);
   }, [roleView, view, userData.length]);
+  useEffect(() => {
+    if (view === "approvals" && roleView === "pathRequests")
+      fetchPathRequests(pathRequestsTab);
+  }, [roleView, view, pathRequestsTab, fetchPathRequests]);
 
   useEffect(() => {
     if (!selected) { setFullUserData(null); return; }
@@ -711,7 +767,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Marketplace Assistance Requests Overview Panel ── */}
           <div id="admin-mkt-assist-panel" className="admin-mkt-assist-section">
             <div className="admin-mkt-assist-header">
               <div className="amah-left">
@@ -909,7 +964,7 @@ export default function Dashboard() {
               <div className="kpi-card kpi-actions-card">
                 <div className="kpi-card-label" style={{ marginBottom: 14 }}>Quick Actions</div>
                 <div className="kpi-actions-square-grid">
-                  <button className="kpi-action-square" onClick={() => setView("approvals")}>
+                  <button className="kpi-action-square" onClick={() => { setRoleView("partner"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); }}>
                     <span className="kpi-action-sq-icon action-amber">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -919,13 +974,15 @@ export default function Dashboard() {
                     <span className="kpi-action-sq-label">Review Approvals</span>
                   </button>
 
-                  <button className="kpi-action-square">
-                    <span className="kpi-action-sq-icon action-violet">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <button className="kpi-action-square" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("all"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("all"); }}>
+                    <span className="kpi-action-sq-icon action-violet" style={{ background: "#ede9fe", color: "#6d28d9" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#7c3aed" />
                       </svg>
                     </span>
-                    <span className="kpi-action-sq-label">Add New Path</span>
+                    <span className="kpi-action-sq-label">Path Requests</span>
+                    {pathRequestsCounts.pending > 0 && <span className="kpi-action-sq-badge">{pathRequestsCounts.pending}</span>}
                   </button>
 
                   <button className="kpi-action-square" onClick={() => { setView("activity"); setSelectedActivityUser(null); }}>
@@ -937,13 +994,13 @@ export default function Dashboard() {
                     <span className="kpi-action-sq-label">User Activity</span>
                   </button>
 
-                  <button className="kpi-action-square">
+                  <button className="kpi-action-square" onClick={() => navigate("/admin/dashboard/paths?tab=active")}>
                     <span className="kpi-action-sq-icon action-cyan">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 17L8 7l4 6 4-4 4 8" />
                       </svg>
                     </span>
-                    <span className="kpi-action-sq-label">Export Data</span>
+                    <span className="kpi-action-sq-label">Manage Paths</span>
                   </button>
 
                   <button className="kpi-action-square" onClick={() => { setView("notifications"); setNotifFilter("all"); }}>
@@ -956,13 +1013,13 @@ export default function Dashboard() {
                     {unreadCount > 0 && <span className="kpi-action-sq-badge">{unreadCount}</span>}
                   </button>
 
-                  <button className="kpi-action-square">
+                  <button className="kpi-action-square" onClick={() => { setRoleView("pathRequests"); setIsCreatePathModalOpen(true); setSelectedPathRequest(pathRequests[0] || { targetGoal: "New Custom Pathway", userEmail: "custom@naaviverse.com" }); }}>
                     <span className="kpi-action-sq-icon action-green">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
                     </span>
-                    <span className="kpi-action-sq-label">Analytics</span>
+                    <span className="kpi-action-sq-label">Add New Path</span>
                   </button>
                 </div>
               </div>
@@ -1591,6 +1648,143 @@ export default function Dashboard() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // PATH REQUESTS — DETAIL VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "approvals" && roleView === "pathRequests" && selectedPathRequest) {
+    const req = selectedPathRequest;
+    return (
+      <div className="dashboard">
+        <div className="details-card">
+          <button className="back-btn" onClick={() => setSelectedPathRequest(null)}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Back to Path Requests
+          </button>
+          <div className="details-hero">
+            <div className="details-avatar" style={{ background: "#ede9fe", color: "#6d28d9", border: "2px solid #ddd6fe" }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#7c3aed" />
+              </svg>
+            </div>
+            <div className="details-hero-info">
+              <div className="details-hero-top">
+                <h2>{req.targetGoal}</h2>
+                <span className={`status-pill ${req.status}`}>
+                  {req.status === "created"
+                    ? "✓ Created & Ready"
+                    : req.status === "in_progress"
+                    ? "⚙ In Progress"
+                    : req.status === "rejected"
+                    ? "✗ Rejected"
+                    : "⏳ Pending Review"}
+                </span>
+              </div>
+              <span className="role-chip path-req">
+                🎓 Custom Pathway Request · {req.requestId || "REQ"}
+              </span>
+            </div>
+          </div>
+
+          <SectionTitle>Target Pathway & Academic Specs</SectionTitle>
+          <div className="details-grid">
+            <DetailItem label="Target Goal / Title" value={req.targetGoal} />
+            <DetailItem label="Target Institution / University" value={req.targetInstitution || "General / Not Specified"} />
+            <DetailItem label="Sector / Category" value={req.sector} />
+            <DetailItem label="Education Level / Stage" value={req.educationLevel} />
+            <DetailItem label="Target Timeline / Duration" value={req.targetTimeline} />
+          </div>
+
+          <SectionTitle>Requirements & Student Notes</SectionTitle>
+          <div className="details-grid">
+            <DetailItem label="Mandatory Prerequisites" value={req.mandatoryRequirements || "None specified"} />
+            <DetailItem label="Goal Details & Focus" value={req.goalDetails || "No additional notes"} />
+            <DetailItem label="Special Instructions" value={req.specialInstructions || "None"} />
+          </div>
+
+          <SectionTitle>Student Information</SectionTitle>
+          <div className="details-grid">
+            <DetailItem label="Student Name" value={req.userName} />
+            <DetailItem label="Student Email" value={req.userEmail} />
+            <DetailItem label="Submitted At" value={new Date(req.createdAt).toLocaleString()} />
+            {req.status === "created" && (
+              <DetailItem
+                label="Created Pathway"
+                value={req.createdPathName ? `${req.createdPathName} (Live in Catalog)` : "Active Pathway Created"}
+              />
+            )}
+          </div>
+
+          <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--slate-100)", display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              style={{
+                background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+                color: "white",
+                border: "none",
+                padding: "0 14px",
+                height: 30,
+                borderRadius: 6,
+                fontSize: 11.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                boxShadow: "0 2px 8px rgba(99, 102, 241, 0.2)",
+              }}
+              onClick={() => setIsCreatePathModalOpen(true)}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              {req.status === "created" ? "Edit / Reconfigure Path" : "✨ Create Custom Path & Steps"}
+            </button>
+
+            {req.status !== "in_progress" && req.status !== "created" && (
+              <button
+                style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe", padding: "0 12px", height: 30, borderRadius: 6, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => updatePathRequestStatus(req._id, "in_progress")}
+              >
+                Mark In Progress
+              </button>
+            )}
+
+            {req.status !== "rejected" && req.status !== "created" && (
+              <button
+                style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fee2e2", padding: "0 12px", height: 30, borderRadius: 6, fontSize: 11.5, fontWeight: 600, cursor: "pointer" }}
+                onClick={() => updatePathRequestStatus(req._id, "rejected")}
+              >
+                Reject Request
+              </button>
+            )}
+          </div>
+        </div>
+
+        <SuperAdminCreatePathModal
+          isOpen={isCreatePathModalOpen}
+          onClose={() => setIsCreatePathModalOpen(false)}
+          request={selectedPathRequest}
+          onPathCreated={(createdPath, updatedReq) => {
+            fetchPathRequests(pathRequestsTab);
+            if (updatedReq) {
+              setSelectedPathRequest(updatedReq);
+            } else if (selectedPathRequest) {
+              setSelectedPathRequest((prev) => ({
+                ...prev,
+                status: "created",
+                createdPathId: createdPath?._id,
+                createdPathName: createdPath?.nameOfPath || createdPath?.name || prev.targetGoal,
+              }));
+            }
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "approvals" && selected) {
@@ -1738,25 +1932,38 @@ export default function Dashboard() {
 
         <div className="card-header">
           <div className="header-left">
-            <div className={`header-icon ${isPartnerView ? "partner-icon" : "user-icon"}`}>
-              {isPartnerView ? (
+            <div className={`header-icon ${roleView === "pathRequests" ? "path-req-icon" : isPartnerView ? "partner-icon" : "user-icon"}`}>
+              {roleView === "pathRequests" ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#7c3aed" />
+                </svg>
+              ) : isPartnerView ? (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
               ) : (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
               )}
             </div>
             <div>
-              <h2>{isPartnerView ? "Partner Approvals" : "User Approvals"}</h2>
+              <h2>{roleView === "pathRequests" ? "Path Requests Review" : isPartnerView ? "Partner Approvals" : "User Approvals"}</h2>
               <p className="header-subtitle">
-                {isPartnerView ? "Manage and review partner onboarding requests" : "Manage and review user registration requests"}
+                {roleView === "pathRequests"
+                  ? "Manage student requests for uncataloged pathways, view prerequisites, and curate custom paths"
+                  : isPartnerView
+                  ? "Manage and review partner onboarding requests"
+                  : "Manage and review user registration requests"}
               </p>
             </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div className="dropdown-container" ref={dropdownRef}>
-              <button type="button" className={`role-toggle-btn ${isPartnerView ? "partner-toggle" : "user-toggle"}`} onClick={() => setShowRoleDropdown((prev) => !prev)}>
-                {isPartnerView ? "Partners" : "Users"}
+              <button
+                type="button"
+                className={`role-toggle-btn ${roleView === "pathRequests" ? "path-req-toggle" : isPartnerView ? "partner-toggle" : "user-toggle"}`}
+                onClick={() => setShowRoleDropdown((prev) => !prev)}
+              >
+                {roleView === "pathRequests" ? "Path Requests" : isPartnerView ? "Partners" : "Users"}
                 <svg className={`arrow ${showRoleDropdown ? "open" : ""}`} width="12" height="12" viewBox="0 0 12 12" fill="none">
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -1773,6 +1980,16 @@ export default function Dashboard() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                   </span> Users
                   <span className="menu-count user-count">{userData.length}</span>
+                </button>
+                <button className={roleView === "pathRequests" ? "partner-active" : ""} onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("all"); setSelectedPathRequest(null); setShowRoleDropdown(false); fetchPathRequests("all"); }}>
+                  <span className="menu-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="3 11 22 2 13 21 11 13 3 11" />
+                    </svg>
+                  </span> Path Requests
+                  <span className="menu-count" style={{ background: pathRequestsCounts.pending > 0 ? "#fef3c7" : "#ede9fe", color: pathRequestsCounts.pending > 0 ? "#b45309" : "#6d28d9" }}>
+                    {pathRequestsCounts.pending > 0 ? `${pathRequestsCounts.pending} new` : pathRequestsCounts.total}
+                  </span>
                 </button>
               </PortalDropdown>
             </div>
@@ -1810,16 +2027,126 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="tab-btn-group">
-          <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
-          <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
-          <button className={`tab-btn ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
-          <button className={`tab-btn ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
-          <button className={`tab-btn ${tab === "deactivated" ? "active" : ""}`} onClick={() => setTab("deactivated")}>Deactivated</button>
-        </div>
+        {roleView === "pathRequests" ? (
+          <div className="tab-btn-group">
+            <button className={`tab-btn ${pathRequestsTab === "all" ? "active" : ""}`} onClick={() => { setPathRequestsTab("all"); fetchPathRequests("all"); }}>
+              All ({pathRequestsCounts.total})
+            </button>
+            <button className={`tab-btn ${pathRequestsTab === "pending" ? "active" : ""}`} onClick={() => { setPathRequestsTab("pending"); fetchPathRequests("pending"); }}>
+              Pending ({pathRequestsCounts.pending})
+            </button>
+            <button className={`tab-btn ${pathRequestsTab === "in_progress" ? "active" : ""}`} onClick={() => { setPathRequestsTab("in_progress"); fetchPathRequests("in_progress"); }}>
+              In Progress ({pathRequestsCounts.in_progress})
+            </button>
+            <button className={`tab-btn ${pathRequestsTab === "created" ? "active" : ""}`} onClick={() => { setPathRequestsTab("created"); fetchPathRequests("created"); }}>
+              Created & Ready ({pathRequestsCounts.created})
+            </button>
+            <button className={`tab-btn ${pathRequestsTab === "rejected" ? "active" : ""}`} onClick={() => { setPathRequestsTab("rejected"); fetchPathRequests("rejected"); }}>
+              Rejected ({pathRequestsCounts.rejected})
+            </button>
+          </div>
+        ) : (
+          <div className="tab-btn-group">
+            <button className={`tab-btn ${tab === "all" ? "active" : ""}`} onClick={() => setTab("all")}>All</button>
+            <button className={`tab-btn ${tab === "pending" ? "active" : ""}`} onClick={() => setTab("pending")}>Pending</button>
+            <button className={`tab-btn ${tab === "approved" ? "active" : ""}`} onClick={() => setTab("approved")}>Approved</button>
+            <button className={`tab-btn ${tab === "rejected" ? "active" : ""}`} onClick={() => setTab("rejected")}>Rejected</button>
+            <button className={`tab-btn ${tab === "deactivated" ? "active" : ""}`} onClick={() => setTab("deactivated")}>Deactivated</button>
+          </div>
+        )}
 
         <div className="table-wrapper">
-          {loadingData ? (
+          {roleView === "pathRequests" ? (
+            pathRequestsLoading ? (
+              <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF" }}>Loading custom path requests...</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Target Goal & Institution</th>
+                    <th>Sector & Timeline</th>
+                    <th>Prerequisites</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pathRequests.length > 0 ? (
+                    pathRequests.map((req, idx) => {
+                      const pal = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
+                      return (
+                        <tr key={req._id || req.requestId} className="table-row">
+                          <td>
+                            <div className="business-info">
+                              <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
+                                {req.userName?.slice(0, 2).toUpperCase() || "ST"}
+                              </div>
+                              <div>
+                                <div className="business-name">{req.userName}</div>
+                                <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{req.userEmail}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--slate-800)" }}>{req.targetGoal}</div>
+                            {req.targetInstitution && (
+                              <div style={{ fontSize: 11.5, color: "#6366f1", fontWeight: 600 }}>🏛 {req.targetInstitution}</div>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--slate-700)" }}>{req.sector}</div>
+                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>⏱ {req.targetTimeline}</div>
+                          </td>
+                          <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "var(--slate-500)" }} title={req.mandatoryRequirements}>
+                            {req.mandatoryRequirements || "—"}
+                          </td>
+                          <td>
+                            <span className={`status-pill ${req.status}`}>
+                              {req.status === "created"
+                                ? "✓ Created"
+                                : req.status === "in_progress"
+                                ? "⚙ In Progress"
+                                : req.status === "rejected"
+                                ? "✗ Rejected"
+                                : "⏳ Pending"}
+                            </span>
+                          </td>
+                          <td className="date-cell">
+                            {new Date(req.createdAt).toLocaleDateString()}
+                          </td>
+                          <td>
+                            <button
+                              className="view-btn"
+                              style={{ background: "#f5f3ff", color: "#6d28d9", borderColor: "#ddd6fe", fontWeight: 700 }}
+                              onClick={() => setSelectedPathRequest(req)}
+                            >
+                              Review & Create →
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="no-results">
+                        <div className="empty-state">
+                          <div className="empty-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10" />
+                              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                            </svg>
+                          </div>
+                          <p>No {pathRequestsTab === "all" ? "" : pathRequestsTab} path requests found</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )
+          ) : loadingData ? (
             <div style={{ padding: "40px", textAlign: "center", color: "#9CA3AF" }}>Loading {isPartnerView ? "partners" : "users"}...</div>
           ) : (
             <table>
@@ -1932,6 +2259,28 @@ export default function Dashboard() {
             prev.map((r) => (r.id === updated.id ? updated : r))
           );
           setSelectedAssistanceRequest(updated);
+        }}
+      />
+
+      {/* ── Super Admin Custom Path Creator Modal ── */}
+      <SuperAdminCreatePathModal
+        isOpen={isCreatePathModalOpen}
+        onClose={() => {
+          setIsCreatePathModalOpen(false);
+        }}
+        request={selectedPathRequest}
+        onPathCreated={(createdPath, updatedReq) => {
+          fetchPathRequests(pathRequestsTab);
+          if (updatedReq) {
+            setSelectedPathRequest(updatedReq);
+          } else if (selectedPathRequest) {
+            setSelectedPathRequest((prev) => ({
+              ...prev,
+              status: "created",
+              createdPathId: createdPath?._id,
+              createdPathName: createdPath?.nameOfPath || createdPath?.name || prev.targetGoal,
+            }));
+          }
         }}
       />
     </div>

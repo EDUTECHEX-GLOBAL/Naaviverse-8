@@ -123,10 +123,66 @@ function getViewMarketplaceItems(step, view, category) {
 }
 
 
+const CANONICAL_URLS = {
+  "khan academy": "https://www.khanacademy.org",
+  "coursera": "https://www.coursera.org",
+  "edx": "https://www.edx.org",
+  "udemy": "https://www.udemy.com",
+  "mit opencourseware": "https://ocw.mit.edu",
+  "mit": "https://web.mit.edu",
+  "stanford online": "https://online.stanford.edu",
+  "harvard online": "https://online-learning.harvard.edu",
+  "nptel": "https://nptel.ac.in",
+  "swayam": "https://swayam.gov.in",
+  "freecodecamp": "https://www.freecodecamp.org",
+  "codecademy": "https://www.codecademy.com",
+  "leetcode": "https://leetcode.com",
+  "hackerrank": "https://www.hackerrank.com",
+  "github": "https://github.com",
+  "kaggle": "https://www.kaggle.com",
+  "youtube": "https://www.youtube.com",
+  "ncert": "https://ncert.nic.in",
+  "duolingo": "https://www.duolingo.com",
+  "british council": "https://www.britishcouncil.org",
+  "ielts": "https://www.ielts.org",
+  "toefl": "https://www.ets.org/toefl",
+  "gre": "https://www.ets.org/gre",
+  "sat": "https://satsuite.collegeboard.org",
+  "college board": "https://www.collegeboard.org",
+  "linkedin learning": "https://www.linkedin.com/learning",
+  "brilliant": "https://brilliant.org",
+  "datacamp": "https://www.datacamp.com",
+  "udacity": "https://www.udacity.com",
+  "pluralsight": "https://www.pluralsight.com",
+  "vellore institute of technology": "https://vit.ac.in",
+  "vit": "https://vit.ac.in",
+  "bits pilani": "https://www.bits-pilani.ac.in",
+  "yale": "https://www.yale.edu",
+  "oxford": "https://www.ox.ac.uk",
+  "cambridge": "https://www.cam.ac.uk"
+};
+
+function resolveProviderUrl(item) {
+  if (!item) return "https://www.google.com";
+  const rawUrl = item.url || item.website || item.link;
+  if (rawUrl && (String(rawUrl).startsWith("http://") || String(rawUrl).startsWith("https://"))) {
+    return rawUrl;
+  }
+  const name = String(item.name || "").toLowerCase().trim();
+  for (const [key, url] of Object.entries(CANONICAL_URLS)) {
+    if (name.includes(key)) return url;
+  }
+  if (name) {
+    return `https://www.google.com/search?q=${encodeURIComponent(item.name + " official website")}`;
+  }
+  return "https://www.google.com";
+}
+
 function formatCardItem(item, sourceIndex, view, category) {
   if (!item) return null;
   const name = item.name || "Resource";
   const price = item.discount || item.cost || item.price || (view === "macro" ? "Free" : "Varies");
+  const url = resolveProviderUrl(item);
   return {
     sourceIndex,
     name: name,
@@ -138,6 +194,8 @@ function formatCardItem(item, sourceIndex, view, category) {
     rating: item.rating || "4.8",
     sessions: item.sessions || (category === "mentors" ? 42 : null),
     avatar: name.split(" ").filter(Boolean).map(w => w[0]).join("").substring(0, 2).toUpperCase() || "NV",
+    url: url,
+    website: url,
     isRecommended: true,
     _raw: item,
   };
@@ -450,9 +508,16 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                     </div>
                   )}
 
-                  <button className="btn-primary mp-connect-btn">
-                    {getCtaLabel(currentCategory, activeView)}
-                  </button>
+                  <a
+                    href={displayItem.url || resolveProviderUrl(displayItem)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary mp-connect-btn"
+                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  >
+                    <span>{getCtaLabel(currentCategory, activeView)}</span>
+                    <span style={{ fontSize: "14px" }}>↗</span>
+                  </a>
                   <button
                     className="mp-card-regenerate-btn"
                     onClick={() => handleRegenerateMarketplaceItem(item)}
@@ -543,9 +608,16 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                     </div>
                   )}
 
-                  <button className="btn-primary mp-connect-btn">
-                    {getCtaLabel(currentCategory, activeView)}
-                  </button>
+                  <a
+                    href={displayItem.url || resolveProviderUrl(displayItem)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-primary mp-connect-btn"
+                    style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  >
+                    <span>{getCtaLabel(currentCategory, activeView)}</span>
+                    <span style={{ fontSize: "14px" }}>↗</span>
+                  </a>
                   <button
                     className="mp-card-regenerate-btn"
                     onClick={() => handleRegenerateMarketplaceItem(item)}

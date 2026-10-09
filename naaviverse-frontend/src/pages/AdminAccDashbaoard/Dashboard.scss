@@ -557,6 +557,7 @@
 
   &.partner-icon { background: var(--partner-50); border: 1px solid var(--partner-100); }
   &.user-icon    { background: var(--user-50);    border: 1px solid var(--user-100); }
+  &.path-req-icon { background: #ede9fe; border: 1px solid #ddd6fe; color: #7c3aed; }
 
   @media (max-width: 480px) { width: 36px; height: 36px; font-size: 16px; }
 }
@@ -582,6 +583,7 @@
 
   &.partner-toggle { background: var(--partner-50); border-color: var(--partner-200); color: var(--partner-600); }
   &.user-toggle    { background: var(--user-50);    border-color: var(--user-200);    color: var(--user-600); }
+  &.path-req-toggle { background: #ede9fe; border-color: #ddd6fe; color: #6d28d9; }
   &:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
   @media (max-width: 480px) { font-size: 11px; padding: 6px 10px; }
@@ -719,68 +721,70 @@ table {
 }
 
 .details-hero {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 24px; padding-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 12px; padding-bottom: 10px;
   border-bottom: 1px solid var(--slate-100);
 
-  @media (max-width: 480px) { flex-direction: column; align-items: flex-start; gap: 12px; }
+  @media (max-width: 480px) { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
 
 .details-avatar {
-  width: 56px; height: 56px; border-radius: var(--radius-lg);
+  width: 38px; height: 38px; border-radius: var(--radius-md);
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; font-weight: 700; flex-shrink: 0;
+  font-size: 16px; font-weight: 700; flex-shrink: 0;
 
-  &.partner-avatar { background: var(--partner-100); color: var(--partner-600); border: 2px solid var(--partner-200); }
-  &.user-avatar    { background: var(--user-100);    color: var(--user-600);    border: 2px solid var(--user-200); }
+  &.partner-avatar { background: var(--partner-100); color: var(--partner-600); border: 1.5px solid var(--partner-200); }
+  &.user-avatar    { background: var(--user-100);    color: var(--user-600);    border: 1.5px solid var(--user-200); }
 }
 
 .details-hero-info { flex: 1; min-width: 0; }
 .details-hero-top {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap;
 
   h2 {
-    font-family: 'Poppins', sans-serif !important; font-size: 20px; font-weight: 700;
-    color: var(--slate-800); margin: 0; letter-spacing: -0.3px;
-    @media (max-width: 480px) { font-size: 17px; }
+    font-family: 'Poppins', sans-serif !important; font-size: 16px; font-weight: 700;
+    color: var(--slate-800); margin: 0; letter-spacing: -0.2px;
+    @media (max-width: 480px) { font-size: 15px; }
   }
 }
 
 .status-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 10px; border-radius: var(--radius-full); font-size: 11.5px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 600;
 
-  &.approved { background: var(--green-100); color: var(--green-700); }
+  &.approved, &.created { background: var(--green-100); color: var(--green-700); border: 1px solid #bbf7d0; }
   &.pending  { background: var(--amber-100); color: var(--amber-600); border: 1px solid var(--amber-200); }
+  &.in_progress { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
   &.rejected { background: var(--red-100);   color: var(--red-700);   border: 1px solid #fecaca; }
 }
 
 .role-chip {
-  display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 11px; border-radius: var(--radius-full);
-  &.partner { background: var(--partner-100); color: var(--partner-600); }
-  &.user    { background: var(--user-100);    color: var(--user-600); }
+  display: inline-block; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  &.partner  { background: var(--partner-100); color: var(--partner-600); }
+  &.user     { background: var(--user-100);    color: var(--user-600); }
+  &.path-req { background: #ede9fe;            color: #6d28d9; border: 1px solid #ddd6fe; }
 }
 
 .details-section-title {
-  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.8px; color: var(--slate-400); margin-bottom: 10px;
+  font-size: 9.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.6px; color: var(--slate-400); margin-bottom: 4px; margin-top: 10px;
 }
 
 .details-grid {
   background: var(--slate-50); border: 1px solid var(--slate-200);
-  border-radius: var(--radius-lg); padding: 4px 0; margin-bottom: 18px;
+  border-radius: var(--radius-md); padding: 1px 0; margin-bottom: 10px;
 }
 
 .detail-row {
-  display: flex; align-items: flex-start; padding: 11px 18px;
-  border-bottom: 1px solid var(--slate-100); gap: 8px;
+  display: flex; align-items: center; padding: 5px 14px;
+  border-bottom: 1px solid var(--slate-100); gap: 12px; min-height: 28px;
   &:last-child { border-bottom: none; }
 
-  @media (max-width: 480px) { flex-direction: column; padding: 10px 14px; gap: 3px; }
+  @media (max-width: 480px) { flex-direction: column; padding: 6px 10px; gap: 2px; align-items: flex-start; }
 
-  .detail-label { width: 145px; font-size: 12px; font-weight: 500; color: var(--slate-400); display: flex; align-items: center; gap: 7px; flex-shrink: 0; @media (max-width: 480px) { width: auto; font-size: 10.5px; } }
-  .detail-icon  { font-size: 13px; }
-  .detail-value { flex: 1; font-size: 13px; color: var(--slate-800); font-weight: 500; word-break: break-word; a { color: var(--partner-500); text-decoration: none; &:hover { text-decoration: underline; } } }
+  .detail-label { width: 210px; min-width: 210px; font-size: 11.5px; font-weight: 500; color: var(--slate-400); display: flex; align-items: center; gap: 6px; flex-shrink: 0; white-space: nowrap; @media (max-width: 480px) { width: auto; min-width: auto; font-size: 10px; } }
+  .detail-icon  { font-size: 12px; }
+  .detail-value { flex: 1; font-size: 12px; color: var(--slate-800); font-weight: 500; word-break: break-word; line-height: 1.35; a { color: var(--partner-500); text-decoration: none; &:hover { text-decoration: underline; } } }
   .empty-val    { color: var(--slate-300); }
 }
 

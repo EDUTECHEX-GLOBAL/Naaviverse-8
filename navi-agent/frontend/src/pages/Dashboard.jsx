@@ -32,6 +32,7 @@ const STEP_COLORS = [
 
 import SegmentSelector from "../components/SegmentSelector";
 import CategoryMismatchWarning from "../components/CategoryMismatchWarning";
+import ObserverInspector from "../components/ObserverInspector";
 import { analyzeCategoryConsistency } from "../utils/categoryConsistencyValidator";
 import { cleanLocationText } from "../utils/textUtils";
 import {
@@ -433,6 +434,37 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
   const [regeneratingAltIdx, setRegeneratingAltIdx] = useState(null);
   const [regeneratingStepId, setRegeneratingStepId] = useState(null);
   const [stepRegenError, setStepRegenError] = useState("");
+  const [showObserverAudit, setShowObserverAudit] = useState(false);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [customAuditReport, setCustomAuditReport] = useState(null);
+
+  const handleReAudit = async () => {
+    if (!activePath) return;
+    try {
+      setAuditLoading(true);
+      const res = await fetch(`${API}/api/observer/observe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roadmap_data: activePath,
+          current_position: current || (userInput?.current || ""),
+          target_goal: goal || (userInput?.goal || ""),
+          profile: profile || {},
+          category: activeSegment,
+          sub_segment: activeSubSegment,
+        }),
+      });
+      if (res.ok) {
+        const auditData = await res.json();
+        setCustomAuditReport(auditData);
+        setShowObserverAudit(true);
+      }
+    } catch (auditErr) {
+      console.error("[Dashboard] Observer Audit Error:", auditErr);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
 
   // Sync segment & autofill initial inputs from profile on mount
   useEffect(() => {
@@ -1485,13 +1517,37 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                       market_score: Math.round(score * 0.30)
                     };
 
+                    const activeReport = customAuditReport || activePath.observer_report;
+
                     return (
                       <div className="db-accuracy-card">
                         <div className="db-accuracy-card-header">
                           <span className="db-accuracy-card-title">Path Accuracy Model</span>
-                          <span className={`db-accuracy-badge ${label.toLowerCase().replace(/\s+/g, '-')}`}>
-                            {label} ({score}/100)
-                          </span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowObserverAudit(p => !p)}
+                              style={{
+                                background: showObserverAudit ? "#e8f0fe" : "var(--bg-hover, #f3f4f6)",
+                                border: "1px solid var(--border, #d1d5db)",
+                                color: showObserverAudit ? "#1a73e8" : "var(--text, #374151)",
+                                fontSize: "11px",
+                                fontWeight: 700,
+                                padding: "4px 9px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "5px"
+                              }}
+                            >
+                              <span>👁️ Observer Audit</span>
+                              <span style={{ fontSize: "10px", opacity: 0.8 }}>{showObserverAudit ? "▲" : "▼"}</span>
+                            </button>
+                            <span className={`db-accuracy-badge ${label.toLowerCase().replace(/\s+/g, '-')}`}>
+                              {label} ({score}/100)
+                            </span>
+                          </div>
                         </div>
                         <div className="db-accuracy-meter">
                           <div className="db-accuracy-meter-fill" style={{ width: `${score}%` }} />
@@ -1500,6 +1556,16 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                           <span>Overall accuracy verified across academic prerequisites, curriculum progression, and profile alignment.</span>
                           <strong style={{ color: "var(--text, #111827)", fontWeight: 700, fontSize: "13px", marginLeft: "12px", whiteSpace: "nowrap" }}>{score}/100</strong>
                         </div>
+
+                        {showObserverAudit && (
+                          <ObserverInspector
+                            report={activeReport}
+                            onReAudit={handleReAudit}
+                            auditLoading={auditLoading}
+                            pathTitle={activePath.path_title}
+                            totalDuration={activePath.total_duration}
+                          />
+                        )}
                       </div>
                     );
                   })()}

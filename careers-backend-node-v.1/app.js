@@ -63,6 +63,7 @@ const stateRoutes = require("./routes/StateRouter");
 const cityRoutes = require("./routes/CityRouter");
 const agentPathsRouter = require("./routes/AgentPathsRouter");
 const feedbackRouter = require("./routes/FeedbackRouter");
+const pathRequestRouter = require("./routes/PathRequestRouter");
 
 // ── Super Admin — newsletter/landing page email subscriptions ──────────────
 const adminNewsletterRoutes = require("./Admin/routes/SubscriptionRouter");
@@ -146,6 +147,7 @@ app.get("/api/purchases", require("./controllers/MarketPlaceController").getAllP
 
 app.use("/api/universities", universitiesRouter);
 app.use("/api/paths", pathsRouter);
+app.use("/api/path-requests", pathRequestRouter);
 app.use("/api/userpaths", userpathRouter);
 app.use("/api/pre_login", preLoginRouter);
 app.use("/api/userAnswers", userPersonalityRouter);
