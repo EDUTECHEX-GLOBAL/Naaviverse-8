@@ -18,10 +18,21 @@ const MallProduct = () => {
   const [searchservice, setSearchservice] = useState("");
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem("user");
+      const parsed = raw ? JSON.parse(raw) : null;
+      const status = parsed?.approvalStatus || parsed?.user?.approvalStatus;
+      if (status !== "approved") {
+        navigate("/dashboard/users/profile", { replace: true });
+        return;
+      }
+    } catch {
+      navigate("/dashboard/users/profile", { replace: true });
+      return;
+    }
     let product = localStorage.getItem("product");
     setIndex(JSON.parse(product));
-    // console.log(JSON.parse(product), "product details");
-  }, [setIndex]);
+  }, [setIndex, navigate]);
 
   function filterItem(text) {
     let filterItem = mallCoindata?.filter((eachitem) => {
@@ -35,7 +46,7 @@ const MallProduct = () => {
     <div className="dashboard-main">
       <div className="dashboard-body">
         <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
-          <Dashsidebar isNotOnMainPage={true} />
+          <Dashsidebar isNotOnMainPage={true} approvalStatus={JSON.parse(localStorage.getItem("user") || "{}")?.approvalStatus || "pending"} />
         </div>
         <div className="dashboard-screens" style={{ height: "100%" }}>
           <div style={{ height: "100%" }}>

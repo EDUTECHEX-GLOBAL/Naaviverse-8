@@ -16,6 +16,7 @@ const {
   deletePendingRegistration,
 } = require("../middlewares/verifySignUp");
 const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
+const { validateEmail } = require("../utils/emailValidator");
 
 // ── Activity logger (non-blocking — never breaks login if it fails) ───────────
 const { logActivityInternal } = require("./ActivityController");
@@ -29,9 +30,14 @@ const signUp = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const emailVal = validateEmail(cleanEmail);
+    if (!emailVal.isValid) {
+      return res.status(400).json({ success: false, message: emailVal.message });
+    }
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
 
     // Check if verified user exists
-    const existingUser = await User.findOne({ email: cleanEmail, OTPverified: true });
+    const existingUser = await User.findOne({ email: emailRegex, OTPverified: true });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -41,7 +47,7 @@ const signUp = async (req, res) => {
       });
     }
 
-    const existingPartner = await Partner.findOne({ email: emailRegex });
+    const existingPartner = await Partner.findOne({ email: emailRegex, OTPverified: true });
     if (existingPartner) {
       return res.status(400).json({
         success: false,
@@ -52,7 +58,7 @@ const signUp = async (req, res) => {
     }
 
     // Clean up any old unverified user record with this email in MongoDB if one existed from before
-    await User.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+    await User.deleteMany({ email: emailRegex, OTPverified: { $ne: true } });
 
     const OTP = generateOTP();
 
@@ -95,8 +101,8 @@ const checkEmailDuplicate = async (req, res) => {
     const cleanEmail = email.toLowerCase().trim();
     const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
 
-    const user = await User.findOne({ email: emailRegex });
-    const partner = await Partner.findOne({ email: emailRegex });
+    const user = await User.findOne({ email: emailRegex, OTPverified: true });
+    const partner = await Partner.findOne({ email: emailRegex, OTPverified: true });
 
     if (user && partner) {
       return res.status(200).json({
@@ -228,7 +234,8 @@ const login = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const user = await User.findOne({ email: cleanEmail });
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
+    const user = await User.findOne({ email: emailRegex });
 
     if (!user) {
       // Check if this email is registered as a Partner
@@ -363,6 +370,7 @@ const verifyOTP = async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanOtp = otp.toString().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
 
     // 1. Check pending registration (new user registration flow)
     const pending = getPendingRegistration(cleanEmail);
@@ -380,7 +388,7 @@ const verifyOTP = async (req, res) => {
       const usernameToUse = pending.username || req.body.username || cleanEmail.split("@")[0];
 
       // Remove any leftover unverified records
-      await User.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+      await User.deleteMany({ email: emailRegex, OTPverified: { $ne: true } });
 
       const newUser = new User({
         username: usernameToUse,
@@ -408,7 +416,7 @@ const verifyOTP = async (req, res) => {
     }
 
     // 2. Existing user check (for password reset / confirmation / legacy flow)
-    const userFound = await User.findOne({ email: cleanEmail });
+    const userFound = await User.findOne({ email: emailRegex });
     if (!userFound) return res.status(404).json({ success: false, message: "No pending registration found or user not found" });
 
     if (userFound.OTPCreatedTime && new Date() - userFound.OTPCreatedTime > 10 * 60 * 1000) {

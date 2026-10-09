@@ -386,9 +386,17 @@ div:has(> .user-dashboard-sidebar) {
   }
 
   &.locked {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none;
+    opacity: 0.42;
+    cursor: not-allowed !important;
+
+    &:hover {
+      background: transparent !important;
+      color: #334155 !important;
+
+      .user-nav-icon {
+        stroke: #475569 !important;
+      }
+    }
   }
 
   span {

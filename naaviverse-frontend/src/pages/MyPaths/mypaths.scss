@@ -5,28 +5,70 @@
 .mypaths {
   width: 100%;
   height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   background: #e9f2fa;
   overflow: hidden;
 
+  @media (max-width: 768px) {
+    height: auto !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    padding-top: 0 !important;
+  }
 
   // ----- Main Content Area -----
   .mypaths-content {
     width: 100%;
     flex: 1;
-    min-height: 0;
+    min-height: 100%;
     padding: 1.2rem 1.5rem;
     padding-bottom: 3rem;
     overflow-y: auto;
     background: #e9f2fa; // Light pastel blue background
+
+    @media (max-width: 768px) {
+      padding: 0 14px 2.5rem 14px !important;
+      min-height: 100% !important;
+      background: #e9f2fa !important;
+    }
+
+    // ----- Filter Tabs & Search Row -----
+    .mypaths-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-top: 0 !important;
+        margin-bottom: 12px;
+      }
+    }
 
     // ----- Filter Tabs -----
     .filter-tabs {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
-      margin-bottom: 1.2rem;
+
+      @media (max-width: 768px) {
+        gap: 6px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
 
       .filter-tab {
         background: white;
@@ -39,6 +81,18 @@
         cursor: pointer;
         transition: all 0.15s ease;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        white-space: nowrap;
+
+        @media (max-width: 768px) {
+          flex-shrink: 0;
+          font-size: 0.78rem !important;
+          padding: 0 14px !important;
+          height: 34px !important;
+          min-height: 34px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
 
         &.active {
           background: #0d6b6e;
@@ -60,6 +114,49 @@
       }
     }
 
+    // ----- Search Bar -----
+    .mp-search-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 30px;
+      padding: 0 14px;
+      height: 36px;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 260px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      flex-shrink: 0;
+
+      @media (max-width: 768px) {
+        max-width: 100%;
+        height: 38px;
+      }
+
+      &:hover,
+      &:focus-within {
+        border-color: #0d6b6e;
+        box-shadow: 0 0 0 3px rgba(13, 107, 110, 0.1);
+      }
+    }
+
+    .mp-search-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 0.84rem;
+      color: #1e293b;
+      width: 100%;
+      height: 100%;
+
+      &::placeholder {
+        color: #94a3b8;
+      }
+    }
+
     // ----- Paths Grid -----
     .paths-grid {
       display: flex;
@@ -73,10 +170,15 @@
       background: white;
       border-radius: 16px;
       border: 1px solid #e6edf4;
-     padding: 1rem 1.2rem 0.75rem 1.2rem; 
+      padding: 1rem 1.2rem 0.75rem 1.2rem; 
       box-shadow: 0 3px 8px rgba(13, 107, 110, 0.05);
       transition: all 0.15s ease;
       cursor: pointer;
+
+      @media (max-width: 768px) {
+        padding: 12px 14px 10px 14px;
+        border-radius: 14px;
+      }
 
       &:hover {
         box-shadow: 0 6px 12px rgba(13, 107, 110, 0.1);
@@ -90,10 +192,20 @@
         justify-content: space-between;
         margin-bottom: 0.5rem;
 
+        @media (max-width: 768px) {
+          align-items: flex-start;
+          gap: 8px;
+          margin-bottom: 0.4rem;
+        }
+
         .path-title {
           display: flex;
           align-items: center;
           gap: 0.75rem;
+
+          @media (max-width: 768px) {
+            gap: 0.5rem;
+          }
 
           h3 {
             font-size: 1rem;
@@ -101,6 +213,11 @@
             color: #0a1c2a;
             margin: 0;
             letter-spacing: -0.01em;
+
+            @media (max-width: 768px) {
+              font-size: 0.92rem;
+              line-height: 1.35;
+            }
           }
         }
 
@@ -112,6 +229,12 @@
           border-radius: 20px;
           white-space: nowrap;
           font-weight: 400;
+
+          @media (max-width: 768px) {
+            font-size: 0.72rem;
+            padding: 0.18rem 0.65rem;
+            flex-shrink: 0;
+          }
         }
       }
 
@@ -124,6 +247,12 @@
         word-break: break-word;
         font-weight: 400;
 
+        @media (max-width: 768px) {
+          font-size: 0.82rem;
+          line-height: 1.45;
+          margin-bottom: 0.5rem;
+        }
+
         .read-more-btn {
           color: #0d6b6e;
           font-weight: 600;
@@ -131,6 +260,10 @@
           cursor: pointer;
           margin-left: 0.3rem;
           white-space: nowrap;
+
+          @media (max-width: 768px) {
+            font-size: 0.8rem;
+          }
 
           &:hover {
             text-decoration: underline;
@@ -146,27 +279,35 @@
         padding-top: 0.6rem; 
         border-top: 1px solid #edf2f7;
 
-.stats-group {
-  .stat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    background: #e6f3f4;
-    color: #0d6b6e;
-    font-size: 0.78rem;      // ← shrink from default large size
-    font-weight: 600;
-    padding: 0.25rem 0.9rem;
-    border-radius: 20px;
-    border: 1px solid #b2dfe0;
-    line-height: 1;
+        @media (max-width: 768px) {
+          padding-top: 0.5rem;
+        }
 
-    &::before {
-      content: '◈';           // ← small decorative icon
-      font-size: 0.7rem;
-      opacity: 0.7;
-    }
-  }
+        .stats-group {
+          .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #e6f3f4;
+            color: #0d6b6e;
+            font-size: 0.78rem;      // ← shrink from default large size
+            font-weight: 600;
+            padding: 0.25rem 0.9rem;
+            border-radius: 20px;
+            border: 1px solid #b2dfe0;
+            line-height: 1;
 
+            @media (max-width: 768px) {
+              font-size: 0.72rem;
+              padding: 0.2rem 0.75rem;
+            }
+
+            &::before {
+              content: '◈';           // ← small decorative icon
+              font-size: 0.7rem;
+              opacity: 0.7;
+            }
+          }
 
           .stat-item {
             display: flex;
@@ -201,6 +342,11 @@
           cursor: pointer;
           transition: all 0.15s;
           white-space: nowrap;
+
+          @media (max-width: 768px) {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.9rem;
+          }
 
           &:hover {
             background: #0d6b6e;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import logo from "../../logos/naavi_final_logo2.png"; // ⚠️ adjust to actual relative path from this file to src/logos
 import signupHero from "./assets/images/signup_hero.png";
 import axios from 'axios';
@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import tickMark from "./tick.svg";
 import tickMarkValid from "./tickMarkValid.svg";
 import { ApplyWelcomeBonus } from "../../views/inner-pages/pages/services/wallet";
+import { validateEmail } from "../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -92,21 +93,41 @@ const GoogleIcon = () => (
 const NewHomePage = () => {
   const navigate = useNavigate();
 
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [userPassword, setUserPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [partnerType, setPartnerType] = useState("");
-  const [showOtp, setShowOtp] = useState(false);
-  const [userOtp, setUserOtp] = useState('');
-  const [wrongOtp, setWrongOtp] = useState(false);
+  // ── Separate independent state for User vs Partner signup ──
+  const [userState, setUserState] = useState({
+    userName: "",
+    userEmail: "",
+    emailTouched: false,
+    userPassword: "",
+    confirmPassword: "",
+    showPassword: false,
+    showConfirmPassword: false,
+    showOtp: false,
+    userOtp: "",
+    wrongOtp: false,
+    errorMessage: "",
+    roleWarning: null,
+  });
+
+  const [partnerState, setPartnerState] = useState({
+    userName: "",
+    userEmail: "",
+    emailTouched: false,
+    userPassword: "",
+    confirmPassword: "",
+    showPassword: false,
+    showConfirmPassword: false,
+    partnerType: "",
+    showOtp: false,
+    userOtp: "",
+    wrongOtp: false,
+    errorMessage: "",
+    roleWarning: null,
+  });
+
   const [loading, setLoading] = useState(false);
   const [signupRole, setSignupRole] = useState("");
   const [showPassReq, setShowPassReq] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [roleWarning, setRoleWarning] = useState(null);
 
   const [validations, setValidations] = useState({
     capitalLetter: false,
@@ -131,31 +152,54 @@ const NewHomePage = () => {
   const isUser = signupRole === "Users";
   const isPartner = signupRole === "Accountants";
 
+  // Current active form based on selected tab
+  const currentForm = isUser ? userState : partnerState;
+  const updateCurrentForm = (fields) => {
+    if (isUser) {
+      setUserState((prev) => ({ ...prev, ...fields }));
+    } else {
+      setPartnerState((prev) => ({ ...prev, ...fields }));
+    }
+  };
+
+  // Real-time email validation
+  const emailValidation = useMemo(() => {
+    if (!currentForm.userEmail) return { isValid: false, message: "" };
+    return validateEmail(currentForm.userEmail);
+  }, [currentForm.userEmail]);
+
   useEffect(() => {
-    validatePassword(userPassword);
-  }, [userPassword]);
+    validatePassword(currentForm.userPassword);
+  }, [currentForm.userPassword]);
 
   const validatePassword = (password) => {
+    const pwd = password || "";
     const capitalLetterRegex = /[A-Z]/;
     const specialCharacterRegex = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
     const numberRegex = /[0-9]/;
 
     setValidations({
-      capitalLetter: capitalLetterRegex.test(password),
-      specialCharacter: specialCharacterRegex.test(password),
-      tenCharacters: password.length >= 10,
-      oneNumber: numberRegex.test(password)
+      capitalLetter: capitalLetterRegex.test(pwd),
+      specialCharacter: specialCharacterRegex.test(pwd),
+      tenCharacters: pwd.length >= 10,
+      oneNumber: numberRegex.test(pwd)
     });
   };
 
   const handleCreateAccount = () => {
-    if (isPartner && !partnerType) {
+    const emailVal = validateEmail(currentForm.userEmail);
+    if (!emailVal.isValid) {
+      updateCurrentForm({ emailTouched: true, errorMessage: emailVal.message });
+      return;
+    }
+
+    if (isPartner && !currentForm.partnerType) {
       alert("Please select a Partner Type.");
       return;
     }
 
-    if (userPassword !== confirmPassword) {
-      setErrorMessage("Passwords do not match.");
+    if (currentForm.userPassword !== currentForm.confirmPassword) {
+      updateCurrentForm({ errorMessage: "Passwords do not match." });
       return;
     }
 
@@ -165,15 +209,14 @@ const NewHomePage = () => {
       !validations.tenCharacters ||
       !validations.oneNumber
     ) {
-      setErrorMessage("Please ensure all password requirements are met.");
+      updateCurrentForm({ errorMessage: "Please ensure all password requirements are met." });
       setShowPassReq(true);
       return;
     }
 
     setLoading(true);
-    setErrorMessage("");
-    setRoleWarning(null);
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
+    updateCurrentForm({ errorMessage: "", roleWarning: null });
+    const cleanEmail = (currentForm.userEmail || "").trim().toLowerCase();
 
     axios.post(`${BASE_URL}/api/auth/checkEmailDuplicate`, {
       email: cleanEmail
@@ -183,27 +226,33 @@ const NewHomePage = () => {
           setLoading(false);
           const registeredRole = data.registeredRole;
           if (registeredRole === "Partner" && isUser) {
-            setRoleWarning({
-              role: "Partner",
-              title: "Registered as Partner",
-              message: "This email is already registered as a Partner account.",
-              targetRole: "Accountants",
-              action: "switch_role",
+            updateCurrentForm({
+              roleWarning: {
+                role: "Partner",
+                title: "Registered as Partner",
+                message: "This email is already registered as a Partner account.",
+                targetRole: "Accountants",
+                action: "switch_role",
+              }
             });
           } else if (registeredRole === "User" && isPartner) {
-            setRoleWarning({
-              role: "User",
-              title: "Registered as User",
-              message: "This email is already registered as a standard User account.",
-              targetRole: "Users",
-              action: "switch_role",
+            updateCurrentForm({
+              roleWarning: {
+                role: "User",
+                title: "Registered as User",
+                message: "This email is already registered as a standard User account.",
+                targetRole: "Users",
+                action: "switch_role",
+              }
             });
           } else {
-            setRoleWarning({
-              role: registeredRole || (isUser ? "User" : "Partner"),
-              title: "Email Already Registered",
-              message: `This email is already registered as a ${registeredRole || (isUser ? "User" : "Partner")} account.`,
-              action: "login",
+            updateCurrentForm({
+              roleWarning: {
+                role: registeredRole || (isUser ? "User" : "Partner"),
+                title: "Email Already Registered",
+                message: `This email is already registered as a ${registeredRole || (isUser ? "User" : "Partner")} account.`,
+                action: "login",
+              }
             });
           }
         } else {
@@ -215,9 +264,9 @@ const NewHomePage = () => {
         const errData = err.response?.data;
         const msg = errData?.message;
         if (msg && msg.toLowerCase().includes("already exists")) {
-          setErrorMessage("This email is already registered.");
+          updateCurrentForm({ errorMessage: "This email is already registered." });
         } else {
-          setErrorMessage(errData?.message || "Error checking email.");
+          updateCurrentForm({ errorMessage: errData?.message || "Error checking email." });
         }
       });
   };
@@ -227,29 +276,29 @@ const NewHomePage = () => {
       ? `${BASE_URL}/api/auth/signup`
       : `${BASE_URL}/api/partner/signup`;
 
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
-    const cleanUser = (userName || "").trim();
+    const cleanEmail = (currentForm.userEmail || "").trim().toLowerCase();
+    const cleanUser = (currentForm.userName || "").trim();
 
     const payload = isUser
       ? {
         username: cleanUser,
         email: cleanEmail,
-        password: userPassword,
+        password: currentForm.userPassword,
       }
       : {
         username: cleanUser,
         email: cleanEmail,
-        password: userPassword,
-        partnerType: partnerType,
+        password: currentForm.userPassword,
+        partnerType: currentForm.partnerType,
       };
 
     axios.post(signupUrl, payload)
       .then(({ data }) => {
         setLoading(false);
         if (data.success) {
-          setShowOtp(true);
+          updateCurrentForm({ showOtp: true, wrongOtp: false });
         } else {
-          setErrorMessage(data?.message || "Signup failed.");
+          updateCurrentForm({ errorMessage: data?.message || "Signup failed." });
         }
       })
       .catch((err) => {
@@ -258,31 +307,37 @@ const NewHomePage = () => {
         if (errData?.registeredRole) {
           const regRole = errData.registeredRole;
           if (regRole === "Partner" && isUser) {
-            setRoleWarning({
-              role: "Partner",
-              title: "Registered as Partner",
-              message: "This email is already registered as a Partner account.",
-              targetRole: "Accountants",
-              action: "switch_role",
+            updateCurrentForm({
+              roleWarning: {
+                role: "Partner",
+                title: "Registered as Partner",
+                message: "This email is already registered as a Partner account.",
+                targetRole: "Accountants",
+                action: "switch_role",
+              }
             });
           } else if (regRole === "User" && isPartner) {
-            setRoleWarning({
-              role: "User",
-              title: "Registered as User",
-              message: "This email is already registered as a User account.",
-              targetRole: "Users",
-              action: "switch_role",
+            updateCurrentForm({
+              roleWarning: {
+                role: "User",
+                title: "Registered as User",
+                message: "This email is already registered as a User account.",
+                targetRole: "Users",
+                action: "switch_role",
+              }
             });
           } else {
-            setRoleWarning({
-              role: regRole,
-              title: "Email Already Registered",
-              message: `This email is already registered as a ${regRole} account.`,
-              action: "login",
+            updateCurrentForm({
+              roleWarning: {
+                role: regRole,
+                title: "Email Already Registered",
+                message: `This email is already registered as a ${regRole} account.`,
+                action: "login",
+              }
             });
           }
         } else {
-          setErrorMessage(errData?.message || "Signup failed. Please try again.");
+          updateCurrentForm({ errorMessage: errData?.message || "Signup failed. Please try again." });
         }
       });
   };
@@ -292,15 +347,15 @@ const NewHomePage = () => {
       ? `${BASE_URL}/api/auth/verifyotp`
       : `${BASE_URL}/api/partner/verifyotp`;
 
-    const cleanEmail = (userEmail || "").trim().toLowerCase();
-    const cleanUser = (userName || "").trim();
+    const cleanEmail = (currentForm.userEmail || "").trim().toLowerCase();
+    const cleanUser = (currentForm.userName || "").trim();
 
     axios.post(verifyOtpUrl, {
       email: cleanEmail,
       username: cleanUser,
-      password: userPassword,
-      partnerType: partnerType,
-      otp: (userOtp || "").trim(),
+      password: currentForm.userPassword,
+      partnerType: currentForm.partnerType,
+      otp: (currentForm.userOtp || "").trim(),
     })
       .then(({ data }) => {
         if (data.success) {
@@ -311,11 +366,11 @@ const NewHomePage = () => {
           }
           navigate(`/login?role=${signupRole}`);
         } else {
-          setWrongOtp(true);
+          updateCurrentForm({ wrongOtp: true });
         }
       })
       .catch(() => {
-        setWrongOtp(true);
+        updateCurrentForm({ wrongOtp: true });
       });
   };
 
@@ -347,12 +402,12 @@ const NewHomePage = () => {
   const hero = heroData[signupRole] || heroData.Accountants;
 
   const isFormValid =
-    userEmail &&
-    userName &&
-    (isUser || partnerType) &&
-    userPassword &&
-    confirmPassword &&
-    userPassword === confirmPassword &&
+    emailValidation.isValid &&
+    Boolean(currentForm.userName) &&
+    (isUser || Boolean(currentForm.partnerType)) &&
+    Boolean(currentForm.userPassword) &&
+    Boolean(currentForm.confirmPassword) &&
+    currentForm.userPassword === currentForm.confirmPassword &&
     validations.capitalLetter &&
     validations.specialCharacter &&
     validations.tenCharacters &&
@@ -362,8 +417,8 @@ const NewHomePage = () => {
     const role = isUser ? "Users" : "Accountants";
     localStorage.setItem("userType", isUser ? "user" : "partner");
     localStorage.setItem("googleAuthRole", role);
-    if (isPartner && partnerType) {
-      localStorage.setItem("partnerType", partnerType);
+    if (isPartner && partnerState.partnerType) {
+      localStorage.setItem("partnerType", partnerState.partnerType);
     }
 
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
@@ -436,8 +491,6 @@ const NewHomePage = () => {
               className={`toggle-each ${isUser ? "toggle-each-active" : ""}`}
               onClick={() => {
                 setSignupRole("Users");
-                setErrorMessage("");
-                setRoleWarning(null);
               }}
             >
               <UserToggleIcon /> User Signup
@@ -446,40 +499,36 @@ const NewHomePage = () => {
               className={`toggle-each ${isPartner ? "toggle-each-active" : ""}`}
               onClick={() => {
                 setSignupRole("Accountants");
-                setErrorMessage("");
-                setRoleWarning(null);
               }}
             >
               <PartnerToggleIcon /> Partner Signup
             </div>
           </div>
 
-          {roleWarning && (
+          {currentForm.roleWarning && (
             <div className="signup-toggle-warning">
               <div className="warning-head">
                 <span className="warning-badge">⚠️ Notice</span>
-                <strong>{roleWarning.title}</strong>
+                <strong>{currentForm.roleWarning.title}</strong>
               </div>
-              <p className="warning-desc">{roleWarning.message}</p>
+              <p className="warning-desc">{currentForm.roleWarning.message}</p>
               <div className="warning-actions">
-                {roleWarning.targetRole && (
+                {currentForm.roleWarning.targetRole && (
                   <button
                     type="button"
                     className="warning-btn primary"
                     onClick={() => {
-                      setSignupRole(roleWarning.targetRole);
-                      setRoleWarning(null);
-                      setErrorMessage("");
+                      setSignupRole(currentForm.roleWarning.targetRole);
                     }}
                   >
-                    Switch to {roleWarning.targetRole === "Accountants" ? "Partner Signup" : "User Signup"}
+                    Switch to {currentForm.roleWarning.targetRole === "Accountants" ? "Partner Signup" : "User Signup"}
                   </button>
                 )}
                 <button
                   type="button"
                   className="warning-btn secondary"
                   onClick={() => {
-                    navigate(`/login?role=${roleWarning.targetRole || signupRole}`);
+                    navigate(`/login?role=${currentForm.roleWarning.targetRole || signupRole}`);
                   }}
                 >
                   Sign In Now →
@@ -488,53 +537,67 @@ const NewHomePage = () => {
             </div>
           )}
 
-          {errorMessage && <div className="errorMsg">{errorMessage}</div>}
+          {currentForm.errorMessage && <div className="errorMsg">{currentForm.errorMessage}</div>}
 
           <form
             onSubmit={(e) => {
               e.preventDefault();
               if (loading) return;
-              if (showOtp) {
-                if (userOtp && userOtp.trim().length > 0) confirmEmail();
+              if (currentForm.showOtp) {
+                if (currentForm.userOtp && currentForm.userOtp.trim().length > 0) confirmEmail();
               } else if (isFormValid) {
                 handleCreateAccount();
               }
             }}
             style={{ width: "100%" }}
           >
-            <div className='input1'>
+            <div
+              className='input1'
+              style={{
+                borderColor: (currentForm.emailTouched || (currentForm.userEmail && currentForm.userEmail.includes('@'))) && currentForm.userEmail && !emailValidation.isValid ? "#ef4444" : undefined
+              }}
+            >
               <EmailIcon />
               <input
                 type="email"
                 placeholder='Email address'
-                disabled={showOtp}
-                value={userEmail}
+                disabled={currentForm.showOtp}
+                value={currentForm.userEmail}
+                onBlur={() => updateCurrentForm({ emailTouched: true })}
                 onChange={e => {
-                  setRoleWarning(null);
-                  setErrorMessage("");
-                  setUserEmail(e.target.value);
+                  updateCurrentForm({
+                    roleWarning: null,
+                    errorMessage: "",
+                    userEmail: e.target.value,
+                    emailTouched: true
+                  });
                 }}
               />
             </div>
+            {(currentForm.emailTouched || (currentForm.userEmail && currentForm.userEmail.includes('@'))) && currentForm.userEmail && !emailValidation.isValid && (
+              <div className="field-error-hint">
+                <span>⚠️</span> {emailValidation.message}
+              </div>
+            )}
 
             <div className='input1'>
               <UserIcon />
               <input
                 type="text"
                 placeholder='Choose a username'
-                disabled={showOtp}
-                value={userName}
-                onChange={e => setUserName(e.target.value)}
+                disabled={currentForm.showOtp}
+                value={currentForm.userName}
+                onChange={e => updateCurrentForm({ userName: e.target.value })}
               />
             </div>
 
             {isPartner && (
-              <div className={`input1 selectWrap ${partnerType ? "hasValue" : ""}`}>
+              <div className={`input1 selectWrap ${currentForm.partnerType ? "hasValue" : ""}`}>
                 <BriefcaseIcon />
                 <select
-                  disabled={showOtp}
-                  value={partnerType}
-                  onChange={(e) => setPartnerType(e.target.value)}
+                  disabled={currentForm.showOtp}
+                  value={currentForm.partnerType}
+                  onChange={(e) => updateCurrentForm({ partnerType: e.target.value })}
                 >
                   <option value="">Select Partner Type</option>
                   <option value="Distributor">Distributor</option>
@@ -549,43 +612,43 @@ const NewHomePage = () => {
               <div className='input2'>
                 <LockIcon />
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={currentForm.showPassword ? "text" : "password"}
                   placeholder='Create password'
-                  disabled={showOtp}
-                  value={userPassword}
-                  onChange={e => setUserPassword(e.target.value)}
+                  disabled={currentForm.showOtp}
+                  value={currentForm.userPassword}
+                  onChange={e => updateCurrentForm({ userPassword: e.target.value })}
                 />
                 <button
                   type="button"
                   className="password-toggle-btn"
                   tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowPassword(prev => !prev)}
+                  aria-label={currentForm.showPassword ? "Hide password" : "Show password"}
+                  onClick={() => updateCurrentForm({ showPassword: !currentForm.showPassword })}
                 >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  {currentForm.showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
 
               <div className='input2'>
                 <LockIcon />
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={currentForm.showConfirmPassword ? "text" : "password"}
                   placeholder='Confirm password'
-                  disabled={showOtp}
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
+                  disabled={currentForm.showOtp}
+                  value={currentForm.confirmPassword}
+                  onChange={e => updateCurrentForm({ confirmPassword: e.target.value })}
                   style={{
-                    borderColor: confirmPassword && userPassword !== confirmPassword ? "#ef4444" : undefined,
+                    borderColor: currentForm.confirmPassword && currentForm.userPassword !== currentForm.confirmPassword ? "#ef4444" : undefined,
                   }}
                 />
                 <button
                   type="button"
                   className="password-toggle-btn"
                   tabIndex={-1}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                  onClick={() => setShowConfirmPassword(prev => !prev)}
+                  aria-label={currentForm.showConfirmPassword ? "Hide password" : "Show password"}
+                  onClick={() => updateCurrentForm({ showConfirmPassword: !currentForm.showConfirmPassword })}
                 >
-                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  {currentForm.showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
             </div>
@@ -603,10 +666,10 @@ const NewHomePage = () => {
               </div>
             )}
 
-            {showOtp && (
+            {currentForm.showOtp && (
               <>
                 <div className="otpHelperText">
-                  {wrongOtp
+                  {currentForm.wrongOtp
                     ? <span className="otpError">Incorrect code. Please check and try again.</span>
                     : "We've sent a verification code to your email. Please enter it below."
                   }
@@ -616,8 +679,8 @@ const NewHomePage = () => {
                   <input
                     type="text"
                     placeholder='Enter 6-digit code'
-                    value={userOtp}
-                    onChange={e => setUserOtp(e.target.value)}
+                    value={currentForm.userOtp}
+                    onChange={e => updateCurrentForm({ userOtp: e.target.value })}
                     maxLength={6}
                   />
                 </div>
@@ -626,10 +689,10 @@ const NewHomePage = () => {
 
             <button
               type="submit"
-              disabled={showOtp ? (!userOtp || userOtp.trim().length === 0 || loading) : (!isFormValid || loading)}
-              className={`nextStep ${(showOtp ? (userOtp && userOtp.trim().length > 0 && !loading) : (isFormValid && !loading)) ? "" : "disabled"}`}
+              disabled={currentForm.showOtp ? (!currentForm.userOtp || currentForm.userOtp.trim().length === 0 || loading) : (!isFormValid || loading)}
+              className={`nextStep ${(currentForm.showOtp ? (currentForm.userOtp && currentForm.userOtp.trim().length > 0 && !loading) : (isFormValid && !loading)) ? "" : "disabled"}`}
             >
-              {loading ? "Creating Account..." : showOtp ? "Verify & Continue" : "Create Account"}
+              {loading ? "Creating Account..." : currentForm.showOtp ? "Verify & Continue" : "Create Account"}
             </button>
           </form>
 

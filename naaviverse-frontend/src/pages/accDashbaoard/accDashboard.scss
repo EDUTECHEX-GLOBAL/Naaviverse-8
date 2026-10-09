@@ -17,13 +17,13 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   left: 0;
   right: 0;
   height: 56px;
-  background: #ffffff;
-  border-bottom: 1px solid #edf2f7;
+  background: #e9f2fa;
+  border-bottom: none;
   z-index: 999;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: none;
 
   .mobile-topbar-left {
     display: flex;
@@ -37,8 +37,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   }
 
   .mobile-topbar-logo {
-    height: 28px;
-    object-fit: contain;
+    display: none !important;
   }
 
   .hamburger-btn {
@@ -3390,15 +3389,41 @@ body:has(.step-popup-overlay) {
 // MOBILE — ≤768px
 // ============================================
 @media (max-width: 768px) {
+  // ── Universal pastel blue canvas for mobile partner flow ──
+  body:has(.mobile-topbar),
+  body:has(.mobile-topbar) #root,
+  .dashboard-root--partner,
+  .dashboard-main--partner,
+  .dashboard-body--partner,
+  .dashboard-screens--partner,
+  .dashboard-screens-inner--partner,
+  body:has(.mobile-topbar) .dashboard-body,
+  .mobile-topbar ~ .dashboard-main,
+  .mobile-topbar ~ .dashboard-main .dashboard-body,
+  .mobile-topbar + .dashboard-main,
+  .mobile-topbar + .dashboard-main .dashboard-body,
+  .dashboard-root--mypaths,
+  .dashboard-main--mypaths,
+  .dashboard-body--mypaths,
+  .dashboard-screens--mypaths,
+  .dashboard-screens-inner--mypaths {
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+  }
+
   body:has(.mobile-topbar) .dashboard-body,
   .mobile-topbar ~ .dashboard-main .dashboard-body,
-  .mobile-topbar + .dashboard-main .dashboard-body {
-    background: #ffffff !important;
+  .mobile-topbar + .dashboard-main .dashboard-body,
+  .dashboard-body--partner {
     flex-direction: row !important;
-    padding-top: 56px !important;
-    width: 100vw !important;
-    height: calc(100vh - 56px) !important;
-    min-height: unset !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    box-sizing: border-box !important;
     overflow: hidden !important;
 
     &::after {
@@ -3412,25 +3437,113 @@ body:has(.step-popup-overlay) {
 
   .mobile-topbar {
     display: flex !important;
+    height: 34px !important;
+    padding: 0 12px !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
+
+    .hamburger-btn {
+      pointer-events: auto !important;
+      min-width: 32px !important;
+      min-height: 32px !important;
+      padding: 4px !important;
+
+      svg {
+        width: 20px !important;
+        height: 20px !important;
+      }
+    }
   }
 
-  .dashboard-screens {
+  .dash-nav {
+    display: none !important;
+  }
+
+  .dashboard-screens,
+  .dashboard-screens--partner {
     flex: 1 1 100% !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     min-height: 0 !important;
     height: 100% !important;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
   }
 
-
-  // ── Content areas ──
-  .services-main,
-  .crm-main {
+  .dashboard-screens > div,
+  .dashboard-screens-inner,
+  .dashboard-screens-inner--partner {
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+    box-sizing: border-box !important;
+  }
+
+  // ── Universal mobile fix for all services-main / content areas across all partner sections ──
+  .services-main,
+  .crm-main,
+  .services-main--mypaths {
+    width: 100% !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100% !important;
+    padding-top: 36px !important;
+    padding-bottom: 2.5rem !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+    box-sizing: border-box !important;
+  }
+
+  // Prevent double top-padding when .mypaths or .mp-root is inside .services-main / .services-main--mypaths
+  .services-main .mypaths,
+  .services-main--mypaths .mypaths,
+  .services-main .mp-root,
+  .dashboard-screens .services-main .mypaths {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .dashboard-screens:has(.services-main),
+  .dashboard-screens:has(.services-main--mypaths),
+  .dashboard-screens:has(.mypaths),
+  .dashboard-screens:has(.pcrm),
+  .dashboard-screens:has(.ph-root),
+  .dashboard-screens:has(.pf-root),
+  .dashboard-screens:has(.mp-root) {
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+  }
+
+  // Universal containers across partner sections on mobile
+  .mypaths,
+  .pcrm,
+  .ph-root,
+  .pf-root,
+  .mp-root,
+  .tasks-main,
+  .page-wrapper,
+  [class*="vaultsMain"] {
+    min-height: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mypaths,
+  .mypaths-content,
+  .mp-root {
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
   }
 
   .services-all-menu,
@@ -3519,8 +3632,20 @@ body:has(.step-popup-overlay) {
   .acc-popular {
     width: calc(100vw - 32px) !important;
     max-width: calc(100vw - 32px) !important;
-    padding: 24px 20px !important;
-    max-height: 85vh !important;
+    padding: 20px 18px !important;
+    top: calc(50% + 28px) !important;
+    max-height: calc(100vh - 96px) !important;
+    overflow-y: auto !important;
+    border-radius: 24px !important;
+
+    .acc-popular-top {
+      margin-bottom: 16px !important;
+      padding-bottom: 12px !important;
+    }
+
+    .acc-popular-head {
+      font-size: 20px !important;
+    }
   }
 
   .acc-popular1 {
@@ -3565,10 +3690,30 @@ body:has(.step-popup-overlay) {
     font-size: 15px !important;
   }
 
-  // ── Path / Step filter tabs ──
+  // ── Path / Step filter tabs & search ──
   .mypaths-menu {
-    padding: 0 16px !important;
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
+    height: auto !important;
+    min-height: auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 0 14px !important;
+    overflow: visible !important;
+    flex-wrap: wrap !important;
+    border-bottom: none !important;
+
+    > div:first-child {
+      display: flex !important;
+      gap: 6px !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    .mp-search-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
   }
 }

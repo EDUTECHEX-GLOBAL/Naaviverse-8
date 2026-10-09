@@ -66,8 +66,21 @@ const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selected
   const [userType, setUserType] = useState(null);
 
   useEffect(() => {
-    setUserType(localStorage.getItem("userType"));
-  }, []);
+    const type = localStorage.getItem("userType");
+    setUserType(type);
+    if (type === "user") {
+      try {
+        const raw = localStorage.getItem("user");
+        const parsed = raw ? JSON.parse(raw) : null;
+        const status = parsed?.approvalStatus || parsed?.user?.approvalStatus;
+        if (status !== "approved") {
+          navigate("/dashboard/users/profile", { replace: true });
+        }
+      } catch {
+        navigate("/dashboard/users/profile", { replace: true });
+      }
+    }
+  }, [navigate]);
 
   const navigate  = useNavigate();
   const loc       = useLocation();
@@ -230,7 +243,7 @@ const StepPage = ({ productDataArray, selectedPathId, showSelectedPath, selected
             {userType === "partner" ? (
               <AccDashsidebar />
             ) : userType === "user" ? (
-              <Dashsidebar />
+              <Dashsidebar approvalStatus={JSON.parse(localStorage.getItem("user") || "{}")?.approvalStatus || "pending"} />
             ) : userType === "accountant" || userType === "admin" ? (
               <AdminAccDashsidebar admin={true} />
             ) : (

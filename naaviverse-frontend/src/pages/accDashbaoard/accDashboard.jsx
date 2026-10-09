@@ -1761,13 +1761,16 @@ const AccDashboard = () => {
   };
 
   return (
-    <div style={{
-      height: "100vh",
-      overflow: "hidden",
-      display: "flex",
-      flexDirection: "column",
-      maxWidth: "100vw"   // ← ADD THIS
-    }}>
+    <div
+      className={`dashboard-root dashboard-root--partner ${accsideNav === "Paths" ? "dashboard-root--mypaths" : ""}`}
+      style={{
+        height: "100vh",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        maxWidth: "100vw"   // ← ADD THIS
+      }}
+    >
 
 
       {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS ── */}
@@ -1793,7 +1796,10 @@ const AccDashboard = () => {
       </div>
 
 
-      <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0, width: "100%", overflow: "hidden" }}>
+      <div
+        className={`dashboard-main dashboard-main--partner ${accsideNav === "Paths" ? "dashboard-main--mypaths" : ""}`}
+        style={{ flex: 1, display: "flex", minHeight: 0, width: "100%", overflow: "hidden" }}
+      >
 
         {sidebarOpen && (
           <div
@@ -1815,9 +1821,12 @@ const AccDashboard = () => {
           onClose={() => setSidebarOpen(false)}
         />
 
-        <div className="dashboard-body">
-          <div className="dashboard-screens">
-            <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
+        <div className={`dashboard-body dashboard-body--partner ${accsideNav === "Paths" ? "dashboard-body--mypaths" : ""}`}>
+          <div className={`dashboard-screens dashboard-screens--partner ${accsideNav === "Paths" ? "dashboard-screens--mypaths" : ""}`}>
+            <div
+              className={`dashboard-screens-inner dashboard-screens-inner--partner ${accsideNav === "Paths" ? "dashboard-screens-inner--mypaths" : ""}`}
+              style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}
+            >
               {viewPathMode ? (
                 createStepForPathId ? (
                   <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
@@ -2061,7 +2070,7 @@ const AccDashboard = () => {
     />
   </>
              ) : accsideNav === "Home" ? (
-  <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+  <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", width: "100%", maxWidth: "100%" }}>
      <PartnerHome setispopular={setispopular} />
   </div>
               ) : accsideNav === "Marketplace" ? (
@@ -2181,7 +2190,7 @@ const AccDashboard = () => {
                     searchPlaceholder={mypathsMenu === "Paths" ? "Search For Paths..." : "Search For Steps..."}
                   />
                   <div
-                    className="services-main"
+                    className="services-main services-main--mypaths"
                     style={{ height: "calc(100% - 70px)", overflowY: "auto", display: "block", paddingBottom: "60px" }}
                     onClick={() => setShowDrop(false)}
                   >

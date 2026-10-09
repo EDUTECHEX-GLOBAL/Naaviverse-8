@@ -88,6 +88,10 @@ const UserProfile = () => {
         const data = result.data;
         setProfileData(data);
         setProfileDataId(data._id);
+        try {
+          localStorage.setItem("userProfile", JSON.stringify(data));
+          window.dispatchEvent(new Event("naavi:profile-updated"));
+        } catch {}
 
         const isComplete =
           data.isProfileCompleted === true ||
@@ -225,6 +229,7 @@ const UserProfile = () => {
             />
           </div>
         </div>
+        <ToastContainer position="bottom-right" />
       </div>
     );
   }
@@ -238,36 +243,33 @@ const UserProfile = () => {
     const isRejected = approvalStatus === "rejected";
 
     return (
-      <div style={{
-        background:   isPending ? "#fffbeb" : "#fef2f2",
-        border:       `1px solid ${isPending ? "#fde68a" : "#fecaca"}`,
-        borderRadius: "12px",
-        padding:      "16px 20px",
-        marginBottom: "24px",
-        display:      "flex",
-        alignItems:   "flex-start",
-        gap:          "14px",
-      }}>
+      <div className={`up-review-banner ${isPending ? "up-review-banner--pending" : "up-review-banner--rejected"}`}>
         {/* Icon */}
-        <div style={{ flexShrink: 0, marginTop: "2px" }}>
+        <div className="up-review-banner-icon">
           {isPending ? <ClockIcon /> : <XCircleIcon />}
         </div>
 
-        {/* Text */}
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize:   "15px",
-            fontWeight: "700",
-            color:      isPending ? "#92400e" : "#991b1b",
-            marginBottom: "4px",
-          }}>
-            {isPending ? "Profile Under Review" : "Application Not Approved"}
+        {/* Content */}
+        <div className="up-review-banner-content">
+          <div className="up-review-banner-title-row">
+            <div className="up-review-banner-title">
+              {isPending ? "Profile Under Review" : "Application Not Approved"}
+            </div>
+            {/* Status pill for mobile */}
+            <div className="up-review-banner-pill up-review-banner-pill--mobile">
+              {isPending ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6V12L16 14" strokeLinecap="round" />
+                  </svg>
+                  Pending Approval
+                </>
+              ) : "Not Approved"}
+            </div>
           </div>
-          <div style={{
-            fontSize:   "13px",
-            color:      isPending ? "#b45309" : "#b91c1c",
-            lineHeight: "1.6",
-          }}>
+          <div className="up-review-banner-desc">
             {isPending
               ? "Your profile has been submitted and is awaiting admin approval. All fields are read-only until approved. This usually takes 1–2 business days."
               : (rejectionReason
@@ -275,7 +277,7 @@ const UserProfile = () => {
                   : "Your application was not approved. Please contact support.")}
           </div>
           {/* Support link */}
-          <div style={{ marginTop: "8px", fontSize: "12px", color: "#9ca3af" }}>
+          <div className="up-review-banner-support">
             Need help?{" "}
             <a href="mailto:support@naavi.com"
               style={{ color: "#59A2DD", textDecoration: "none", fontWeight: "600" }}>
@@ -284,21 +286,8 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Status pill */}
-        <div style={{
-          flexShrink:   0,
-          display:      "inline-flex",
-          alignItems:   "center",
-          gap:          "6px",
-          padding:      "6px 14px",
-          borderRadius: "30px",
-          fontSize:     "12px",
-          fontWeight:   "600",
-          whiteSpace:   "nowrap",
-          background:   isPending ? "#fffbeb" : "#fef2f2",
-          color:        isPending ? "#92400e" : "#991b1b",
-          border:       `1px solid ${isPending ? "#fde68a" : "#fecaca"}`,
-        }}>
+        {/* Status pill for desktop */}
+        <div className="up-review-banner-pill up-review-banner-pill--desktop">
           {isPending ? (
             <>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -546,9 +535,14 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, existingData, onC
         <div className="up-creation-steps">
           {[1, 2, 3].map((s) => (
             <React.Fragment key={s}>
-              <div className={`up-step-pill
-                ${step === s ? "up-step-pill--active" : ""}
-                ${step > s  ? "up-step-pill--done"   : ""}`}>
+              <div
+                className={`up-step-pill
+                  ${step === s ? "up-step-pill--active" : ""}
+                  ${step > s  ? "up-step-pill--done"   : ""}`}
+                onClick={() => { if (step > s) setStep(s); }}
+                style={{ cursor: step > s ? "pointer" : "default" }}
+                title={step > s ? `Go back to ${STEP_LABELS[s - 1]}` : undefined}
+              >
                 <span className="up-step-num">{step > s ? "✓" : s}</span>
                 <span className="up-step-label">{STEP_LABELS[s - 1]}</span>
               </div>
@@ -581,6 +575,7 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, existingData, onC
             <LevelThreeModal inline creation
               profileDataId={profileDataId}
               existingData={null}
+              onBack={() => setStep(2)}
               onClose={null}
               onComplete={handleLevel3Done} />
           )}

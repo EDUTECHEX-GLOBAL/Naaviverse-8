@@ -445,6 +445,17 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   animation: fadeIn 0.3s ease;
 }
 
+.field-error-hint {
+  font-size: 11.5px;
+  color: $error;
+  margin: -5px 0 8px 4px;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
 /* ===== INPUTS ===== */
 .input1,
 .input2 {

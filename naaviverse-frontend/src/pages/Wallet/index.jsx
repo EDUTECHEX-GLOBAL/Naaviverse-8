@@ -97,6 +97,14 @@ const Wallet = () => {
   // REPLACE your useEffect and both fetch functions
   useEffect(() => {
     if (!email) { navigate("/login"); return; }
+    // Check approval status: unapproved users can only view profile
+    const raw = localStorage.getItem("user");
+    const parsed = raw ? JSON.parse(raw) : null;
+    const approvalStatus = parsed?.approvalStatus || parsed?.user?.approvalStatus;
+    if (approvalStatus !== "approved") {
+      navigate("/dashboard/users/profile", { replace: true });
+      return;
+    }
     fetchBalanceThenTxns(); // ✅ chain the calls
     const createdAt = userDetails?.createdAt;
     setIsNewUser(!createdAt || moment().diff(moment(createdAt), "hours") < 24);
@@ -192,7 +200,7 @@ const Wallet = () => {
         <div className="dashboard-body">
 
           <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
-            <Dashsidebar />
+            <Dashsidebar approvalStatus={userDetails?.approvalStatus || "pending"} />
           </div>
 
           <div className="dashboard-screens" onClick={() => setShowDrop(false)}>

@@ -153,6 +153,7 @@ export const getCountryPostalRules = (isoCode) => {
 
 // ── Reusable Custom Select (always opens DOWNWARDS, matches top-box width) ──
 const CustomSelect = ({
+  name,
   options = [],
   value,
   onChange,
@@ -160,12 +161,14 @@ const CustomSelect = ({
   searchPlaceholder = "Search...",
   disabled = false,
   className = "",
+  searchable = true,
   renderSelected,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -179,10 +182,20 @@ const CustomSelect = ({
   }, []);
 
   useEffect(() => {
-    if (isOpen && searchInputRef.current) {
-      setTimeout(() => searchInputRef.current?.focus(), 60);
+    if (isOpen) {
+      if (searchable && options.length > 5) {
+        setTimeout(() => searchInputRef.current?.focus(), 60);
+      }
+      setTimeout(() => {
+        if (listRef.current) {
+          const selectedEl = listRef.current.querySelector(".up-custom-select-item--selected");
+          if (selectedEl) {
+            selectedEl.scrollIntoView({ block: "nearest" });
+          }
+        }
+      }, 60);
     }
-  }, [isOpen]);
+  }, [isOpen, searchable, options.length]);
 
   const selectedOpt = useMemo(() => {
     return options.find((opt) => (typeof opt === "object" ? opt.value === value : opt === value));
@@ -207,55 +220,123 @@ const CustomSelect = ({
   }, [options, search]);
 
   const handleSelect = (optVal) => {
-    onChange(optVal);
+    if (onChange) {
+      onChange({ target: { name, value: optVal } });
+    }
     setIsOpen(false);
     setSearch("");
   };
 
   return (
-    <div className={`up-custom-select ${className}`} ref={containerRef}>
+    <div
+      className={`up-custom-select-wrapper ${isOpen ? "up-custom-select-wrapper--open" : ""} ${disabled ? "up-custom-select-wrapper--disabled" : ""} ${className}`}
+      ref={containerRef}
+    >
       <button
         type="button"
-        className={`up-custom-select-trigger ${isOpen ? "is-open" : ""} ${disabled ? "is-disabled" : ""}`}
-        onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        className={`up-custom-select-trigger ${isOpen ? "up-custom-select-trigger--open" : ""} ${!displayLabel ? "up-custom-select-trigger--placeholder" : ""}`}
+        onClick={() => {
+          if (!disabled) setIsOpen((prev) => !prev);
+        }}
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
       >
-        <span className={`up-custom-select-value ${!displayLabel ? "up-custom-select-placeholder" : ""}`}>
+        <span className="up-custom-select-value" title={displayLabel || placeholder}>
           {displayLabel || placeholder}
         </span>
-        <span className={`up-custom-select-arrow ${isOpen ? "is-open" : ""}`}>▼</span>
+        <svg
+          className={`up-custom-select-arrow ${isOpen ? "up-custom-select-arrow--open" : ""}`}
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
       {isOpen && !disabled && (
-        <div className="up-custom-select-menu">
-          {options.length > 5 && (
-            <div className="up-custom-select-search">
+        <div className="up-custom-select-menu" role="listbox">
+          {searchable && options.length > 5 && (
+            <div className="up-custom-select-search-wrap" onClick={(e) => e.stopPropagation()}>
+              <svg
+                className="up-custom-select-search-icon"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
               <input
                 ref={searchInputRef}
                 type="text"
+                className="up-custom-select-search-input"
                 placeholder={searchPlaceholder}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setIsOpen(false);
+                    setSearch("");
+                  }
+                }}
               />
+              {search && (
+                <button
+                  type="button"
+                  className="up-custom-select-search-clear"
+                  onClick={() => setSearch("")}
+                >
+                  ✕
+                </button>
+              )}
             </div>
           )}
-          <div className="up-custom-select-options">
+
+          <div className="up-custom-select-list" ref={listRef}>
             {filteredOptions.length === 0 ? (
-              <div className="up-custom-select-no-results">No options found</div>
+              <div className="up-custom-select-empty">No options found</div>
             ) : (
               filteredOptions.map((opt, idx) => {
                 const optVal = typeof opt === "object" ? opt.value : opt;
                 const optLabel = typeof opt === "object" ? opt.label || opt.value : opt;
-                const isSelected = optVal === value;
+                const isSelected = selectedOpt && (typeof selectedOpt === "object" ? selectedOpt.value : selectedOpt) === optVal;
                 return (
                   <div
                     key={`${optVal}-${idx}`}
-                    className={`up-custom-select-option ${isSelected ? "is-selected" : ""}`}
+                    role="option"
+                    aria-selected={isSelected}
+                    title={optLabel}
+                    className={`up-custom-select-item ${isSelected ? "up-custom-select-item--selected" : ""}`}
                     onClick={() => handleSelect(optVal)}
                   >
-                    <span>{optLabel}</span>
-                    {isSelected && <span style={{ color: "var(--teal)", fontWeight: "bold" }}>✓</span>}
+                    <span className="up-custom-select-item-text">{optLabel}</span>
+                    {isSelected && (
+                      <svg
+                        className="up-custom-select-check-icon"
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
                   </div>
                 );
               })
@@ -364,11 +445,69 @@ const LevelOneModal = ({
     }
   };
 
+  // ── Custom Phone Code Dropdown State & Refs ───────────────────────────────
+  const [phoneDropdownOpen, setPhoneDropdownOpen] = useState(false);
+  const phoneDropdownRef = useRef(null);
+  const phoneListRef = useRef(null);
+
+  // Close phone code dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (phoneDropdownRef.current && !phoneDropdownRef.current.contains(e.target)) {
+        setPhoneDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Auto-scroll to selected option when opened
+  useEffect(() => {
+    if (phoneDropdownOpen && phoneListRef.current) {
+      const selectedEl = phoneListRef.current.querySelector(".up-phone-code-item--selected");
+      if (selectedEl) {
+        selectedEl.scrollIntoView({ block: "nearest" });
+      }
+    }
+  }, [phoneDropdownOpen]);
+
   // Typeahead support: when user types first two letters (e.g. "IN", "US") or country name, jump immediately
   const phoneTypeaheadQueryRef = useRef("");
   const phoneTypeaheadTimerRef = useRef(null);
 
   const handlePhoneCodeKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setPhoneDropdownOpen((prev) => !prev);
+      return;
+    }
+    if (e.key === "Escape") {
+      setPhoneDropdownOpen(false);
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!phoneDropdownOpen) {
+        setPhoneDropdownOpen(true);
+        return;
+      }
+      const currentIndex = dialCodeOptions.findIndex((o) => o.isoCode === selectedPhoneIso);
+      const nextIndex = Math.min(dialCodeOptions.length - 1, currentIndex + 1);
+      handlePhoneCountryChange(dialCodeOptions[nextIndex].isoCode);
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (!phoneDropdownOpen) {
+        setPhoneDropdownOpen(true);
+        return;
+      }
+      const currentIndex = dialCodeOptions.findIndex((o) => o.isoCode === selectedPhoneIso);
+      const prevIndex = Math.max(0, currentIndex - 1);
+      handlePhoneCountryChange(dialCodeOptions[prevIndex].isoCode);
+      return;
+    }
+
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
       clearTimeout(phoneTypeaheadTimerRef.current);
       phoneTypeaheadQueryRef.current += e.key.toLowerCase();
@@ -940,10 +1079,17 @@ const LevelOneModal = ({
           const raw    = localStorage.getItem("user");
           const parsed = raw ? JSON.parse(raw) : {};
           const updated = parsed?.user
-            ? { ...parsed, user: { ...parsed.user, name: formData.name } }
-            : { ...parsed, name: formData.name };
+            ? { ...parsed, user: { ...parsed.user, name: formData.name, country: formData.country, city: formData.city, state: formData.state } }
+            : { ...parsed, name: formData.name, country: formData.country, city: formData.city, state: formData.state };
           localStorage.setItem("user", JSON.stringify(updated));
           localStorage.setItem("userName", formData.name);
+
+          const rawProf = localStorage.getItem("userProfile");
+          const parsedProf = rawProf ? JSON.parse(rawProf) : {};
+          const savedData = response.data?.data || {};
+          const updatedProf = { ...parsedProf, ...savedData, ...formData };
+          localStorage.setItem("userProfile", JSON.stringify(updatedProf));
+          window.dispatchEvent(new Event("naavi:profile-updated"));
         } catch {}
 
         if (typeof onComplete === "function") onComplete(savedId);
@@ -1017,8 +1163,8 @@ const LevelOneModal = ({
         </div>
 
         {/* ── Name + Username ─────────────────────────────────────────────── */}
-        <div className="up-form-row">
-          <div className="up-form-group">
+        <div className="up-form-row up-form-row--compact">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">Full Name *</label>
             <input
               className={`up-input ${nameError && (nameTouched || formData.name) ? "input-err" : ""}`}
@@ -1036,7 +1182,7 @@ const LevelOneModal = ({
             )}
           </div>
 
-          <div className="up-form-group">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">Username *</label>
             <div className="up-username-row">
               <input
@@ -1082,18 +1228,55 @@ const LevelOneModal = ({
         <div className="up-form-group">
           <label className="up-form-label">Phone Number *</label>
           <div className="up-phone-row">
-            <select
-              className="up-select up-phone-code"
-              value={selectedPhoneIso}
-              onChange={(e) => handlePhoneCountryChange(e.target.value)}
-              onKeyDown={handlePhoneCodeKeyDown}
-            >
-              {dialCodeOptions.map((opt) => (
-                <option key={`${opt.isoCode}-${opt.code}`} value={opt.isoCode}>
-                  {opt.isoCode} ({opt.code})
-                </option>
-              ))}
-            </select>
+            <div className="up-phone-code-wrapper" ref={phoneDropdownRef}>
+              <button
+                type="button"
+                className={`up-phone-code-trigger ${phoneDropdownOpen ? "up-phone-code-trigger--open" : ""}`}
+                onClick={() => setPhoneDropdownOpen((prev) => !prev)}
+                onKeyDown={handlePhoneCodeKeyDown}
+                aria-haspopup="listbox"
+                aria-expanded={phoneDropdownOpen}
+              >
+                <span className="up-phone-code-text">
+                  {selectedPhoneIso} ({countryCode})
+                </span>
+                <svg
+                  className={`up-phone-code-arrow ${phoneDropdownOpen ? "up-phone-code-arrow--open" : ""}`}
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {phoneDropdownOpen && (
+                <div className="up-phone-code-menu" ref={phoneListRef} role="listbox">
+                  {dialCodeOptions.map((opt) => {
+                    const isSelected = opt.isoCode === selectedPhoneIso;
+                    return (
+                      <div
+                        key={`${opt.isoCode}-${opt.code}`}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`up-phone-code-item ${isSelected ? "up-phone-code-item--selected" : ""}`}
+                        onClick={() => {
+                          handlePhoneCountryChange(opt.isoCode);
+                          setPhoneDropdownOpen(false);
+                        }}
+                      >
+                        <span>{opt.isoCode} ({opt.code})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <input
               className="up-input up-phone-input"
               type="tel"
@@ -1130,75 +1313,54 @@ const LevelOneModal = ({
         </div>
 
         {/* ── Country + State ─────────────────────────────────────────────── */}
-        <div className="up-form-row">
-          <div className="up-form-group">
+        <div className="up-form-row up-form-row--compact">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">Country *</label>
-            <select
-              className="up-select"
+            <CustomSelect
               name="country"
               value={formData.country}
               onChange={handleCountryChange}
-              required
-            >
-              <option value="">Select Country</option>
-              {allCountries.map((c) => (
-                <option key={c.isoCode} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+              options={countryOptions}
+              placeholder="Select Country"
+              searchPlaceholder="Search country..."
+            />
           </div>
 
-          <div className="up-form-group">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">State *</label>
-            <select
-              className="up-select"
+            <CustomSelect
               name="state"
               value={formData.state}
               onChange={handleStateChange}
-              required
-              disabled={!availableStates.length}
-            >
-              <option value="">
-                {!formData.country
+              options={stateOptions}
+              placeholder={
+                !formData.country
                   ? "Select country first"
                   : availableStates.length
                   ? "Select State"
-                  : "No states found"}
-              </option>
-              {availableStates.map((s) => (
-                <option key={`${s.countryCode}-${s.isoCode}`} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+                  : "No states found"
+              }
+              searchPlaceholder="Search state..."
+              disabled={!availableStates.length}
+            />
           </div>
         </div>
 
         {/* ── City + Postal ────────────────────────────────────────────────── */}
-        <div className="up-form-row">
-          <div className="up-form-group">
+        <div className="up-form-row up-form-row--compact">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">
               City * {fetchingCity && <span style={{ textTransform: "none", fontSize: "11px", fontWeight: "400", color: "var(--teal)" }}>Auto-detecting...</span>}
             </label>
             {availableCities.length > 0 ? (
-              <select
-                className="up-select"
+              <CustomSelect
                 name="city"
                 value={formData.city}
                 onChange={handleCityChange}
-                required
-              >
-                <option value="">Select City</option>
-                {formData.city && !availableCities.some((c) => c.name.toLowerCase() === formData.city.toLowerCase()) && (
-                  <option value={formData.city}>{formData.city}</option>
-                )}
-                {availableCities.map((c, idx) => (
-                  <option key={`${c.countryCode}-${c.stateCode}-${c.name}-${idx}`} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                options={cityOptions}
+                placeholder="Select City"
+                searchPlaceholder="Search city..."
+              />
             ) : (
               <input
                 className="up-input"
@@ -1212,7 +1374,7 @@ const LevelOneModal = ({
             )}
           </div>
 
-          <div className="up-form-group">
+          <div className="up-form-group up-form-group--compact">
             <label className="up-form-label">Postal Code *</label>
             <input
               className="up-input"

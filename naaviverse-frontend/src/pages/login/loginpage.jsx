@@ -271,18 +271,31 @@ const Loginpage = ({ initialType }) => {
                             `${BASE_URL}/api/users/get/${result.user.email}`
                         );
                         const profileData = profileRes.data?.data;
-                        if (profileData?.name) {
-                            localStorage.setItem("userName", profileData.name);
-                            localStorage.setItem("user", JSON.stringify({
-                                ...userObj,
-                                name: profileData.name,
-                            }));
-                        }
-                        if (profileData?.profilePicture) {
-                            localStorage.setItem("userProfilePic", profileData.profilePicture);
+                        if (profileData) {
+                            localStorage.setItem("userProfile", JSON.stringify(profileData));
+                            if (profileData.name) {
+                                localStorage.setItem("userName", profileData.name);
+                                localStorage.setItem("user", JSON.stringify({
+                                    ...userObj,
+                                    name: profileData.name,
+                                }));
+                            }
+                            if (profileData.profilePicture) {
+                                localStorage.setItem("userProfilePic", profileData.profilePicture);
+                            }
                         }
                     } catch (e) {
                         console.warn("Could not fetch profile at login:", e?.message);
+                    }
+
+                    // Clear any path data from a previous user or session
+                    const prevPathOwner = localStorage.getItem("selectedPathOwner");
+                    if (prevPathOwner && prevPathOwner.toLowerCase() !== result.user.email.toLowerCase()) {
+                        [
+                            "selectedPathId", "selectedPathName", "selectedPathSteps",
+                            "selectedPathCountry", "selectedPathUniversity", "selectedPathPathway",
+                            "selectedPathCountryForId", "selectedPathOwner"
+                        ].forEach((k) => localStorage.removeItem(k));
                     }
                 }
 
@@ -315,7 +328,28 @@ const Loginpage = ({ initialType }) => {
                     if (!isComplete) {
                         navigate("/dashboard/users/profile", { replace: true });
                     } else {
-                        navigate("/dashboard/users/home", { replace: true });
+                        // Check live approval status before routing to home
+                        let approvalStatus = "pending";
+                        try {
+                            const approvalRes = await axios.get(
+                                `${BASE_URL}/api/approvals/status?email=${result.user.email}&role=User`
+                            );
+                            approvalStatus = approvalRes.data?.data?.status || "pending";
+                        } catch (e) {
+                            console.warn("Could not check approval status:", e?.message);
+                        }
+
+                        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+                        localStorage.setItem("user", JSON.stringify({
+                            ...currentUser,
+                            approvalStatus,
+                        }));
+
+                        if (approvalStatus === "approved") {
+                            navigate("/dashboard/users/home", { replace: true });
+                        } else {
+                            navigate("/dashboard/users/profile", { replace: true });
+                        }
                     }
                 } else {
                     const partnerData = result.partner || {};
@@ -466,32 +500,72 @@ const Loginpage = ({ initialType }) => {
 
             if (loginType === "Users") {
                 if (result.user) {
-                    localStorage.setItem("user", JSON.stringify(result.user));
+                    let userObj = { ...result.user };
+                    localStorage.setItem("user", JSON.stringify(userObj));
 
                     if (result.user.profilePicture) {
                         localStorage.setItem("userProfilePic", result.user.profilePicture);
                     }
 
+                    let isComplete = false;
                     try {
                         const profileRes = await axios.get(
                             `${BASE_URL}/api/users/get/${result.user.email}`
                         );
                         const profileData = profileRes.data?.data;
-                        if (profileData?.name) {
-                            localStorage.setItem("userName", profileData.name);
-                            localStorage.setItem("user", JSON.stringify({
-                                ...result.user,
-                                name: profileData.name,
-                            }));
-                        }
-                        if (profileData?.profilePicture) {
-                            localStorage.setItem("userProfilePic", profileData.profilePicture);
+                        if (profileData) {
+                            localStorage.setItem("userProfile", JSON.stringify(profileData));
+                            if (profileData.name) {
+                                localStorage.setItem("userName", profileData.name);
+                                userObj.name = profileData.name;
+                            }
+                            if (profileData.profilePicture) {
+                                localStorage.setItem("userProfilePic", profileData.profilePicture);
+                            }
+                            isComplete =
+                                profileData.isProfileCompleted === true ||
+                                Boolean(
+                                    profileData.name &&
+                                    profileData.username &&
+                                    profileData.phoneNumber &&
+                                    profileData.school &&
+                                    profileData.personality
+                                );
                         }
                     } catch (e) {
                         console.warn("Could not fetch profile at login:", e?.message);
                     }
+
+                    // Check live approval status
+                    let approvalStatus = "pending";
+                    try {
+                        const approvalRes = await axios.get(
+                            `${BASE_URL}/api/approvals/status?email=${result.user.email}&role=User`
+                        );
+                        approvalStatus = approvalRes.data?.data?.status || "pending";
+                    } catch (e) {
+                        console.warn("Could not fetch approval status at login:", e?.message);
+                    }
+
+                    userObj.approvalStatus = approvalStatus;
+                    localStorage.setItem("user", JSON.stringify(userObj));
+
+                    // Clear any path data from a previous user or session, or if unapproved
+                    const prevPathOwner = localStorage.getItem("selectedPathOwner");
+                    if ((prevPathOwner && prevPathOwner.toLowerCase() !== result.user.email.toLowerCase()) || approvalStatus !== "approved") {
+                        [
+                            "selectedPathId", "selectedPathName", "selectedPathSteps",
+                            "selectedPathCountry", "selectedPathUniversity", "selectedPathPathway",
+                            "selectedPathCountryForId", "selectedPathOwner"
+                        ].forEach((k) => localStorage.removeItem(k));
+                    }
+
+                    if (approvalStatus === "approved" && isComplete) {
+                        navigate("/dashboard/users/home");
+                    } else {
+                        navigate("/dashboard/users/profile");
+                    }
                 }
-                navigate("/dashboard/users/home");
 
             } else {
                 const partnerData = result.partner || {};

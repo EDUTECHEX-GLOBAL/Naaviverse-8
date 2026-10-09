@@ -107,22 +107,41 @@ const Dashboard = () => {
   const [profileId, setProfileId] = useState("");
   const [productDataArray, setProductDataArray] = useState([]);
   
-  // ✅ ADDED: Access control states
-  const [approvalStatus, setApprovalStatus] = useState("");
- const [isProfileIncomplete, setIsProfileIncomplete] = useState(null); 
+  // Helper to read cached approval status
+  const getCachedApproval = () => {
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return "";
+      const parsed = JSON.parse(raw);
+      return parsed?.approvalStatus || parsed?.user?.approvalStatus || "";
+    } catch {
+      return "";
+    }
+  };
+
+  // ✅ Access control states
+  const [approvalStatus, setApprovalStatus] = useState(getCachedApproval);
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(null); 
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
-  // ✅ ADDED: Function to check user access (profile completion + approval)
+  // ✅ Function to check user access (profile completion + approval)
   const checkUserAccess = async () => {
     try {
       const raw = localStorage.getItem("user");
-      if (!raw) return;
+      if (!raw) {
+        navigate("/login", { replace: true });
+        return;
+      }
       const parsed = JSON.parse(raw);
       const email = parsed?.user?.email || parsed?.email;
-      if (!email) return;
+      if (!email) {
+        navigate("/login", { replace: true });
+        return;
+      }
 
-      // Check profile completion
+      // Check profile completion first
       const profileRes = await axios.get(`${BASE_URL}/api/users/get/${email}`);
       const data = profileRes.data?.data;
 
@@ -135,33 +154,43 @@ const Dashboard = () => {
       if (!isComplete) {
         setIsProfileIncomplete(true);
         setApprovalStatus("");
-        // Redirect to profile page
-        navigate("/dashboard/users/profile");
+        navigate("/dashboard/users/profile", { replace: true });
         return;
       }
 
       setIsProfileIncomplete(false);
 
-      // Check approval status
-      const cached = parsed?.approvalStatus;
-      if (cached === "approved") {
-        setApprovalStatus("approved");
-        return;
-      }
-
+      // Check live approval status with backend
       const approvalRes = await axios.get(
         `${BASE_URL}/api/approvals/status?email=${email}&role=User`
       );
-      const status = approvalRes.data?.data?.status;
-      setApprovalStatus(status || "pending");
+      const liveStatus = approvalRes.data?.data?.status;
 
-      // Update localStorage
-      const updated = { ...parsed, approvalStatus: status || "pending" };
+      if (liveStatus !== "approved") {
+        const effectiveStatus = liveStatus || "pending";
+        setApprovalStatus(effectiveStatus);
+        const updated = { ...parsed, approvalStatus: effectiveStatus };
+        localStorage.setItem("user", JSON.stringify(updated));
+        // Redirect to profile section only!
+        navigate("/dashboard/users/profile", { replace: true });
+        return;
+      }
+
+      // User IS approved by admin
+      setApprovalStatus("approved");
+      const updated = { ...parsed, approvalStatus: "approved" };
       localStorage.setItem("user", JSON.stringify(updated));
+      setCheckingAccess(false);
 
     } catch (err) {
       console.error("Access check failed:", err);
-      setIsProfileIncomplete(false);
+      const cached = getCachedApproval();
+      if (cached !== "approved") {
+        navigate("/dashboard/users/profile", { replace: true });
+      } else {
+        setApprovalStatus("approved");
+        setCheckingAccess(false);
+      }
     }
   };
 
@@ -300,6 +329,38 @@ const Dashboard = () => {
   };
 
   // ── RENDER ───────────────────────────────────────────────────────────────
+  if (approvalStatus !== "approved" || checkingAccess) {
+    return (
+      <div>
+        <div className="dashboard-main">
+          <div className="dashboard-body">
+            <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
+              <Dashsidebar
+                approvalStatus={approvalStatus || "pending"}
+                isProfileIncomplete={isProfileIncomplete === true}
+              />
+            </div>
+            <div className="dashboard-screens" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#f6f5ff" }}>
+              <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                <div style={{
+                  width: "40px",
+                  height: "40px",
+                  border: "3px solid #e0f2fe",
+                  borderTopColor: "#0284c7",
+                  borderRadius: "50%",
+                  margin: "0 auto 16px"
+                }} />
+                <p style={{ color: "#64748b", fontSize: "14px", fontFamily: "'Poppins', sans-serif" }}>
+                  Verifying account access…
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="dashboard-main">
