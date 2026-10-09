@@ -164,9 +164,7 @@ const signUp = async (req, res) => {
       });
     }
 
-    // =========================
-    // Check duplicate
-    // =========================
+   
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
