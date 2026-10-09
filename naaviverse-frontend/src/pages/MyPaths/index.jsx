@@ -642,7 +642,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
         ) : (
           <>
             {/* Filter Tabs + Search Row */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+            <div className="mypaths-controls-row">
               <div className="filter-tabs">
                 <span
                   className={`filter-tab ${mypathsMenu === 'Paths' ? 'active' : ''}`}

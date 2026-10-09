@@ -226,76 +226,106 @@
 }
 
 // ── Card Header ───────────────────────────────────────────────────────────────
-// KEY FIX: stack title and badges vertically on mobile
 .step-card-header {
   display: flex;
-  flex-direction: column;     // ← MOBILE: title on top, badges below
+  flex-direction: row;        // ← MOBILE: row with flex-wrap so badges sit compactly
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
-  padding-bottom: 12px;
-  margin-bottom: 14px;
+  gap: 6px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
   border-bottom: 1px solid #ecf3f9;
 
   @media (min-width: 600px) {
     flex-direction: row;      // ← DESKTOP: side by side
     flex-wrap: wrap;
     align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
   }
 }
 
 .step-card-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #0a1c2a;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
   word-break: break-word;
-  width: 100%;                // take full width so it wraps properly
+  flex: 1 1 180px;            // allow flexible wrapping on mobile
+  min-width: 0;
 
   @media (min-width: 600px) {
     font-size: 1.1rem;
     width: auto;
     flex: 1;
     min-width: 0;
+    line-height: 1.4;
   }
 }
 
 .step-card-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
   flex-shrink: 0;
+  line-height: 1;
+
+  @media (min-width: 600px) {
+    gap: 6px;
+  }
 }
 
 .badge-path {
   background: #e6f3f4;
   color: #0d6b6e;
   border-radius: 30px;
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  padding: 3px 8px;
+  font-size: 0.72rem;
   font-weight: 600;
-  display: flex;
+  line-height: 1.25;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  // KEY FIX: allow wrapping instead of cutting off
   white-space: normal;
   word-break: break-word;
   max-width: 100%;
+  height: auto;
+  min-height: 0;
+
+  @media (min-width: 600px) {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    line-height: normal;
+  }
 }
 
 .badge-status {
   border-radius: 30px;
-  padding: 3px 10px;
-  font-size: 0.7rem;
+  padding: 2.5px 8px;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   white-space: nowrap;
   flex-shrink: 0;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  height: auto;
+  min-height: 0;
 
-  &.active   { background: #d1fae5; color: #047857; }
-  &.inactive { background: #fee2e2; color: #b91c1c; }
+  &.active   { background: #d1fae5 !important; color: #047857 !important; }
+  &.inactive { background: #fee2e2 !important; color: #b91c1c !important; }
+
+  @media (min-width: 600px) {
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    line-height: normal;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -934,3 +964,107 @@
 
   img { width: 14px; height: 14px; }
 }
+
+@media (max-width: 768px) {
+  .dashboard-screens-inner > .mypaths {
+    padding-top: 36px !important;
+  }
+
+  .mypaths {
+    height: auto !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+  }
+
+  .mypaths-menu {
+    height: auto !important;
+    min-height: auto !important;
+    padding: 0 14px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    border-bottom: none !important;
+
+    > div:first-child {
+      display: flex !important;
+      gap: 6px !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      &::-webkit-scrollbar {
+        display: none !important;
+      }
+    }
+
+    .mp-search-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  .mypaths-content {
+    height: auto !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+    padding-top: 0 !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .steps-card-list {
+    padding: 12px 14px 32px 14px !important;
+    gap: 14px !important;
+  }
+
+  // Compact step card header on mobile
+  .step-card-header {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding-bottom: 8px !important;
+    margin-bottom: 10px !important;
+    border-bottom: 1px solid #ecf3f9 !important;
+  }
+
+  .step-card-title {
+    font-size: 0.95rem !important;
+    line-height: 1.35 !important;
+    flex: 1 1 180px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+  }
+
+  .step-card-badges {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 5px !important;
+    flex-shrink: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .badge-path {
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+    padding: 3px 8px !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  .badge-status {
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+    padding: 2.5px 8px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    &.active   { background: #d1fae5 !important; color: #047857 !important; }
+    &.inactive { background: #fee2e2 !important; color: #b91c1c !important; }
+  }
+}

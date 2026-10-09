@@ -536,10 +536,11 @@ export default function UserHome({ initialView = "home" }) {
             (p) => p.pathId?.toString() === selectedPathId
           );
           if (!belongsToUser) {
-            localStorage.removeItem("selectedPathId");
-            localStorage.removeItem("selectedPathOwner");
-            localStorage.removeItem("selectedStepId");
-            localStorage.removeItem("selectedStepNumber");
+            [
+              "selectedPathId", "selectedPathOwner", "selectedStepId", "selectedStepNumber",
+              "selectedPathName", "selectedPathSteps", "selectedPathCountry",
+              "selectedPathUniversity", "selectedPathPathway", "selectedPathCountryForId"
+            ].forEach((k) => localStorage.removeItem(k));
             selectedPathId = null;
           }
         }
@@ -558,6 +559,11 @@ export default function UserHome({ initialView = "home" }) {
         }
 
         if (!userPaths.length) {
+          [
+            "selectedPathId", "selectedPathOwner", "selectedStepId", "selectedStepNumber",
+            "selectedPathName", "selectedPathSteps", "selectedPathCountry",
+            "selectedPathUniversity", "selectedPathPathway", "selectedPathCountryForId"
+          ].forEach((k) => localStorage.removeItem(k));
           setMyPath(null);
           setPathLoading(false);
           return;
@@ -1348,7 +1354,7 @@ export default function UserHome({ initialView = "home" }) {
 
       {/* ── TOP STRIP ───────────────────────────────────────────────────────── */}
       <div className="uh-top-strip">
-        <div className="uh-credits-hero" onClick={() => setActiveTab("wallet")}>
+        <div className="uh-credits-hero" onClick={() => navigate("/dashboard/users/wallet")}>
           <div className="uh-ch-left">
             <div className="uh-ch-label">AVAILABLE CREDITS</div>
             <div className="uh-ch-number">{credits?.available ?? "—"}</div>
@@ -1360,7 +1366,7 @@ export default function UserHome({ initialView = "home" }) {
           </div>
           <div className="uh-ch-right">
             <Ring pct={creditPct} size={60} stroke={5} />
-            <button className="uh-ch-btn" onClick={(e) => { e.stopPropagation(); setActiveTab("wallet"); }}>
+            <button className="uh-ch-btn" onClick={(e) => { e.stopPropagation(); navigate("/dashboard/users/wallet"); }}>
               View Wallet <Icon type="arrow-r" size={11} />
             </button>
           </div>

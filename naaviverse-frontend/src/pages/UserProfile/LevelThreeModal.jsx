@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import "./UserProfile.css";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -136,6 +137,7 @@ const LevelThreeModal = ({
   existingData,
   onClose,
   onComplete,
+  onBack,
 }) => {
   const [loading,          setLoading]          = useState(false);
   const [questionsLoading, setQuestionsLoading] = useState(true);
@@ -219,7 +221,7 @@ const LevelThreeModal = ({
         setValidationError("");
       } else if (validationError) {
         setValidationError(
-          `Please rate every activity before proceeding. (${stillUnrated} unrated ${stillUnrated === 1 ? "activity" : "activities"} remaining)`
+          `Please rate all activities before proceeding (${stillUnrated} remaining)`
         );
       }
       return next;
@@ -232,13 +234,26 @@ const LevelThreeModal = ({
       const remaining = unratedQuestions.length;
       const msg =
         remaining > 0
-          ? `Please rate every activity before proceeding. You have ${remaining} unrated ${remaining === 1 ? "activity" : "activities"} remaining.`
-          : "Please rate every activity before proceeding.";
+          ? `Please rate all activities before proceeding (${remaining} remaining)`
+          : "Please rate every activity before proceeding";
       setValidationError(msg);
-      toast.error(msg);
+      toast.error(msg, {
+        autoClose: 3500,
+        hideProgressBar: false,
+        style: {
+          fontSize: "12.5px",
+          fontFamily: "'Poppins', sans-serif",
+          maxWidth: "360px",
+          padding: "8px 12px",
+          borderRadius: "8px",
+        },
+      });
 
-      // Scroll to the first unrated question to help user locate it
-      if (unratedQuestions.length > 0) {
+      // Scroll to the validation banner before questions, or first unrated question
+      const alertEl = document.getElementById("up-questions-validation-alert");
+      if (alertEl) {
+        alertEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else if (unratedQuestions.length > 0) {
         const firstUnrated = unratedQuestions[0];
         const el = document.getElementById(`question-row-${firstUnrated._id || firstUnrated.question}`);
         if (el) {
@@ -304,8 +319,19 @@ const LevelThreeModal = ({
           <>
             {/* Progress */}
             <div className="up-progress-bar-wrap">
-              <div className="up-progress-label">
-                Progress — {answeredCount} / {totalCount} Answered ({progressPct}%)
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <div className="up-progress-label" style={{ margin: 0 }}>
+                  Progress — {answeredCount} / {totalCount} Answered ({progressPct}%)
+                </div>
+                {unratedQuestions.length > 0 ? (
+                  <span className="up-unrated-badge">
+                    {unratedQuestions.length} unrated remaining
+                  </span>
+                ) : (
+                  <span className="up-done-badge">
+                    ✓ All answered
+                  </span>
+                )}
               </div>
               <div className="up-progress-track">
                 <div
@@ -316,13 +342,29 @@ const LevelThreeModal = ({
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginBottom: "14px" }}>
               {ANSWER_OPTIONS.map((opt, i) => (
                 <span key={i} style={{ fontSize: "11px", color: "#64748b" }}>
                   <strong style={{ color: "#0d9488" }}>{i + 1}</strong> = {opt}
                 </span>
               ))}
             </div>
+
+            {/* Validation Banner — displayed right BEFORE the questions list so user immediately sees what is missing */}
+            {validationError && (
+              <div id="up-questions-validation-alert" className="up-validation-banner">
+                <div className="up-validation-banner-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </div>
+                <div className="up-validation-banner-content">
+                  <span className="up-validation-banner-text">{validationError}</span>
+                </div>
+              </div>
+            )}
 
             {/* Questions */}
             <div className="up-questions-list">
@@ -359,8 +401,8 @@ const LevelThreeModal = ({
             {/* Auto-detected personality result — shown only after all questions answered */}
             {allAnswered && detectedPersonality && (
               <div style={{
-                marginTop: "24px",
-                padding: "16px 20px",
+                marginTop: "20px",
+                padding: "14px 18px",
                 background: "#f0fdf9",
                 border: "1.5px solid #0d9488",
                 borderRadius: "12px",
@@ -369,8 +411,8 @@ const LevelThreeModal = ({
                 gap: "12px",
               }}>
                 <div style={{
-                  width: "40px",
-                  height: "40px",
+                  width: "36px",
+                  height: "36px",
                   borderRadius: "50%",
                   background: "#0d9488",
                   display: "flex",
@@ -378,7 +420,7 @@ const LevelThreeModal = ({
                   justifyContent: "center",
                   flexShrink: 0,
                 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
@@ -386,7 +428,7 @@ const LevelThreeModal = ({
                   <div style={{ fontSize: "11px", color: "#0f766e", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     Detected personality type
                   </div>
-                  <div style={{ fontSize: "18px", fontWeight: 600, color: "#0d9488", marginTop: "2px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 600, color: "#0d9488", marginTop: "2px" }}>
                     {detectedPersonality}
                   </div>
                 </div>
@@ -395,39 +437,36 @@ const LevelThreeModal = ({
 
             {/* Hint while in progress */}
             {!allAnswered && (
-              <div style={{ marginTop: "16px", fontSize: "13px", color: "#94a3b8", textAlign: "center" }}>
+              <div style={{ marginTop: "12px", fontSize: "12px", color: "#94a3b8", textAlign: "center" }}>
                 Answer all {totalCount} questions to reveal your personality type
               </div>
             )}
           </>
         )}
 
-        {/* Validation Error Message */}
+        {/* Footer Validation Notice if scrolled to bottom */}
         {validationError && (
-          <div style={{
-            margin: "16px 0 8px",
-            padding: "12px 16px",
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "10px",
-            color: "#b91c1c",
-            fontSize: "13px",
-            fontWeight: "500",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px"
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" style={{ flexShrink: 0 }}>
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span>{validationError}</span>
+          <div className="up-validation-banner" style={{ margin: "14px 0 6px" }}>
+            <div className="up-validation-banner-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div className="up-validation-banner-content">
+              <span className="up-validation-banner-text">{validationError}</span>
+            </div>
           </div>
         )}
 
         {/* Footer */}
         <div className="up-form-footer">
+          {onBack && creation && (
+            <button type="button" className="up-btn-cancel" onClick={onBack}>
+              ← Back
+            </button>
+          )}
           {onClose && !creation && (
             <button type="button" className="up-btn-cancel" onClick={onClose}>
               Cancel

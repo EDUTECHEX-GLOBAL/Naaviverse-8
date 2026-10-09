@@ -547,18 +547,43 @@ $radius: 10px;
 // ── Responsive ────────────────────────────────────────────
 @media (max-width: 768px) {
   .mp-root {
-    padding: 14px 14px 28px;
+    padding: 0 14px 2.5rem !important;
+    height: auto !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
   }
 
+  // Four sections horizontal scroll on mobile
   .mp-cat-tabs {
-    gap: 4px;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    gap: 8px !important;
+    padding: 2px 2px 6px 2px !important;
+    margin-bottom: 14px !important;
+
+    &::-webkit-scrollbar {
+      display: none !important;
+    }
   }
 
   .mp-cat-tab {
-    padding: 6px 10px;
-    gap: 5px;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    padding: 8px 14px 8px 10px !important;
+    gap: 8px !important;
 
-    &__label { font-size: 0.72rem; }
+    &__label {
+      font-size: 0.78rem !important;
+    }
+  }
+
+  .mp-panel {
+    border-radius: 12px !important;
+    overflow: hidden !important;
   }
 
   .mp-panel__bar {
@@ -569,6 +594,18 @@ $radius: 10px;
   .mp-search {
     width: 100%;
     min-width: unset;
+  }
+
+  // Allow moving side to side in table
+  .mp-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    scrollbar-width: thin !important;
+  }
+
+  .mp-table {
+    min-width: 480px !important;
   }
 
   .mp-modal {

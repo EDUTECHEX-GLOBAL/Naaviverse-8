@@ -64,6 +64,14 @@ const LevelTwoModal = ({
         formData
       );
       if (response.data?.status) {
+        try {
+          const raw = localStorage.getItem("userProfile");
+          const parsed = raw ? JSON.parse(raw) : {};
+          const savedData = response.data?.data || {};
+          const updated = { ...parsed, ...savedData, ...formData };
+          localStorage.setItem("userProfile", JSON.stringify(updated));
+          window.dispatchEvent(new Event("naavi:profile-updated"));
+        } catch {}
         if (typeof onComplete === "function") onComplete();
       } else {
         toast.error(response.data?.message || "Failed to save");

@@ -118,7 +118,19 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
     });
   };
 
-  const isApprovalLocked = approvalStatus === "pending" || approvalStatus === "rejected";
+  const effectiveApprovalStatus = (() => {
+    if (approvalStatus) return approvalStatus;
+    try {
+      const raw = localStorage.getItem("user");
+      if (!raw) return "";
+      const parsed = JSON.parse(raw);
+      return parsed?.approvalStatus || parsed?.user?.approvalStatus || "";
+    } catch {
+      return "";
+    }
+  })();
+
+  const isApprovalLocked = effectiveApprovalStatus !== "approved";
   const isLocked         = isApprovalLocked || !!isProfileIncomplete;
   const isOnProfilePage  = location.pathname === "/dashboard/users/profile";
 
@@ -148,7 +160,12 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
 
   const handleNavigation = (e, title, path) => {
     e.stopPropagation();
-    if (isLocked) return;
+    if (isLocked) {
+      if (!isOnProfilePage) {
+        navigate("/dashboard/users/profile");
+      }
+      return;
+    }
     setCurrentStepData("");
     setCurrentStepDataLength("");
     setCurrentStepDataPathId("");
@@ -165,15 +182,18 @@ const handleLogout = (e) => {
   triggerLogout(() => {
     [
       "authToken", "user", "partner", "userType", "userProfilePic",
-      "selectedPathId", "selectedPathOwner",        // 👈 ADD THESE
-      "selectedStepId", "selectedStepNumber",        // 👈 ADD THESE
+      "userProfile", "userName",
+      "selectedPathId", "selectedPathOwner",
+      "selectedPathName", "selectedPathSteps", "selectedPathCountry",
+      "selectedPathUniversity", "selectedPathPathway", "selectedPathCountryForId",
+      "selectedStepId", "selectedStepNumber",
     ].forEach((k) => localStorage.removeItem(k));
     navigate("/login", { replace: true });
   });
 };
   const handleProfileClick = (e) => {
     e.stopPropagation();
-    if (isLocked) return;
+    // Profile is always accessible
     setsideNav("Profile");
     navigate("/dashboard/users/profile");
     setShowLogoutMenu(false);
@@ -262,7 +282,7 @@ const handleLogout = (e) => {
         {/* Logo Section */}
         <div
           className="user-dashboard-left"
-          style={{ cursor: isLocked ? "default" : "pointer" }}
+          style={{ cursor: "pointer" }}
         >
           <div
             className="sidebar-logo-click"
@@ -275,6 +295,10 @@ const handleLogout = (e) => {
               if (!isLocked) {
                 setsideNav("Home");
                 navigate("/dashboard/users/home");
+                setMobileOpen(false);
+              } else {
+                setsideNav("Profile");
+                navigate("/dashboard/users/profile");
                 setMobileOpen(false);
               }
             }}
@@ -297,7 +321,7 @@ const handleLogout = (e) => {
                 key={each.id}
                 className={`user-each-sidenav ${active ? "active" : ""} ${isLocked ? "locked" : ""}`}
                 onClick={(e) => handleNavigation(e, each.title, each.path)}
-                title={collapsed ? each.display : ""}
+                title={isLocked ? "Admin approval required to access" : (collapsed ? each.display : "")}
               >
                 <span className="user-nav-icon-wrapper">
                   <NavIcon type={each.icon} isActive={active} />
@@ -341,7 +365,7 @@ const handleLogout = (e) => {
             <div className="user-sidebar-profile-row">
               <div
                 className="user-sidebar-profile-info"
-                style={{ cursor: isLocked ? "default" : "pointer" }}
+                style={{ cursor: "pointer" }}
                 onClick={handleProfileClick}
               >
                 {profilePic && !imgError ? (
@@ -359,13 +383,15 @@ const handleLogout = (e) => {
                   {isLocked && (
                     <div
                       className="user-sidebar-profile-status"
-                      style={{ color: approvalStatus === "rejected" ? "#ef4444" : "#f59e0b" }}
+                      style={{ color: effectiveApprovalStatus === "rejected" ? "#ef4444" : "#f59e0b" }}
                     >
-                      {approvalStatus === "rejected"
+                      {effectiveApprovalStatus === "rejected"
                         ? "Rejected"
-                        : approvalStatus === "pending"
+                        : effectiveApprovalStatus === "pending"
                         ? "Pending Approval"
-                        : "Profile Required"}
+                        : isProfileIncomplete
+                        ? "Profile Required"
+                        : "Awaiting Approval"}
                     </div>
                   )}
                 </div>

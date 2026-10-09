@@ -84,7 +84,9 @@ $radius-lg: 14px;
   background: #ffffff;
   border: 1px solid #cbd5e1;
   border-radius: $radius-sm;
-  padding: 6px 12px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 0 12px;
   outline: none;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -94,16 +96,31 @@ $radius-lg: 14px;
     border-color: #94a3b8;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   }
+
+  @media (max-width: 768px) {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 0.7rem;
+  }
 }
 
 .pcrm-view-toggle {
   display: inline-flex;
   align-items: center;
   background: rgba(226, 232, 240, 0.85);
-  padding: 3px;
-  border-radius: $radius-md;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 2.5px;
+  border-radius: $radius-sm;
   border: 1px solid rgba(203, 213, 225, 0.7);
-  gap: 3px;
+  gap: 2px;
+
+  @media (max-width: 768px) {
+    height: 30px;
+    padding: 2px;
+    gap: 2px;
+    border-radius: 6px;
+  }
 }
 
 .pcrm-view-btn {
@@ -113,11 +130,17 @@ $radius-lg: 14px;
   color: $text-sub;
   background: transparent;
   border: none;
-  padding: 6px 14px;
-  border-radius: $radius-sm;
+  height: 100%;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   outline: none;
+  white-space: nowrap;
 
   &:hover {
     color: $text-title;
@@ -128,6 +151,11 @@ $radius-lg: 14px;
     color: $text-title;
     font-weight: 700;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 10px;
+    font-size: 0.7rem;
   }
 }
 
@@ -140,6 +168,16 @@ $radius-lg: 14px;
 
   @media (max-width: 900px) {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 6px;
+    margin-bottom: 12px;
   }
 }
 
@@ -161,6 +199,17 @@ $radius-lg: 14px;
     transform: translateY(-2px);
   }
 
+  @media (max-width: 768px) {
+    padding: 10px 12px;
+    min-height: 72px;
+    border-radius: 6px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    min-height: 64px;
+  }
+
   // ── Decorative background overlapping circles (matching Purple template) ──
   &__bg-circle-1 {
     position: absolute;
@@ -171,6 +220,20 @@ $radius-lg: 14px;
     bottom: -35px;
     right: -25px;
     pointer-events: none;
+
+    @media (max-width: 768px) {
+      width: 85px;
+      height: 85px;
+      bottom: -20px;
+      right: -15px;
+    }
+
+    @media (max-width: 480px) {
+      width: 70px;
+      height: 70px;
+      bottom: -15px;
+      right: -10px;
+    }
   }
 
   &__bg-circle-2 {
@@ -182,6 +245,20 @@ $radius-lg: 14px;
     bottom: -50px;
     right: 40px;
     pointer-events: none;
+
+    @media (max-width: 768px) {
+      width: 75px;
+      height: 75px;
+      bottom: -30px;
+      right: 25px;
+    }
+
+    @media (max-width: 480px) {
+      width: 60px;
+      height: 60px;
+      bottom: -25px;
+      right: 20px;
+    }
   }
 
   // ── Exact Gradients & Box Shadows from Purple Admin Template ──
@@ -228,6 +305,10 @@ $radius-lg: 14px;
     position: relative;
     z-index: 1;
     margin-bottom: 4px;
+
+    @media (max-width: 768px) {
+      margin-bottom: 2px;
+    }
   }
 
   &__label {
@@ -236,6 +317,14 @@ $radius-lg: 14px;
     color: #ffffff;
     opacity: 0.95;
     letter-spacing: 0;
+
+    @media (max-width: 768px) {
+      font-size: 0.68rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.62rem;
+    }
   }
 
   &__icon {
@@ -252,6 +341,26 @@ $radius-lg: 14px;
       width: 18px;
       height: 18px;
     }
+
+    @media (max-width: 768px) {
+      width: 18px;
+      height: 18px;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      width: 16px;
+      height: 16px;
+
+      svg {
+        width: 12px;
+        height: 12px;
+      }
+    }
   }
 
   &__value {
@@ -263,6 +372,17 @@ $radius-lg: 14px;
     position: relative;
     z-index: 1;
     margin: 4px 0 6px 0;
+
+    @media (max-width: 768px) {
+      font-size: 1.15rem;
+      margin: 2px 0 2px 0;
+      line-height: 1.15;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.05rem;
+      margin: 1px 0 2px 0;
+    }
   }
 
   &__sub {
@@ -272,6 +392,17 @@ $radius-lg: 14px;
     opacity: 0.9;
     position: relative;
     z-index: 1;
+
+    @media (max-width: 768px) {
+      font-size: 0.58rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.52rem;
+    }
   }
 }
 
@@ -1056,3 +1187,22 @@ $radius-lg: 14px;
     margin: 0;
   }
 }
+
+@media (max-width: 768px) {
+  .pcrm {
+    height: auto !important;
+    min-height: 100% !important;
+    background: #e9f2fa !important;
+    background-color: #e9f2fa !important;
+    padding-top: 36px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .pcrm-header {
+    margin-top: 0 !important;
+    margin-bottom: 10px !important;
+  }
+}
+

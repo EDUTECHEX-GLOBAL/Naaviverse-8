@@ -24,7 +24,7 @@ const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // ✅ Unified activity — replaces the old partneractivity.controller import
 const { logEvent } = require("./ActivityController");
-const { validatePersonName } = require("../utils/emailValidator");
+const { validateEmail, validatePersonName } = require("../utils/emailValidator");
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,9 +42,14 @@ const signUp = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const emailVal = validateEmail(cleanEmail);
+    if (!emailVal.isValid) {
+      return res.status(400).json({ success: false, message: emailVal.message });
+    }
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
 
     // Check if verified partner exists
-    const existingPartner = await Partner.findOne({ email: cleanEmail, OTPverified: true });
+    const existingPartner = await Partner.findOne({ email: emailRegex, OTPverified: true });
     if (existingPartner) {
       return res.status(400).json({
         success: false,
@@ -54,7 +59,7 @@ const signUp = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email: emailRegex });
+    const existingUser = await User.findOne({ email: emailRegex, OTPverified: true });
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -65,7 +70,7 @@ const signUp = async (req, res) => {
     }
 
     // Clean up any old unverified partner record with this email in MongoDB if one existed from before
-    await Partner.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+    await Partner.deleteMany({ email: emailRegex, OTPverified: { $ne: true } });
 
     const OTP = generateOTP();
 
@@ -86,7 +91,8 @@ const signUp = async (req, res) => {
       expiresIn: "10 minutes",
     });
 
-    sendNotificationMail(cleanEmail, otpSubject, otpHtml);
+    sendNotificationMail(cleanEmail, otpSubject, otpHtml)
+      .catch((err) => console.error("Mail failed:", err));
 
     return res.status(200).json({
       success: true,
@@ -113,7 +119,8 @@ const login = async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const partner = await Partner.findOne({ email: cleanEmail });
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
+    const partner = await Partner.findOne({ email: emailRegex });
     if (!partner) {
       // Check if this email is registered as a standard User
       const user = await User.findOne({ email: emailRegex });
@@ -340,6 +347,7 @@ const verifyOtp = async (req, res) => {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanOtp = otp.toString().trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
 
     // 1. Check pending registration first (registration flow)
     const pending = getPendingRegistration(cleanEmail);
@@ -358,7 +366,7 @@ const verifyOtp = async (req, res) => {
       const partnerTypeToUse = pending.partnerType || req.body.partnerType || "Distributor";
 
       // Remove any leftover unverified records
-      await Partner.deleteMany({ email: cleanEmail, OTPverified: { $ne: true } });
+      await Partner.deleteMany({ email: emailRegex, OTPverified: { $ne: true } });
 
       const newPartner = new Partner({
         username: usernameToUse,
@@ -404,7 +412,7 @@ const verifyOtp = async (req, res) => {
     }
 
     // 2. Fallback: check existing partner in DB (e.g. forgot password or legacy)
-    const partner = await Partner.findOne({ email: cleanEmail });
+    const partner = await Partner.findOne({ email: emailRegex });
     if (!partner) {
       return res.status(400).json({ success: false, message: "Partner not found or OTP expired" });
     }

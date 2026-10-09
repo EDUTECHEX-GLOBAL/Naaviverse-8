@@ -154,11 +154,11 @@ export default function UserTopHeader({ onBack }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [fromLabel, setFromLabel] = useState("Please select");
-  const [toLabel, setToLabel] = useState("Please select");
-  const [mobileToLabel, setMobileToLabel] = useState("Please select");
-  const [stepsLabel, setStepsLabel] = useState("Please select");
-  const [cityLabel, setCityLabel] = useState("Machilipatnam");
+  const [fromLabel, setFromLabel] = useState("");
+  const [toLabel, setToLabel] = useState("");
+  const [mobileToLabel, setMobileToLabel] = useState("");
+  const [stepsLabel, setStepsLabel] = useState("");
+  const [cityLabel, setCityLabel] = useState("");
 
   const lastPathIdRef = useRef(localStorage.getItem("selectedPathId"));
   const lastPathNameRef = useRef(localStorage.getItem("selectedPathName"));
@@ -175,6 +175,8 @@ export default function UserTopHeader({ onBack }) {
         userObj = null;
       }
 
+      const email = userObj?.email || "";
+
       let profileObj = null;
       try {
         const rawProfile = localStorage.getItem("userProfile");
@@ -183,31 +185,144 @@ export default function UserTopHeader({ onBack }) {
         profileObj = null;
       }
 
-      const email = userObj?.email || "";
+      // If cached profile belongs to a different user, clear it immediately
+      if (profileObj?.email && email && profileObj.email.toLowerCase() !== email.toLowerCase()) {
+        profileObj = null;
+        localStorage.removeItem("userProfile");
+      }
+
+      // Fetch fresh profile data for the current user from the API
+      if (email) {
+        try {
+          const profRes = await axios.get(`${BASE_URL}/api/users/get/${encodeURIComponent(email)}`);
+          if (profRes.data?.status && profRes.data?.data) {
+            profileObj = profRes.data.data;
+            localStorage.setItem("userProfile", JSON.stringify(profileObj));
+          }
+        } catch (e) {
+          // ignore network error, keep current profileObj
+        }
+      }
+
       const userOriginCountry = profileObj?.country || userObj?.country || "";
 
-      // Determine 'FROM' (Current Position)
-      let from = "";
-      if (profileObj) {
-        from = [profileObj.grade, profileObj.stream || profileObj.curriculum, profileObj.country]
-          .filter(Boolean)
-          .join(" • ") || profileObj.profession || profileObj.currentPosition || "";
-      }
-      if (!from && userObj) {
-        from = [userObj.grade, userObj.stream || userObj.curriculum, userObj.country]
-          .filter(Boolean)
-          .join(" • ") || userObj.currentPosition || "";
-      }
-      setFromLabel(from || "Please select");
+      // Determine 'FROM' (Current Position) from the new user's real profile
+      const buildFrom = (p) => {
+        if (!p) return "";
+        // Priority 1: Grade • Stream / Curriculum • Country
+        const academicParts = [
+          p.grade,
+          p.stream || p.curriculum,
+          p.country
+        ].filter(Boolean);
+        if (academicParts.length >= 2) {
+          return academicParts.join(" • ");
+        }
+
+        // Priority 2: Grade • School • Country
+        if (p.grade && (p.school || p.country)) {
+          return [p.grade, p.school, p.country].filter(Boolean).join(" • ");
+        }
+
+        // Priority 3: School • Country
+        if (p.school && p.country) {
+          return `${p.school} • ${p.country}`;
+        }
+
+        // Priority 4: Profession / Current Position
+        if (p.profession || p.currentPosition) {
+          return [p.profession || p.currentPosition, p.country].filter(Boolean).join(" • ");
+        }
+
+        // Priority 5: City • Country (e.g. Level 1 completed)
+        if (p.city && p.country) {
+          return `${p.city} • ${p.country}`;
+        }
+        if (p.country) return p.country;
+        if (p.city) return p.city;
+        if (p.school) return p.school;
+        if (p.grade) return p.grade;
+
+        return "";
+      };
+
+      const fromVal = buildFrom(profileObj) || buildFrom(userObj) || userObj?.name || "";
+      setFromLabel(fromVal);
 
       // Determine City / Location
-      const city = profileObj?.city || userObj?.city || profileObj?.country || userObj?.country || "Machilipatnam";
+      const city = profileObj?.city || userObj?.city || profileObj?.country || userObj?.country || "";
       setCityLabel(city);
 
-      // 2. Selected Path & Steps (Destination)
+      // Check approval status: if user is not approved, they CANNOT have a selected path
+      const approvalStatus = profileObj?.approvalStatus || userObj?.approvalStatus || "";
+      const isApproved = approvalStatus === "approved";
+
+      // Verify path ownership: if selectedPathOwner in localStorage doesn't match current user, purge it!
+      const pathOwner = localStorage.getItem("selectedPathOwner");
+      if (pathOwner && email && pathOwner.toLowerCase() !== email.toLowerCase()) {
+        localStorage.removeItem("selectedPathId");
+        localStorage.removeItem("selectedPathName");
+        localStorage.removeItem("selectedPathSteps");
+        localStorage.removeItem("selectedPathCountry");
+        localStorage.removeItem("selectedPathUniversity");
+        localStorage.removeItem("selectedPathPathway");
+        localStorage.removeItem("selectedPathCountryForId");
+        localStorage.removeItem("selectedPathOwner");
+      }
+
+      // For a new user whose account is still not approved, TO and STEPS must be empty!
+      // They should be filled ONLY after path selection.
+      if (!isApproved) {
+        localStorage.removeItem("selectedPathId");
+        localStorage.removeItem("selectedPathName");
+        localStorage.removeItem("selectedPathSteps");
+        localStorage.removeItem("selectedPathCountry");
+        localStorage.removeItem("selectedPathUniversity");
+        localStorage.removeItem("selectedPathPathway");
+        localStorage.removeItem("selectedPathCountryForId");
+
+        setToLabel("");
+        setMobileToLabel("");
+        setStepsLabel("");
+        return;
+      }
+
+      // 2. Selected Path & Steps (Destination for Approved Users)
       let pathId = localStorage.getItem("selectedPathId");
       let pathName = localStorage.getItem("selectedPathName");
       let stepsCount = localStorage.getItem("selectedPathSteps");
+
+      // Verify active path from API for this user
+      if (email) {
+        try {
+          const selRes = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
+            params: { email },
+          });
+          const serverPathId = selRes.data?.status && selRes.data?.pathId ? selRes.data.pathId : null;
+          if (serverPathId) {
+            pathId = serverPathId;
+            localStorage.setItem("selectedPathId", pathId);
+            localStorage.setItem("selectedPathOwner", email);
+          } else if (!serverPathId && !pathId) {
+            pathId = null;
+            pathName = null;
+            stepsCount = null;
+            localStorage.removeItem("selectedPathId");
+            localStorage.removeItem("selectedPathName");
+            localStorage.removeItem("selectedPathSteps");
+          }
+        } catch (err) {
+          // ignore
+        }
+      }
+
+      // If no path selected, TO and STEPS must be empty
+      if (!pathId) {
+        setToLabel("");
+        setMobileToLabel("");
+        setStepsLabel("");
+        return;
+      }
 
       // Only re-use cached destination info if it was saved FOR THIS EXACT pathId
       const cachedForId = localStorage.getItem("selectedPathCountryForId");
@@ -216,85 +331,38 @@ export default function UserTopHeader({ onBack }) {
       let pathPathway = (cachedForId && cachedForId === pathId) ? (localStorage.getItem("selectedPathPathway") || "") : "";
 
       // Fetch latest path details for the active pathId
-      if (pathId) {
-        try {
-          const [viewRes, stepsRes] = await Promise.allSettled([
-            axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`),
-            axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`),
-          ]);
+      try {
+        const [viewRes, stepsRes] = await Promise.allSettled([
+          axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`),
+          axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`),
+        ]);
 
-          const pathDoc = viewRes.status === "fulfilled" && viewRes.value?.data?.data ? viewRes.value.data.data : {};
-          const stepsData = stepsRes.status === "fulfilled" && stepsRes.value?.data?.data ? stepsRes.value.data.data : {};
+        const pathDoc = viewRes.status === "fulfilled" && viewRes.value?.data?.data ? viewRes.value.data.data : {};
+        const stepsData = stepsRes.status === "fulfilled" && stepsRes.value?.data?.data ? stepsRes.value.data.data : {};
 
-          const fetchedName = pathDoc.nameOfPath || pathDoc.name || stepsData.name || stepsData.nameOfPath || "";
-          if (fetchedName) {
-            pathName = fetchedName;
-            localStorage.setItem("selectedPathName", fetchedName);
-          }
-
-          const count = pathDoc.StepDetails?.length || pathDoc.total_steps || stepsData.steps?.length || 0;
-          if (count > 0) {
-            stepsCount = `${count} Steps`;
-            localStorage.setItem("selectedPathSteps", stepsCount);
-          }
-
-          const { country: extCountry, university: extUniversity, pathway: extPathway } = extractDestInfo(pathName, pathDoc, userOriginCountry);
-          pathCountry = extCountry || "";
-          pathUniversity = extUniversity || "";
-          pathPathway = extPathway || "";
-
-          localStorage.setItem("selectedPathCountry", pathCountry);
-          localStorage.setItem("selectedPathUniversity", pathUniversity);
-          localStorage.setItem("selectedPathPathway", pathPathway);
-          localStorage.setItem("selectedPathCountryForId", pathId);
-        } catch (err) {
-          // ignore error
+        const fetchedName = pathDoc.nameOfPath || pathDoc.name || stepsData.name || stepsData.nameOfPath || "";
+        if (fetchedName) {
+          pathName = fetchedName;
+          localStorage.setItem("selectedPathName", fetchedName);
         }
-      }
 
-      // If no path in storage, try to restore from userpaths/selected
-      if (!pathId && email) {
-        try {
-          const selRes = await axios.get(`${BASE_URL}/api/userpaths/selected`, {
-            params: { email },
-          });
-          if (selRes.data?.status && selRes.data?.pathId) {
-            pathId = selRes.data.pathId;
-            localStorage.setItem("selectedPathId", pathId);
-
-            const [viewRes, stepsRes] = await Promise.allSettled([
-              axios.get(`${BASE_URL}/api/paths/viewpath/${pathId}`),
-              axios.get(`${BASE_URL}/api/userpaths/steps?pathId=${pathId}`),
-            ]);
-
-            const pathDoc = viewRes.status === "fulfilled" && viewRes.value?.data?.data ? viewRes.value.data.data : {};
-            const stepsData = stepsRes.status === "fulfilled" && stepsRes.value?.data?.data ? stepsRes.value.data.data : {};
-
-            const fetchedName = pathDoc.nameOfPath || pathDoc.name || stepsData.name || stepsData.nameOfPath || "";
-            if (fetchedName) {
-              pathName = fetchedName;
-              localStorage.setItem("selectedPathName", fetchedName);
-            }
-
-            const count = pathDoc.StepDetails?.length || pathDoc.total_steps || stepsData.steps?.length || 0;
-            if (count > 0) {
-              stepsCount = `${count} Steps`;
-              localStorage.setItem("selectedPathSteps", stepsCount);
-            }
-
-            const { country: extCountry, university: extUniversity, pathway: extPathway } = extractDestInfo(pathName, pathDoc, userOriginCountry);
-            pathCountry = extCountry || "";
-            pathUniversity = extUniversity || "";
-            pathPathway = extPathway || "";
-
-            localStorage.setItem("selectedPathCountry", pathCountry);
-            localStorage.setItem("selectedPathUniversity", pathUniversity);
-            localStorage.setItem("selectedPathPathway", pathPathway);
-            localStorage.setItem("selectedPathCountryForId", pathId);
-          }
-        } catch (err) {
-          // ignore
+        const count = pathDoc.StepDetails?.length || pathDoc.total_steps || stepsData.steps?.length || 0;
+        if (count > 0) {
+          stepsCount = `${count} Steps`;
+          localStorage.setItem("selectedPathSteps", stepsCount);
         }
+
+        const { country: extCountry, university: extUniversity, pathway: extPathway } = extractDestInfo(pathName, pathDoc, userOriginCountry);
+        pathCountry = extCountry || "";
+        pathUniversity = extUniversity || "";
+        pathPathway = extPathway || "";
+
+        localStorage.setItem("selectedPathCountry", pathCountry);
+        localStorage.setItem("selectedPathUniversity", pathUniversity);
+        localStorage.setItem("selectedPathPathway", pathPathway);
+        localStorage.setItem("selectedPathCountryForId", pathId);
+      } catch (err) {
+        // ignore error
       }
 
       // Fallback: If no API call was able to run but pathName is in memory:
@@ -305,11 +373,11 @@ export default function UserTopHeader({ onBack }) {
         if (extPathway) pathPathway = extPathway;
       }
 
-      setToLabel(pathName || "Please select");
-      setStepsLabel(stepsCount || "Please select");
+      setToLabel(pathName || "");
+      setStepsLabel(stepsCount || "");
 
       // On mobile: show Country if available; if no specified country, present either Pathway or University name
-      let mobileVal = "Please select";
+      let mobileVal = "";
       if (pathCountry) {
         mobileVal = pathCountry;
       } else if (pathUniversity) {
@@ -336,6 +404,7 @@ export default function UserTopHeader({ onBack }) {
 
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener("naavi:path-selected", handlePathSelected);
+    window.addEventListener("naavi:profile-updated", handleStorageChange);
     window.addEventListener("naavi:step-completed", handleStepCompleted);
 
     // Polling interval check to immediately detect if path changed in localStorage
@@ -352,6 +421,7 @@ export default function UserTopHeader({ onBack }) {
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("naavi:path-selected", handlePathSelected);
+      window.removeEventListener("naavi:profile-updated", handleStorageChange);
       window.removeEventListener("naavi:step-completed", handleStepCompleted);
       clearInterval(pollInterval);
     };
@@ -404,7 +474,7 @@ export default function UserTopHeader({ onBack }) {
           </div>
           <div className="uth-search-copy uth-from-copy">
             <span className="uth-label">FROM</span>
-            <strong className={`uth-value ${fromLabel === "Please select" ? "uth-placeholder" : ""}`} title={fromLabel}>
+            <strong className="uth-value" title={fromLabel || ""}>
               {fromLabel}
             </strong>
           </div>
@@ -426,10 +496,10 @@ export default function UserTopHeader({ onBack }) {
           </div>
           <div className="uth-search-copy uth-to-copy">
             <span className="uth-label">TO</span>
-            <strong className={`uth-value uth-desktop-val ${toLabel === "Please select" ? "uth-placeholder" : ""}`} title={toLabel}>
+            <strong className="uth-value uth-desktop-val" title={toLabel || ""}>
               {toLabel}
             </strong>
-            <strong className={`uth-value uth-mobile-val ${mobileToLabel === "Please select" ? "uth-placeholder" : ""}`} title={mobileToLabel}>
+            <strong className="uth-value uth-mobile-val" title={mobileToLabel || ""}>
               {mobileToLabel}
             </strong>
           </div>
@@ -440,22 +510,24 @@ export default function UserTopHeader({ onBack }) {
         {/* STEPS */}
         <div className="uth-search-copy uth-steps-copy">
           <span className="uth-label">STEPS</span>
-          <strong className={`uth-value ${stepsLabel === "Please select" ? "uth-placeholder" : ""}`}>
+          <strong className="uth-value">
             {stepsLabel}
           </strong>
         </div>
       </div>
 
-      <div className="uth-location-pill" title={cityLabel}>
-        <svg className="uth-desktop-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
-        <svg className="uth-mobile-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-        </svg>
-        <span>{cityLabel}</span>
-      </div>
+      {cityLabel ? (
+        <div className="uth-location-pill" title={cityLabel}>
+          <svg className="uth-desktop-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <svg className="uth-mobile-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+          </svg>
+          <span>{cityLabel}</span>
+        </div>
+      ) : null}
     </header>
   );
 }

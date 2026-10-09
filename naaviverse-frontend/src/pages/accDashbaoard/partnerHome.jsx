@@ -815,8 +815,8 @@ export default function PartnerHome({ setispopular }) {
       )}
 
       <div className="ph-section-label">
-        <span>OVERVIEW · LAST 30 DAYS</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span className="ph-section-title">OVERVIEW · LAST 30 DAYS</span>
+        <div className={`ph-section-actions ${!showGuideNote ? "has-guide-btn" : ""}`}>
           {!showGuideNote && (
             <button
               type="button"
