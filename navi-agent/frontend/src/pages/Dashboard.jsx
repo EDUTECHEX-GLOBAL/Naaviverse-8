@@ -1541,7 +1541,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                                 gap: "5px"
                               }}
                             >
-                              <span>👁️ Observer Audit</span>
+                              <IconCheck size={13} />
+                              <span>Quality Check</span>
                               <span style={{ fontSize: "10px", opacity: 0.8 }}>{showObserverAudit ? "▲" : "▼"}</span>
                             </button>
                             <span className={`db-accuracy-badge ${label.toLowerCase().replace(/\s+/g, '-')}`}>

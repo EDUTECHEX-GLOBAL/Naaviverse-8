@@ -106,7 +106,7 @@ class NaaviObserverAgent:
 
         for req in required_root:
             if req not in roadmap or roadmap[req] is None:
-                issues.append({"field": req, "severity": "critical", "message": f"Mandatory root field '{req}' is missing."})
+                issues.append({"field": req, "severity": "critical", "message": f"Pathway is missing required information: '{req}'."})
                 score -= 30.0
 
         for rec in recommended_root:
@@ -116,7 +116,7 @@ class NaaviObserverAgent:
 
         steps = roadmap.get("steps") or []
         if not isinstance(steps, list) or len(steps) == 0:
-            issues.append({"field": "steps", "severity": "critical", "message": "Roadmap contains zero steps/milestones."})
+            issues.append({"field": "steps", "severity": "critical", "message": "This pathway has no steps or milestones yet."})
             score = 0.0
             return {"score": max(0.0, score), "passed": False, "issues": issues, "warnings": warnings}
 
@@ -124,16 +124,16 @@ class NaaviObserverAgent:
         seen_ids = set()
         for idx, step in enumerate(steps, start=1):
             if not isinstance(step, dict):
-                issues.append({"field": f"steps[{idx}]", "severity": "critical", "message": f"Step at index {idx} is not an object."})
+                issues.append({"field": f"steps[{idx}]", "severity": "critical", "message": f"Step {idx} format is invalid."})
                 score -= 15.0
                 continue
 
             step_id = step.get("id")
             if step_id is None:
-                issues.append({"field": f"steps[{idx}].id", "severity": "high", "message": f"Step {idx} is missing an 'id'."})
+                issues.append({"field": f"steps[{idx}].id", "severity": "high", "message": f"Step {idx} is missing an ID number."})
                 score -= 5.0
             elif step_id in seen_ids:
-                issues.append({"field": f"steps[{idx}].id", "severity": "high", "message": f"Duplicate step ID '{step_id}' detected."})
+                issues.append({"field": f"steps[{idx}].id", "severity": "high", "message": f"Duplicate step ID '{step_id}' found."})
                 score -= 10.0
             else:
                 seen_ids.add(step_id)
@@ -156,19 +156,19 @@ class NaaviObserverAgent:
             for view_key in ["macro_view", "micro_view", "nano_view"]:
                 view_val = step.get(view_key)
                 if not view_val:
-                    warnings.append({"field": f"steps[{idx}].{view_key}", "severity": "low", "message": f"Step {idx} missing {view_key}."})
+                    warnings.append({"field": f"steps[{idx}].{view_key}", "severity": "low", "message": f"Step {idx}: Missing detailed description for {view_key}."})
                     score -= 3.0
 
             # Check Learning Objectives
             objs = step.get("learning_objectives")
             if not isinstance(objs, list) or len(objs) == 0:
-                warnings.append({"field": f"steps[{idx}].learning_objectives", "severity": "medium", "message": f"Step {idx} has no learning objectives."})
+                warnings.append({"field": f"steps[{idx}].learning_objectives", "severity": "medium", "message": f"Step {idx}: Add 2-3 clear learning goals for what the student will achieve."})
                 score -= 4.0
 
             # Check Micro Steps
             msteps = step.get("micro_steps")
             if not isinstance(msteps, list) or len(msteps) == 0:
-                warnings.append({"field": f"steps[{idx}].micro_steps", "severity": "low", "message": f"Step {idx} has no micro_steps checklist."})
+                warnings.append({"field": f"steps[{idx}].micro_steps", "severity": "low", "message": f"Step {idx}: Add an actionable checklist of tasks."})
                 score -= 2.0
 
         return {
@@ -234,7 +234,7 @@ class NaaviObserverAgent:
                     "step_id": step_idx,
                     "severity": "high",
                     "type": "sequence_inversion",
-                    "message": f"Step {step_idx} ('{title}') introduces foundational material after advanced capstone/placement steps."
+                    "message": f"Step {step_idx} ('{title}'): Foundational basics should come before advanced career or placement steps."
                 })
                 score -= 15.0
             highest_stage_seen = max(highest_stage_seen, stage)
@@ -251,7 +251,7 @@ class NaaviObserverAgent:
                 warnings.append({
                     "severity": "medium",
                     "type": "duplicate_milestone",
-                    "message": f"Milestone title '{t}' appears {count} times across the roadmap."
+                    "message": f"Step title '{t}' is repeated {count} times. Please give each step a unique name."
                 })
                 score -= 10.0
 
@@ -264,7 +264,7 @@ class NaaviObserverAgent:
                     "step_id": i,
                     "severity": "low",
                     "type": "vague_content",
-                    "message": f"Step {i} contains vague filler language."
+                    "message": f"Step {i} contains placeholder or vague language. Please add specific goals or guidance."
                 })
                 score -= 5.0
 
@@ -329,7 +329,7 @@ class NaaviObserverAgent:
                     "expected_duration": expected_dur_str,
                     "actual_months": roadmap_months,
                     "actual_duration": roadmap_dur_str,
-                    "message": f"Roadmap total duration ({roadmap_dur_str}) significantly diverges from standard curriculum timeline ({expected_dur_str})."
+                    "message": f"Total pathway duration ({roadmap_dur_str}) differs significantly from standard timeline ({expected_dur_str})."
                 })
                 score -= 25.0
             elif deviation_pct > 0.15:
@@ -338,7 +338,7 @@ class NaaviObserverAgent:
                     "type": "duration_divergence",
                     "expected_duration": expected_dur_str,
                     "actual_duration": roadmap_dur_str,
-                    "message": f"Roadmap duration ({roadmap_dur_str}) has a slight discrepancy with authoritative duration ({expected_dur_str})."
+                    "message": f"Total pathway duration ({roadmap_dur_str}) differs slightly from recommended duration ({expected_dur_str})."
                 })
                 score -= 10.0
 
@@ -347,7 +347,7 @@ class NaaviObserverAgent:
         for i, s in enumerate(steps, start=1):
             dur = str(s.get("duration") or "").strip().lower()
             if not dur:
-                warnings.append({"step_id": i, "severity": "medium", "message": f"Step {i} duration is unspecified."})
+                warnings.append({"step_id": i, "severity": "medium", "message": f"Step {i} has no duration specified. Please set a timeline."})
                 score -= 5.0
                 continue
 
@@ -359,7 +359,7 @@ class NaaviObserverAgent:
                         "step_id": i,
                         "severity": "critical",
                         "type": "impossible_step_duration",
-                        "message": f"Step {i} ('{s.get('title')}') specifies an impossible duration '{dur}' for a multi-year formal degree."
+                        "message": f"Step {i} ('{s.get('title')}'): Duration '{dur}' is too short for a multi-year formal degree."
                     })
                     score -= 20.0
 
@@ -520,7 +520,7 @@ class NaaviObserverAgent:
                         "step_id": i,
                         "provider_name": name or "(empty)",
                         "severity": "high",
-                        "message": f"Detected dummy/hallucinated marketplace provider '{name}' in Step {i}."
+                        "message": f"Step {i}: '{name}' looks like a placeholder name. Please replace with a real institution or platform."
                     })
                     score -= 10.0
 
@@ -553,7 +553,7 @@ class NaaviObserverAgent:
                         "step_id": step_id,
                         "severity": "medium",
                         "type": "empty_marketplace",
-                        "message": f"Step {step_id} does not provide any marketplace recommendations."
+                        "message": f"Step {step_id}: Add recommended courses, books, or platforms."
                     })
                     score -= 6.0
 
@@ -562,7 +562,7 @@ class NaaviObserverAgent:
             issues.append({
                 "severity": "high",
                 "type": "budget_conflict",
-                "message": f"Student profile specifies constrained financial capacity, but {expensive_items_count} premium/high-cost marketplace items were recommended."
+                "message": f"Student requested budget-friendly options, but {expensive_items_count} premium/high-cost courses were recommended. Consider adding free or low-cost alternatives."
             })
             score -= 15.0
 
@@ -570,7 +570,7 @@ class NaaviObserverAgent:
             warnings.append({
                 "severity": "low",
                 "type": "missing_free_tier",
-                "message": "Roadmap provides no free foundational resources (0 macro_free items detected)."
+                "message": "No free learning resources are included. Consider adding free guides or introductory courses."
             })
             score -= 5.0
 
@@ -624,7 +624,7 @@ class NaaviObserverAgent:
                 warnings.append({
                     "severity": "medium",
                     "type": "stage_mismatch",
-                    "message": f"Student is in Grade {grade}, but initial milestones appear to assume college-level prerequisites."
+                    "message": f"Student is in Grade {grade}, but early steps seem too advanced. Start with grade-appropriate foundations."
                 })
                 score -= 15.0
 
@@ -683,7 +683,7 @@ class NaaviObserverAgent:
                         "step_id": i,
                         "severity": "high",
                         "type": "category_contamination",
-                        "message": f"Step {i} ('{s.get('title')}') introduces technical software coding into a Non-Academic Counselling pathway."
+                        "message": f"Step {i} ('{s.get('title')}'): Technical coding modules do not fit into a counselling pathway."
                     })
                     score -= 20.0
 
@@ -696,7 +696,7 @@ class NaaviObserverAgent:
                         "step_id": i,
                         "severity": "medium",
                         "type": "scope_warning",
-                        "message": f"Early Step {i} emphasizes corporate employment before academic foundation."
+                        "message": f"Step {i}: Job or placement activities are suggested before finishing academic basics."
                     })
                     score -= 10.0
 
@@ -824,19 +824,19 @@ class NaaviObserverAgent:
 
         if overall_score >= 85 and len(critical_issues) == 0:
             status = "APPROVED"
-            status_label = "Verified High Quality"
+            status_label = "High Quality · Verified"
             status_color = "#137333"
         elif overall_score >= 70 and len(critical_issues) <= 1:
             status = "APPROVED_WITH_WARNINGS"
-            status_label = "Approved with Advisory Warnings"
+            status_label = "Good Quality · Minor Suggestions"
             status_color = "#1a73e8"
         elif overall_score >= 50:
             status = "REQUIRES_CORRECTION"
-            status_label = "Requires Quality Correction"
+            status_label = "Needs Review Before Approving"
             status_color = "#b06000"
         else:
             status = "REJECTED"
-            status_label = "Fails Quality Threshold"
+            status_label = "Needs Revisions"
             status_color = "#c5221f"
 
         duration_ms = round((time.perf_counter() - start_time) * 1000)
