@@ -108,6 +108,22 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
   useEffect(() => {
     // Clear any stale collapsed flag so side section and three dots are visible by default
     localStorage.removeItem('userSidebarCollapsed');
+
+    const handleCollapse = () => {
+      setCollapsed(true);
+      localStorage.setItem('userSidebarCollapsed', 'true');
+    };
+    const handleExpand = () => {
+      setCollapsed(false);
+      localStorage.setItem('userSidebarCollapsed', 'false');
+    };
+
+    window.addEventListener("naavi:collapse-sidebar", handleCollapse);
+    window.addEventListener("naavi:expand-sidebar", handleExpand);
+    return () => {
+      window.removeEventListener("naavi:collapse-sidebar", handleCollapse);
+      window.removeEventListener("naavi:expand-sidebar", handleExpand);
+    };
   }, []);
 
   const toggleCollapsed = () => {

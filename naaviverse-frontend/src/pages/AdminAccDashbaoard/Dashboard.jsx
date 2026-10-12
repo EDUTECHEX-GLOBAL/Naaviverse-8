@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AssistanceRequestDetailsModal from "../../AdminDashboard/components/AssistanceRequestDetailsModal";
 import AssistanceDetailsPage from "../../AdminDashboard/components/AssistanceDetailsPage";
-import SuperAdminCreatePathModal from "../../AdminDashboard/components/SuperAdminCreatePathModal";
+import SuperAdminCustomPathBuilder from "../../AdminDashboard/components/SuperAdminCustomPathBuilder";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -376,18 +376,13 @@ export default function Dashboard() {
   const [assistanceRequests, setAssistanceRequests] = useState([]);
   const [selectedAssistanceRequest, setSelectedAssistanceRequest] = useState(null);
   const [isAssistanceModalOpen, setIsAssistanceModalOpen] = useState(false);
-  const [assistanceTab, setAssistanceTab] = useState("all");
-  const [assistanceLoading, setAssistanceLoading] = useState(false);
 
   const fetchAssistanceRequests = async () => {
-    setAssistanceLoading(true);
     try {
       const data = await marketplaceReplacementService.getAllAssistanceRequests();
       setAssistanceRequests(data || []);
     } catch (err) {
       console.error("Failed to fetch assistance requests:", err);
-    } finally {
-      setAssistanceLoading(false);
     }
   };
 
@@ -423,7 +418,6 @@ export default function Dashboard() {
     rejected: 0,
   });
   const [selectedPathRequest, setSelectedPathRequest] = useState(null);
-  const [isCreatePathModalOpen, setIsCreatePathModalOpen] = useState(false);
 
   const fetchPathRequests = useCallback(async (tabStatus = pathRequestsTab) => {
     try {
@@ -767,123 +761,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div id="admin-mkt-assist-panel" className="admin-mkt-assist-section">
-            <div className="admin-mkt-assist-header">
-              <div className="amah-left">
-                <div className="amah-icon-wrap">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <div className="amah-title-row">
-                    <h2 className="amah-title">Recent Assistance Requests & Activity Feed</h2>
-                    <span className="amah-live-badge">
-                      <span className="amah-pulse-dot" />
-                      {assistanceRequests.filter((r) => r.status === "pending").length} Pending Review
-                    </span>
-                  </div>
-                  <p className="amah-desc">
-                    Student requirements & escalations after recommendation replacements. Click any request to open complete details & live 2-way chat.
-                  </p>
-                </div>
-              </div>
-
-              {/* Filter Tabs */}
-              <div className="amah-filter-tabs">
-                {[
-                  { key: "all", label: "All", count: assistanceRequests.length },
-                  { key: "pending", label: "Pending", count: assistanceRequests.filter((r) => r.status === "pending").length },
-                  { key: "reviewing", label: "Reviewing", count: assistanceRequests.filter((r) => r.status === "reviewing").length },
-                  { key: "resolved", label: "Resolved", count: assistanceRequests.filter((r) => r.status === "resolved").length },
-                ].map((t) => (
-                  <button
-                    key={t.key}
-                    type="button"
-                    className={`amah-tab ${assistanceTab === t.key ? "active" : ""}`}
-                    onClick={() => setAssistanceTab(t.key)}
-                  >
-                    <span className="amah-tab-label">{t.label}</span>
-                    <span className="amah-tab-count">{t.count}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Assistance Requests List - Notification Box Style */}
-            <div className="admin-mkt-assist-notif-list">
-              {assistanceLoading ? (
-                <div className="amah-loading">Loading assistance requests...</div>
-              ) : (assistanceTab === "all" ? assistanceRequests : assistanceRequests.filter((r) => r.status === assistanceTab)).length === 0 ? (
-                <div className="amah-empty">
-                  <span style={{ display: "inline-block" }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
-                  </span>
-                  <h4>No {assistanceTab !== "all" ? assistanceTab : ""} assistance requests</h4>
-                  <p>All student inquiries have been resolved.</p>
-                </div>
-              ) : (
-                (assistanceTab === "all" ? assistanceRequests : assistanceRequests.filter((r) => r.status === assistanceTab)).map((req) => (
-                  <div
-                    key={req.id}
-                    className={`admin-mkt-notif-item status-${req.status}`}
-                    onClick={() => {
-                      setSelectedAssistanceRequest(req);
-                      setView("assistanceDetails");
-                    }}
-                  >
-                    {/* Left Icon & Indicator */}
-                    <div className="amn-icon-wrap">
-                      <div className="amn-avatar">
-                        {(req.userName || req.userEmail || "U")[0].toUpperCase()}
-                      </div>
-                      {req.status === "pending" && <span className="amn-unread-dot" />}
-                    </div>
-
-                    {/* Notification Message Text */}
-                    <div className="amn-content">
-                      <div className="amn-title-line">
-                        <strong className="amn-user-name">{req.userName || "Student"}</strong>
-                        <span className="amn-action-text">
-                          submitted an assistance request for <strong>{req.stepName || req.pathName || "their career milestone"}</strong>
-                        </span>
-                      </div>
-                      <div className="amn-sub-line">
-                        <span className="amn-email">{req.userEmail}</span>
-                        <span className="amn-dot">•</span>
-                        <span className="amn-time">
-                          {new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Status Pill & Click Action */}
-                    <div className="amn-right-actions">
-                      <span className={`amc-status-pill status-${req.status || "pending"}`}>
-                        <span className="asp-dot" />
-                        <span>
-                          {req.status === "reviewing"
-                            ? "Reviewing"
-                            : req.status === "pending"
-                            ? "Pending"
-                            : req.status === "resolved"
-                            ? "Resolved"
-                            : req.status === "closed"
-                            ? "Closed"
-                            : req.status?.toUpperCase() || "Pending"}
-                        </span>
-                      </span>
-                      <span className="amn-view-arrow">View Details →</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
           {/* ── KPI Section ── */}
           <div className="kpi-section">
             <div className="kpi-header">
@@ -961,65 +838,164 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="kpi-card kpi-actions-card">
-                <div className="kpi-card-label" style={{ marginBottom: 14 }}>Quick Actions</div>
-                <div className="kpi-actions-square-grid">
-                  <button className="kpi-action-square" onClick={() => { setRoleView("partner"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); }}>
-                    <span className="kpi-action-sq-icon action-amber">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M21 12c0 4.97-4.03 9-9 9S3 16.97 3 12 7.03 3 12 3s9 4.03 9 9z" stroke="currentColor" strokeWidth="2" />
-                      </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">Review Approvals</span>
-                  </button>
+              {/* ── NEW DEDICATED PATH REQUESTS OVERVIEW SECTION ── */}
+              <div className="kpi-card kpi-path-requests-card">
+                <div className="pr-overview-header">
+                  <div className="pr-header-left">
+                    <div className="pr-title-row">
+                      <span className="pr-icon-badge">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" />
+                        </svg>
+                      </span>
+                      <h3 className="pr-overview-title">Path Requests</h3>
+                      {pathRequestsCounts.pending > 0 && (
+                        <span className="pr-pending-pill">{pathRequestsCounts.pending} Pending</span>
+                      )}
+                    </div>
+                    <p className="pr-overview-sub">
+                      Students request personalized pathways unavailable in the catalog. Review specs, configure milestones, and curate custom paths.
+                    </p>
+                  </div>
+                  <div className="pr-header-actions">
+                    <button
+                      type="button"
+                      className="pr-view-all-btn"
+                      onClick={() => {
+                        setRoleView("pathRequests");
+                        setPathRequestsTab("all");
+                        setView("approvals");
+                        setSelected(null);
+                        setSelectedPathRequest(null);
+                        fetchPathRequests("all");
+                      }}
+                    >
+                      View All Requests →
+                    </button>
+                  </div>
+                </div>
 
-                  <button className="kpi-action-square" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("all"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("all"); }}>
-                    <span className="kpi-action-sq-icon action-violet" style={{ background: "#ede9fe", color: "#6d28d9" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Summary KPI statistics */}
+                <div className="pr-stats-row">
+                  <div className="pr-stat-pill" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("all"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("all"); }}>
+                    <span className="pr-stat-val">{pathRequestsCounts.total}</span>
+                    <span className="pr-stat-lbl">Total Requests</span>
+                  </div>
+                  <div className="pr-stat-pill pr-stat-pill--pending" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("pending"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("pending"); }}>
+                    <span className="pr-stat-val">{pathRequestsCounts.pending}</span>
+                    <span className="pr-stat-lbl">Pending Review</span>
+                  </div>
+                  <div className="pr-stat-pill pr-stat-pill--progress" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("in_progress"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("in_progress"); }}>
+                    <span className="pr-stat-val">{pathRequestsCounts.in_progress}</span>
+                    <span className="pr-stat-lbl">In Progress</span>
+                  </div>
+                  <div className="pr-stat-pill pr-stat-pill--ready" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("created"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("created"); }}>
+                    <span className="pr-stat-val">{pathRequestsCounts.created}</span>
+                    <span className="pr-stat-lbl">Created & Ready</span>
+                  </div>
+                  <div className="pr-stat-pill pr-stat-pill--rejected" onClick={() => { setRoleView("pathRequests"); setPathRequestsTab("rejected"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); fetchPathRequests("rejected"); }}>
+                    <span className="pr-stat-val">{pathRequestsCounts.rejected}</span>
+                    <span className="pr-stat-lbl">Rejected</span>
+                  </div>
+                </div>
+
+                {/* Recent Requests list */}
+                <div className="pr-recent-container">
+                  <div className="pr-recent-header">
+                    <span className="pr-recent-title">Recent Student Requests</span>
+                    <span className="pr-recent-count">{Math.min(pathRequests.length, 5)} showing</span>
+                  </div>
+
+                  {pathRequestsLoading && pathRequests.length === 0 ? (
+                    <div className="pr-empty-box">Loading path requests...</div>
+                  ) : pathRequests.length === 0 ? (
+                    <div className="pr-empty-box">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10" />
-                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="#7c3aed" />
+                        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
                       </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">Path Requests</span>
-                    {pathRequestsCounts.pending > 0 && <span className="kpi-action-sq-badge">{pathRequestsCounts.pending}</span>}
-                  </button>
+                      <p>No student path requests logged yet.</p>
+                    </div>
+                  ) : (
+                    <div className="pr-recent-list">
+                      {pathRequests.slice(0, 5).map((req) => (
+                        <div
+                          key={req._id || req.requestId}
+                          className="pr-recent-item"
+                          onClick={() => {
+                            setSelectedPathRequest(req);
+                            setRoleView("pathRequests");
+                            setView("approvals");
+                          }}
+                        >
+                          <div className="pr-item-left">
+                            <div className="pr-item-avatar">
+                              {(req.userName || req.userEmail || "S")[0].toUpperCase()}
+                            </div>
+                            <div className="pr-item-info">
+                              <div className="pr-item-title-row">
+                                <span className="pr-item-goal">{req.targetGoal}</span>
+                                {req.targetInstitution && (
+                                  <span className="pr-item-inst">🏛 {req.targetInstitution}</span>
+                                )}
+                              </div>
+                              <div className="pr-item-sub">
+                                <span className="pr-item-user">{req.userName}</span>
+                                <span className="pr-item-dot">•</span>
+                                <span className="pr-item-sector">{req.sector || "General"}</span>
+                                <span className="pr-item-dot">•</span>
+                                <span className="pr-item-date">{new Date(req.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                              </div>
+                            </div>
+                          </div>
 
-                  <button className="kpi-action-square" onClick={() => { setView("activity"); setSelectedActivityUser(null); }}>
-                    <span className="kpi-action-sq-icon action-rose">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 8v4l3 3M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">User Activity</span>
-                  </button>
+                          <div className="pr-item-right">
+                            <span className={`pr-status-tag status-${req.status}`}>
+                              {req.status === "created"
+                                ? "Created"
+                                : req.status === "in_progress"
+                                ? "In Progress"
+                                : req.status === "rejected"
+                                ? "Rejected"
+                                : "Pending"}
+                            </span>
+                            <button
+                              type="button"
+                              className="pr-item-action-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedPathRequest(req);
+                                setRoleView("pathRequests");
+                                setView("approvals");
+                              }}
+                            >
+                              View Details →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                  <button className="kpi-action-square" onClick={() => navigate("/admin/dashboard/paths?tab=active")}>
-                    <span className="kpi-action-sq-icon action-cyan">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 17L8 7l4 6 4-4 4 8" />
-                      </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">Manage Paths</span>
+                {/* Quick actions bar preserving all original actions */}
+                <div className="pr-quick-toolbar">
+                  <span className="pr-quick-toolbar-label">Quick Actions:</span>
+                  <button type="button" className="pr-quick-btn" onClick={() => { setRoleView("partner"); setView("approvals"); setSelected(null); setSelectedPathRequest(null); }}>
+                    Review Approvals
                   </button>
-
-                  <button className="kpi-action-square" onClick={() => { setView("notifications"); setNotifFilter("all"); }}>
-                    <span className="kpi-action-sq-icon action-indigo">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">Notifications</span>
-                    {unreadCount > 0 && <span className="kpi-action-sq-badge">{unreadCount}</span>}
+                  <button type="button" className="pr-quick-btn" onClick={() => { setView("activity"); setSelectedActivityUser(null); }}>
+                    User Activity
                   </button>
-
-                  <button className="kpi-action-square" onClick={() => { setRoleView("pathRequests"); setIsCreatePathModalOpen(true); setSelectedPathRequest(pathRequests[0] || { targetGoal: "New Custom Pathway", userEmail: "custom@naaviverse.com" }); }}>
-                    <span className="kpi-action-sq-icon action-green">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                    </span>
-                    <span className="kpi-action-sq-label">Add New Path</span>
+                  <button type="button" className="pr-quick-btn" onClick={() => navigate("/admin/dashboard/paths?tab=active")}>
+                    Manage Paths
+                  </button>
+                  <button type="button" className="pr-quick-btn" onClick={() => { setView("notifications"); setNotifFilter("all"); }}>
+                    Notifications {unreadCount > 0 && `(${unreadCount})`}
+                  </button>
+                  <button type="button" className="pr-quick-btn pr-quick-btn--primary" onClick={() => { setRoleView("pathRequests"); setSelectedPathRequest(pathRequests[0] || { targetGoal: "New Custom Pathway", userEmail: "custom@naaviverse.com" }); setView("customPathBuilder"); }}>
+                    + Add New Path
                   </button>
                 </div>
               </div>
@@ -1648,6 +1624,34 @@ export default function Dashboard() {
   }
 
   // ══════════════════════════════════════════════════════════════════════════
+  // CUSTOM PATH BUILDER — DEDICATED FULL-PAGE DASHBOARD VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  if (view === "customPathBuilder" && selectedPathRequest) {
+    return (
+      <div className="dashboard">
+        <SuperAdminCustomPathBuilder
+          request={selectedPathRequest}
+          onBack={() => setView("approvals")}
+          onPathCreated={(createdPath, updatedReq) => {
+            fetchPathRequests(pathRequestsTab);
+            if (updatedReq) {
+              setSelectedPathRequest(updatedReq);
+            } else if (selectedPathRequest) {
+              setSelectedPathRequest((prev) => ({
+                ...prev,
+                status: "created",
+                createdPathId: createdPath?._id,
+                createdPathName: createdPath?.nameOfPath || createdPath?.name || prev.targetGoal,
+              }));
+            }
+            setView("approvals");
+          }}
+        />
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════
   // PATH REQUESTS — DETAIL VIEW
   // ══════════════════════════════════════════════════════════════════════════
   if (view === "approvals" && roleView === "pathRequests" && selectedPathRequest) {
@@ -1714,6 +1718,9 @@ export default function Dashboard() {
                 value={req.createdPathName ? `${req.createdPathName} (Live in Catalog)` : "Active Pathway Created"}
               />
             )}
+            {req.adminNotes && (
+              <DetailItem label="Super Admin Notes / Feedback" value={req.adminNotes} />
+            )}
           </div>
 
           <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--slate-100)", display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }}>
@@ -1733,7 +1740,7 @@ export default function Dashboard() {
                 gap: 6,
                 boxShadow: "0 2px 8px rgba(99, 102, 241, 0.2)",
               }}
-              onClick={() => setIsCreatePathModalOpen(true)}
+              onClick={() => setView("customPathBuilder")}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -1761,28 +1768,10 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-
-        <SuperAdminCreatePathModal
-          isOpen={isCreatePathModalOpen}
-          onClose={() => setIsCreatePathModalOpen(false)}
-          request={selectedPathRequest}
-          onPathCreated={(createdPath, updatedReq) => {
-            fetchPathRequests(pathRequestsTab);
-            if (updatedReq) {
-              setSelectedPathRequest(updatedReq);
-            } else if (selectedPathRequest) {
-              setSelectedPathRequest((prev) => ({
-                ...prev,
-                status: "created",
-                createdPathId: createdPath?._id,
-                createdPathName: createdPath?.nameOfPath || createdPath?.name || prev.targetGoal,
-              }));
-            }
-          }}
-        />
       </div>
     );
   }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // APPROVALS — DETAIL VIEW
@@ -2261,31 +2250,10 @@ export default function Dashboard() {
           setSelectedAssistanceRequest(updated);
         }}
       />
-
-      {/* ── Super Admin Custom Path Creator Modal ── */}
-      <SuperAdminCreatePathModal
-        isOpen={isCreatePathModalOpen}
-        onClose={() => {
-          setIsCreatePathModalOpen(false);
-        }}
-        request={selectedPathRequest}
-        onPathCreated={(createdPath, updatedReq) => {
-          fetchPathRequests(pathRequestsTab);
-          if (updatedReq) {
-            setSelectedPathRequest(updatedReq);
-          } else if (selectedPathRequest) {
-            setSelectedPathRequest((prev) => ({
-              ...prev,
-              status: "created",
-              createdPathId: createdPath?._id,
-              createdPathName: createdPath?.nameOfPath || createdPath?.name || prev.targetGoal,
-            }));
-          }
-        }}
-      />
     </div>
   );
 }
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function SectionTitle({ children }) {
