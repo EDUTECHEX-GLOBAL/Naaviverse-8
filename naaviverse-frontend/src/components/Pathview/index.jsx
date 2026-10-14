@@ -265,7 +265,12 @@ const Pathview = memo(({
           ))
         ) : (
           <div className="pathview-empty">
-            <div className="pathview-empty__icon">🔍</div>
+            <div className="pathview-empty__icon" style={{ display: "flex", justifyContent: "center" }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7.5" />
+                <line x1="21" y1="21" x2="16.5" y2="16.5" strokeWidth="2.2" />
+              </svg>
+            </div>
             <p>No paths found matching your criteria.</p>
             <small>Try adjusting your coordinates or search term.</small>
 

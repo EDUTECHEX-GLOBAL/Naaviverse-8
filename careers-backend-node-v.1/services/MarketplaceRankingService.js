@@ -266,8 +266,8 @@ async function trackMarketplaceEvent({ serviceId, action, value = 1, rating, par
 }
 
 async function attachAnalyticsToItems(items = [], userContext = {}) {
-  const ids = items.map((item) => item._id).filter(Boolean);
-  const analyticsRows = await MarketplaceAnalytics.find({ service_id: { $in: ids } }).lean();
+  const ids = items.map((item) => item._id).filter((id) => id && mongoose.Types.ObjectId.isValid(id));
+  const analyticsRows = ids.length > 0 ? await MarketplaceAnalytics.find({ service_id: { $in: ids } }).lean() : [];
   const analyticsByService = new Map(analyticsRows.map((row) => [String(row.service_id), row]));
 
   return items.map((item) => {
@@ -323,7 +323,7 @@ function applyDiversityRule(items = []) {
 }
 
 async function getRankedMarketplaceItems(filter = {}, userContext = {}) {
-  const items = await MarketplaceItem.find(filter).lean();
+  const items = Array.isArray(filter) ? filter : await MarketplaceItem.find(filter).lean();
 
   const partnerEmails = [...new Set(items.map((it) => it.partner_email?.trim()).filter(Boolean))];
   const Partner = require("../models/PartnerModel");

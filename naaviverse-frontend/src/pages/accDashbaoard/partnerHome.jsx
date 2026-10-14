@@ -295,7 +295,7 @@ export default function PartnerHome({ setispopular }) {
   // ── ACTIONS PAGE ────────────────────────────────────────────────────────
   if (view === "actions") {
     return (
-      <div className="ph-root">
+      <div className="ph-root ph-actions-root">
         <div className="ph-page-card">
           <div className="ph-page-topbar">
             <button className="ph-back-btn-icon" onClick={() => setView("home")}>
@@ -358,7 +358,7 @@ export default function PartnerHome({ setispopular }) {
   if (view === "paths" && !selectedPath) {
     const filtered = pathTab === "all" ? MY_PATHS : MY_PATHS.filter(p => (p.status || "active") === pathTab);
     return (
-      <div className="ph-root">
+      <div className="ph-root ph-paths-root">
         <div className="ph-page-card">
           <div className="ph-page-topbar">
             <button className="ph-back-btn-icon" onClick={() => setView("home")}>
@@ -461,7 +461,7 @@ export default function PartnerHome({ setispopular }) {
   if (view === "pathDetail" && selectedPath) {
     const p = selectedPath;
     return (
-      <div className="ph-root">
+      <div className="ph-root ph-path-detail-root">
         <div className="ph-page-card">
           <button className="ph-back-btn" onClick={() => { setSelectedPath(null); setPathUsers([]); setView("paths"); }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -541,49 +541,106 @@ export default function PartnerHome({ setispopular }) {
   if (view === "marketplace" && !selectedItem) {
     const totalRev = MARKETPLACE_ITEMS.reduce((s, m) => s + m.revenue, 0);
     return (
-      <div className="ph-root">
-        <div className="ph-page-card">
-          <div className="ph-page-topbar">
-            <button className="ph-back-btn-icon" onClick={() => setView("home")}>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>Back</span>
-            </button>
-            <div className="ph-page-header-left">
-              <div className="ph-page-header-content">
-                <h2>My Marketplace</h2>
-                <p>Track purchases · monitor revenue · manage listings</p>
+      <div className="ph-root ph-marketplace-root">
+        <div className="ph-page-card ph-marketplace-card">
+          <div className="ph-marketplace-topbar">
+            <div className="ph-marketplace-topbar-left">
+              <button
+                type="button"
+                className="ph-marketplace-back-btn"
+                onClick={() => setView("home")}
+                title="Back to Dashboard"
+              >
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>Back</span>
+              </button>
+              <div className="ph-marketplace-title-block">
+                <h2 className="ph-marketplace-title">My Marketplace</h2>
+                <p className="ph-marketplace-subtitle">Track purchases · monitor revenue · manage listings</p>
               </div>
             </div>
-            <div className="ph-rev-badge">₹{totalRev.toLocaleString("en-IN")} revenue</div>
+            <div className="ph-marketplace-rev-summary">
+              <div className="ph-rev-summary-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div className="ph-rev-summary-text">
+                <span className="ph-rev-summary-label">Total Revenue</span>
+                <span className="ph-rev-summary-value">₹{totalRev.toLocaleString("en-IN")}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="ph-table-wrap">
-            <table>
+          <div className="ph-marketplace-table-container">
+            <table className="ph-marketplace-table">
               <thead>
                 <tr>
-                  <th>Item</th>
-                  <th>Type</th>
-                  <th>Plan</th>
-                  <th>Purchases</th>
-                  <th>Revenue</th>
-                  <th>Status</th>
-                  <th></th>
+                  <th className="ph-col-item">Item</th>
+                  <th className="ph-col-type">Type</th>
+                  <th className="ph-col-plan">Plan</th>
+                  <th className="ph-col-purchases">Purchases</th>
+                  <th className="ph-col-revenue">Revenue</th>
+                  <th className="ph-col-status">Status</th>
+                  <th className="ph-col-actions"></th>
                 </tr>
               </thead>
               <tbody>
-                {MARKETPLACE_ITEMS.map(item => (
-                  <tr key={item.id} className="ph-table-row">
-                    <td><div className="ph-cell-name">{item.name}</div></td>
-                    <td><span className="ph-type-chip">{item.type}</span></td>
-                    <td><span className="ph-plan-badge" style={{ background: PLAN_BADGE[item.plan]?.bg, color: PLAN_BADGE[item.plan]?.color }}>{item.plan}</span></td>
-                    <td style={{ fontWeight: 700, color: "#1e293b" }}>{item.purchases}</td>
-                    <td style={{ fontWeight: 700, color: "#7c3aed" }}>₹{item.revenue.toLocaleString("en-IN")}</td>
-                    <td><span className={`ph-status-pill ph-status-${item.status}`}>{item.status === "active" ? "Active" : "Pending"}</span></td>
-                    <td><button className="ph-view-btn" onClick={() => { setSelectedItem(item); setView("marketDetail"); }}>Details</button></td>
+                {MARKETPLACE_ITEMS.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="ph-table-empty-cell">
+                      No marketplace listings found.
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  MARKETPLACE_ITEMS.map(item => (
+                    <tr key={item.id} className="ph-marketplace-row">
+                      <td className="ph-col-item">
+                        <div className="ph-marketplace-item-name" title={item.name}>
+                          {item.name}
+                        </div>
+                      </td>
+                      <td className="ph-col-type">
+                        <span className="ph-marketplace-type-badge">{item.type}</span>
+                      </td>
+                      <td className="ph-col-plan">
+                        <span
+                          className="ph-marketplace-plan-badge"
+                          style={{
+                            backgroundColor: PLAN_BADGE[item.plan]?.bg || "#eff6ff",
+                            color: PLAN_BADGE[item.plan]?.color || "#2563eb",
+                            borderColor: PLAN_BADGE[item.plan]?.border || "#bfdbfe",
+                          }}
+                        >
+                          {item.plan}
+                        </span>
+                      </td>
+                      <td className="ph-col-purchases">
+                        <span className="ph-purchases-val">{item.purchases}</span>
+                      </td>
+                      <td className="ph-col-revenue">
+                        <span className="ph-revenue-val">₹{item.revenue.toLocaleString("en-IN")}</span>
+                      </td>
+                      <td className="ph-col-status">
+                        <span className={`ph-status-pill ph-status-${item.status}`}>
+                          <span className="ph-status-bullet" />
+                          {item.status === "active" ? "Active" : "Pending"}
+                        </span>
+                      </td>
+                      <td className="ph-col-actions">
+                        <button
+                          type="button"
+                          className="ph-details-action-btn"
+                          onClick={() => { setSelectedItem(item); setView("marketDetail"); }}
+                        >
+                          Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -595,30 +652,107 @@ export default function PartnerHome({ setispopular }) {
   if (view === "marketDetail" && selectedItem) {
     const item = selectedItem;
     return (
-      <div className="ph-root">
-        <div className="ph-page-card">
-          <button className="ph-back-btn" onClick={() => { setSelectedItem(null); setView("marketplace"); }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Back to Marketplace
-          </button>
-          <div className="ph-detail-hero">
-            <div className="ph-detail-avatar" style={{ background: "linear-gradient(135deg,#7c3aed,#a78bfa)" }}>🛒</div>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                <h2 style={{ fontFamily: "var(--ph-display)", fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>{item.name}</h2>
-                <span className={`ph-status-pill ph-status-${item.status}`}>{item.status === "active" ? "● Active" : "⏳ Pending"}</span>
+      <div className="ph-root ph-market-detail-root">
+        <div className="ph-page-card ph-market-detail-card">
+          <div className="ph-detail-top-nav">
+            <button
+              type="button"
+              className="ph-detail-back-btn"
+              onClick={() => { setSelectedItem(null); setView("marketplace"); }}
+            >
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>Back to Marketplace</span>
+            </button>
+          </div>
+
+          <div className="ph-detail-hero-card">
+            <div className="ph-detail-hero-avatar">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="ph-detail-hero-content">
+              <div className="ph-detail-hero-top-row">
+                <h1 className="ph-detail-item-title">{item.name}</h1>
+                <span className={`ph-status-pill ph-status-${item.status}`}>
+                  <span className="ph-status-bullet" />
+                  {item.status === "active" ? "Active" : "Pending"}
+                </span>
               </div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>{item.type} · {item.plan} Plan</div>
+              <div className="ph-detail-hero-meta">
+                <span className="ph-meta-type">{item.type}</span>
+                <span className="ph-meta-dot">·</span>
+                <span className="ph-meta-plan">{item.plan} Plan</span>
+              </div>
             </div>
           </div>
-          <div className="ph-detail-stats" style={{ gridTemplateColumns: "1fr 1fr" }}>
-            <div className="ph-dsc ph-dsc-violet"><div className="ph-dsc-label">Purchases</div><div className="ph-dsc-val">{item.purchases}</div></div>
-            <div className="ph-dsc ph-dsc-emerald"><div className="ph-dsc-label">Revenue</div><div className="ph-dsc-val">₹{item.revenue.toLocaleString("en-IN")}</div></div>
+
+          <div className="ph-detail-metrics-row">
+            <div className="ph-detail-stat-card ph-stat-card-purchases">
+              <div className="ph-stat-card-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div className="ph-stat-card-info">
+                <span className="ph-stat-card-label">PURCHASES</span>
+                <span className="ph-stat-card-value">{item.purchases}</span>
+              </div>
+            </div>
+
+            <div className="ph-detail-stat-card ph-stat-card-revenue">
+              <div className="ph-stat-card-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <div className="ph-stat-card-info">
+                <span className="ph-stat-card-label">REVENUE</span>
+                <span className="ph-stat-card-value">₹{item.revenue.toLocaleString("en-IN")}</span>
+              </div>
+            </div>
           </div>
-          <div className="ph-detail-grid">
-            {[["Item Name", item.name], ["Type", item.type], ["Plan", item.plan], ["Purchases", item.purchases], ["Revenue", `₹${item.revenue.toLocaleString("en-IN")}`], ["Status", item.status]].map(([l, v]) => (
-              <div key={l} className="ph-detail-row"><div className="ph-detail-label">{l}</div><div className="ph-detail-value">{v}</div></div>
-            ))}
+
+          <div className="ph-detail-specs-card">
+            <div className="ph-specs-card-header">
+              <h3 className="ph-specs-card-title">Listing Details</h3>
+              <span className="ph-specs-card-tag">Specifications</span>
+            </div>
+            <div className="ph-specs-card-body">
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Item Name</span>
+                <span className="ph-spec-item-value ph-spec-name-value">{item.name}</span>
+              </div>
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Type</span>
+                <span className="ph-spec-item-value">{item.type}</span>
+              </div>
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Plan</span>
+                <span className="ph-spec-item-value">{item.plan}</span>
+              </div>
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Purchases</span>
+                <span className="ph-spec-item-value">{item.purchases} {item.purchases === 1 ? "unit" : "units"}</span>
+              </div>
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Revenue</span>
+                <span className="ph-spec-item-value ph-spec-revenue-value">₹{item.revenue.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="ph-spec-item-row">
+                <span className="ph-spec-item-label">Status</span>
+                <span className="ph-spec-item-value">
+                  <span className={`ph-status-pill ph-status-${item.status}`}>
+                    <span className="ph-status-bullet" />
+                    {item.status === "active" ? "Active" : "Pending"}
+                  </span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -752,7 +886,7 @@ export default function PartnerHome({ setispopular }) {
                 onClick={() => {
                   try {
                     localStorage.setItem("dont_show_add_path_hint", "true");
-                  } catch {}
+                  } catch { }
                   setShowGuideNote(false);
                 }}
                 title="Never show this guide again"

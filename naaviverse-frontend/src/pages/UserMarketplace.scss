@@ -2608,5 +2608,20 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   }
 }
 
+.mkt-status-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  text-align: center;
+  color: #64748b;
+  margin: 20px 0;
+  width: 100%;
+}
+
 
 

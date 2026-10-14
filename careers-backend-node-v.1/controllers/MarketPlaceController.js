@@ -43,17 +43,23 @@ const addMarketplaceItem = async (req, res) => {
       return res.status(400).json({ status: false, message: "step_id and layer are required" });
     }
 
+    const resolvedRole = role || category || "vendor";
+    const resolvedCategory = (category || role || "vendor").toLowerCase();
+    const resolvedLayer = (layer || "macro").toLowerCase();
+
     const item = await marketplaceModel.create({
-      name, role, layer, step_id, path_id, partner_email,
-      category, access, cost, goal, outcomes, duration, iterations,
+      name, role: resolvedRole, layer: resolvedLayer, step_id, path_id, partner_email,
+      category: resolvedCategory, access, cost, goal, outcomes, duration, iterations,
       discount, features, status: "active"
     });
 
     // Push this item's _id into the step's [layer]_marketplace array
-    await stepModel.findByIdAndUpdate(
-      step_id,
-      { $push: { [`${layer}_marketplace`]: item._id } }
-    );
+    if (step_id && mongoose.Types.ObjectId.isValid(step_id)) {
+      await stepModel.findByIdAndUpdate(
+        step_id,
+        { $addToSet: { [`${resolvedLayer}_marketplace`]: item._id } }
+      );
+    }
 
     // ✅ Log marketplace listing created
     if (partner_email) {
@@ -122,38 +128,156 @@ const getMarketplaceItemsByStep = async (req, res) => {
     const { step_id } = req.params;
     const { layer, category, searchQ, intent, path_id, email } = req.query;
 
-    // If a specific layer is requested that requires unlock, verify user permission
-    if (layer && layer !== "macro") {
+    if (!step_id) {
+      return res.json({ status: true, data: [] });
+    }
+
+    // If a specific layer is explicitly queried that requires unlock, verify permission
+    if (layer && layer !== "macro" && email) {
       const unlocked = await isLayerUnlockedForUser(email, step_id, layer);
       if (!unlocked) {
         return res.json({ status: true, data: [] });
       }
     }
 
-    const filter = { step_id, status: "active" };
-    if (layer) filter.layer = layer;
-    if (category) filter.category = category;
-    
-    const userContext = {
-      searchQuery: searchQ || intent || "",
-      pathId: path_id || "",
-      stepId: step_id || "",
-    };
-
-    let items = await getRankedMarketplaceItems(filter, userContext);
-
-    // If email is provided and no specific layer was filtered, exclude locked layers
-    if (email) {
-      const microUnlocked = await isLayerUnlockedForUser(email, step_id, "micro");
-      const nanoUnlocked = await isLayerUnlockedForUser(email, step_id, "nano");
-      items = items.filter((item) => {
-        if (item.layer === "micro") return microUnlocked;
-        if (item.layer === "nano") return nanoUnlocked;
-        return true;
-      });
+    // 1. Fetch from marketplaceModel
+    let mItems = [];
+    try {
+      const mFilter = { status: "active" };
+      if (mongoose.Types.ObjectId.isValid(step_id)) {
+        mFilter.$or = [{ step_id: new mongoose.Types.ObjectId(step_id) }, { step_id: String(step_id) }];
+      } else {
+        mFilter.step_id = String(step_id);
+      }
+      mItems = await marketplaceModel.find(mFilter).lean();
+    } catch (e) {
+      console.warn("MarketplaceItem find error:", e);
     }
 
-    res.json({ status: true, data: items });
+    // 2. Fetch the step document to extract partner marketplace items from macro/micro/nano arrays
+    let stepDoc = null;
+    try {
+      if (mongoose.Types.ObjectId.isValid(step_id)) {
+        stepDoc = await stepModel.findById(step_id).lean();
+      }
+      if (!stepDoc) {
+        stepDoc = await stepModel.findOne({ _id: step_id }).lean();
+      }
+      if (!stepDoc && mongoose.connection.db) {
+        stepDoc = await mongoose.connection.db.collection("career_steps").findOne({
+          _id: mongoose.Types.ObjectId.isValid(step_id) ? new mongoose.Types.ObjectId(step_id) : step_id,
+        });
+      }
+      if (!stepDoc && mongoose.connection.db) {
+        stepDoc = await mongoose.connection.db.collection("steps").findOne({
+          _id: mongoose.Types.ObjectId.isValid(step_id) ? new mongoose.Types.ObjectId(step_id) : step_id,
+        });
+      }
+    } catch (e) {
+      console.warn("Step fetch error in getMarketplaceItemsByStep:", e);
+    }
+
+    const combined = [...mItems];
+    const seenNames = new Set(
+      mItems.map((i) => `${(i.name || "").toLowerCase().trim()}_${(i.layer || "").toLowerCase().trim()}`)
+    );
+    const seenIds = new Set(mItems.map((i) => String(i._id)));
+
+    if (stepDoc) {
+      const stepLayers = ["macro", "micro", "nano"];
+      for (const lay of stepLayers) {
+        const rawArr = [
+          ...(Array.isArray(stepDoc[`${lay}_marketplace`]) ? stepDoc[`${lay}_marketplace`] : []),
+          ...(Array.isArray(stepDoc[lay]?.marketplace) ? stepDoc[lay].marketplace : []),
+        ];
+
+        for (let idx = 0; idx < rawArr.length; idx++) {
+          const entry = rawArr[idx];
+          if (!entry) continue;
+
+          // If entry is an ObjectId or reference string
+          if (typeof entry === "string" || entry instanceof mongoose.Types.ObjectId) {
+            const entryIdStr = String(entry);
+            if (!seenIds.has(entryIdStr) && mongoose.Types.ObjectId.isValid(entryIdStr)) {
+              try {
+                const refItem = await marketplaceModel.findById(entryIdStr).lean();
+                if (refItem && refItem.status === "active") {
+                  seenIds.add(entryIdStr);
+                  seenNames.add(`${(refItem.name || "").toLowerCase().trim()}_${(refItem.layer || lay).toLowerCase().trim()}`);
+                  combined.push({
+                    ...refItem,
+                    layer: (refItem.layer || lay).toLowerCase(),
+                  });
+                }
+              } catch (_) {}
+            }
+          } else if (typeof entry === "object" && entry.name && String(entry.name).trim()) {
+            // Embedded marketplace item object (saved from partner step modal)
+            const normName = String(entry.name).trim();
+            const resolvedLayer = (entry.layer || lay).toLowerCase();
+            const nameKey = `${normName.toLowerCase()}_${resolvedLayer}`;
+            const entryIdStr = entry._id ? String(entry._id) : null;
+
+            if ((entryIdStr && seenIds.has(entryIdStr)) || seenNames.has(nameKey)) {
+              continue;
+            }
+
+            const resolvedRole = entry.role || entry.category || "vendor";
+            const resolvedCategory = (entry.category || entry.role || "vendor").toLowerCase();
+            const costVal = entry.cost !== undefined ? String(entry.cost) : "0";
+            const isFree = costVal === "0" || costVal.toLowerCase() === "free" || !costVal;
+
+            const normalizedItem = {
+              _id: entryIdStr || `step_${stepDoc._id}_${lay}_${idx}`,
+              name: normName,
+              role: resolvedRole,
+              category: resolvedCategory,
+              layer: resolvedLayer,
+              step_id: stepDoc._id,
+              path_id: stepDoc.path_id || path_id || null,
+              partner_email: entry.partner_email || stepDoc.email || "",
+              access: entry.access || (isFree ? "Free" : "Paid"),
+              cost: costVal,
+              goal: entry.goal || "",
+              outcomes: entry.outcomes || "",
+              duration: entry.duration || "Self-Paced",
+              iterations: entry.iterations || "",
+              discount: entry.discount || "None",
+              features: entry.features || "",
+              status: "active",
+              sourceType: "step",
+              createdAt: entry.createdAt || stepDoc.createdAt || new Date(),
+            };
+
+            if (entryIdStr) seenIds.add(entryIdStr);
+            seenNames.add(nameKey);
+            combined.push(normalizedItem);
+          }
+        }
+      }
+    }
+
+    // 3. Filter by layer if specific layer query is passed
+    let finalItems = combined;
+    if (layer) {
+      finalItems = finalItems.filter((i) => (i.layer || "macro").toLowerCase() === layer.toLowerCase());
+    }
+
+    // 4. Filter by category if requested
+    if (category && category !== "all") {
+      finalItems = finalItems.filter(
+        (i) => (i.category || i.role || "").toLowerCase() === category.toLowerCase()
+      );
+    }
+
+    const userContext = {
+      searchQuery: searchQ || intent || "",
+      pathId: path_id || (stepDoc?.path_id ? String(stepDoc.path_id) : ""),
+      stepId: String(step_id),
+    };
+
+    const ranked = await getRankedMarketplaceItems(finalItems, userContext);
+    return res.json({ status: true, data: ranked });
   } catch (err) {
     console.error("getMarketplaceItemsByStep error:", err);
     res.status(500).json({ status: false, message: err.message });

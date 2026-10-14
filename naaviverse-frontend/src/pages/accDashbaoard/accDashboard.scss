@@ -101,7 +101,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    pointer-events: none !important; 
+    pointer-events: none !important;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 
   }
@@ -109,7 +109,7 @@ $pastel-mint: rgba(220, 240, 230, 0.3);
   &:has(.acc-popular)::after {
     opacity: 1;
     visibility: visible;
-    pointer-events: none !important; 
+    pointer-events: none !important;
   }
 }
 
@@ -1753,9 +1753,11 @@ input[type="file"] {
     &::-webkit-scrollbar {
       width: 6px;
     }
+
     &::-webkit-scrollbar-track {
       background: transparent;
     }
+
     &::-webkit-scrollbar-thumb {
       background: #cbd5e1;
       border-radius: 4px;
@@ -2073,7 +2075,8 @@ select {
 .dashboard-sidebar {
   position: relative;
   z-index: 500;
-  background: #ffffff;  /* White background, not transparent */
+  background: #ffffff;
+  /* White background, not transparent */
 }
 
 // Fix for CreateNewPath layout
@@ -3363,15 +3366,19 @@ body:has(.step-popup-overlay) {
   .dashboard-sidebar {
     position: relative !important;
     left: 0 !important;
-    width: 240px !important; /* Changed from 260px to 220px */
+    width: 240px !important;
+    /* Changed from 260px to 220px */
     flex-shrink: 0 !important;
     box-shadow: none !important;
-    background: #ffffff !important;  /* Force white background */
-    border-right: 1px solid #eef2f6 !important;  /* Add back the border */
+    background: #ffffff !important;
+    /* Force white background */
+    border-right: 1px solid #eef2f6 !important;
+    /* Add back the border */
   }
 
   .dashboard-screens {
-   width: calc(100vw - 240px) !important; /* Match the 220px width */
+    width: calc(100vw - 240px) !important;
+    /* Match the 220px width */
     flex: 1 !important;
   }
 
@@ -3389,6 +3396,7 @@ body:has(.step-popup-overlay) {
 // MOBILE — ≤768px
 // ============================================
 @media (max-width: 768px) {
+
   // ── Universal pastel blue canvas for mobile partner flow ──
   body:has(.mobile-topbar),
   body:has(.mobile-topbar) #root,
@@ -3398,10 +3406,10 @@ body:has(.step-popup-overlay) {
   .dashboard-screens--partner,
   .dashboard-screens-inner--partner,
   body:has(.mobile-topbar) .dashboard-body,
-  .mobile-topbar ~ .dashboard-main,
-  .mobile-topbar ~ .dashboard-main .dashboard-body,
-  .mobile-topbar + .dashboard-main,
-  .mobile-topbar + .dashboard-main .dashboard-body,
+  .mobile-topbar~.dashboard-main,
+  .mobile-topbar~.dashboard-main .dashboard-body,
+  .mobile-topbar+.dashboard-main,
+  .mobile-topbar+.dashboard-main .dashboard-body,
   .dashboard-root--mypaths,
   .dashboard-main--mypaths,
   .dashboard-body--mypaths,
@@ -3412,8 +3420,8 @@ body:has(.step-popup-overlay) {
   }
 
   body:has(.mobile-topbar) .dashboard-body,
-  .mobile-topbar ~ .dashboard-main .dashboard-body,
-  .mobile-topbar + .dashboard-main .dashboard-body,
+  .mobile-topbar~.dashboard-main .dashboard-body,
+  .mobile-topbar+.dashboard-main .dashboard-body,
   .dashboard-body--partner {
     flex-direction: row !important;
     padding-top: 0 !important;
@@ -3476,7 +3484,7 @@ body:has(.step-popup-overlay) {
     background-color: #e9f2fa !important;
   }
 
-  .dashboard-screens > div,
+  .dashboard-screens>div,
   .dashboard-screens-inner,
   .dashboard-screens-inner--partner {
     width: 100% !important;
@@ -3709,7 +3717,7 @@ body:has(.step-popup-overlay) {
     flex-wrap: wrap !important;
     border-bottom: none !important;
 
-    > div:first-child {
+    >div:first-child {
       display: flex !important;
       gap: 6px !important;
       overflow-x: auto !important;

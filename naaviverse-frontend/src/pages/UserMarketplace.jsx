@@ -58,124 +58,13 @@ const CATEGORY_PILLS = [
   { key: "institution", label: "Institutions" },
 ];
 
-// High quality fallback sample data matching user screenshot
-const DEMO_FALLBACK_ITEMS = [
-  {
-    _id: "demo_inst_1",
-    name: "University of Toronto Economics Department Resources",
-    category: "institution",
-    role: "INSTITUTE",
-    layer: "macro",
-    cost: "0",
-    // partner_email: "pathengine.admin@gmail.com",
-    goal: "Official resources from the University of Toronto Economics Department to help you prepare for advanced study.",
-    duration: "Self-Paced",
-    discount: "None",
-    marketplace_score: 85,
-    average_rating: 4.0
-  },
-  {
-    _id: "demo_inst_2",
-    name: "Coursera University of Toronto Economics Specialization",
-    category: "institution",
-    role: "COURSE",
-    layer: "macro",
-    cost: "300500",
-    // partner_email: "pathengine.admin@gmail.com",
-    goal: "A series of online courses from the University of Toronto Economics Department to help you build a strong foundation.",
-    duration: "4–6 Months",
-    discount: "Financial Aid Available",
-    marketplace_score: 90,
-    average_rating: 4.0
-  },
-  {
-    _id: "demo_inst_3",
-    name: "Economics Institute of Canada",
-    category: "institution",
-    role: "INSTITUTE",
-    layer: "macro",
-    cost: "0",
-    // partner_email: "pathengine.admin@gmail.com",
-    goal: "A leading institute for economics education and research in Canada, offering programs and scholarships.",
-    duration: "Varies by Program",
-    discount: "Scholarships Available",
-    marketplace_score: 88,
-    average_rating: 4.0
-  },
-  {
-    _id: "demo_vendor_1",
-    name: "Global Financial Data & Analytics Toolkit",
-    category: "vendor",
-    role: "VENDOR",
-    layer: "macro",
-    cost: "0",
-    // partner_email: "fin.tools@pathengine.io",
-    goal: "Interactive data visualization and analysis tools tailored for macroeconomic modeling.",
-    duration: "Self-Paced",
-    discount: "Free License",
-    marketplace_score: 92,
-    average_rating: 4.5
-  },
-  {
-    _id: "demo_vendor_2",
-    name: "Enterprise Business Intelligence Platform",
-    category: "vendor",
-    role: "VENDOR",
-    layer: "macro",
-    cost: "45000",
-    // partner_email: "vendor.admin@pathengine.io",
-    goal: "Comprehensive analytics suite providing real-time data feeds and automated reporting.",
-    duration: "1 Year Access",
-    discount: "15% Institutional",
-    marketplace_score: 82,
-    average_rating: 4.2
-  },
-  {
-    _id: "demo_mentor_1",
-    name: "1-on-1 Academic Advisory & Admission Guidance",
-    category: "mentor",
-    role: "MENTOR",
-    layer: "macro",
-    cost: "0",
-    // partner_email: "mentor.prep@pathengine.com",
-    goal: "Personalized mentorship sessions covering application strategy and academic roadmap.",
-    duration: "3 Sessions",
-    discount: "Free Trial",
-    marketplace_score: 96,
-    average_rating: 4.9
-  },
-  {
-    _id: "demo_distro_1",
-    name: "North America Higher Ed Distribution Network",
-    category: "distributor",
-    role: "DISTRIBUTOR",
-    layer: "macro",
-    cost: "0",
-    // partner_email: "distro@pathengine.com",
-    goal: "Distribution access across universities and partner institutions for academic materials.",
-    duration: "Ongoing",
-    discount: "Full Grant",
-    marketplace_score: 84,
-    average_rating: 4.1
-  },
-  {
-    _id: "demo_inst_4",
-    name: "Canadian Centre for Advanced Economic Policy",
-    category: "institution",
-    role: "INSTITUTE",
-    layer: "macro",
-    cost: "125000",
-    // partner_email: "pathengine.admin@gmail.com",
-    goal: "Policy analysis, econometric research papers, and executive certification modules.",
-    duration: "2 Months",
-    discount: "Early Bird 10%",
-    marketplace_score: 87,
-    average_rating: 4.4
-  }
-];
-
 const getItemCategory = (item) => {
-  return (item?.category || item?.role || "vendor").toLowerCase();
+  const cat = String(item?.category || item?.role || "vendor").toLowerCase().trim();
+  if (cat.includes("mentor")) return "mentor";
+  if (cat.includes("distribut")) return "distributor";
+  if (cat.includes("institut") || cat.includes("universit") || cat.includes("course") || cat.includes("degree")) return "institution";
+  if (cat.includes("vendor")) return "vendor";
+  return cat;
 };
 
 const isFreeItem = (s) => {
@@ -904,8 +793,18 @@ const MarketplaceGrid = ({
   if (!services || services.length === 0) {
     return (
       <div className="mkt-status-box">
-        <div style={{ fontSize: 36 }}>🔍</div>
-        <p>No services found matching your filters.</p>
+        <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}>
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7.5" />
+            <line x1="21" y1="21" x2="16.5" y2="16.5" strokeWidth="2.2" />
+          </svg>
+        </div>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1e293b", margin: "0 0 6px" }}>
+          No Marketplace Services Found
+        </h3>
+        <p style={{ fontSize: 13, color: "#64748b", margin: 0 }}>
+          No services have been listed for this view yet.
+        </p>
       </div>
     );
   }
@@ -1567,10 +1466,47 @@ const UserMarketplace = ({ onStepChange }) => {
     userRaw?.fullName ||
     localStorage.getItem("userName") ||
     "Student";
-  const stepId = location.state?.stepId || localStorage.getItem("selectedStepId") || "default_step";
+  const [activeStepId, setActiveStepId] = useState(() => {
+    const fromState = location.state?.stepId;
+    const fromStorage = localStorage.getItem("selectedStepId");
+    if (fromState && MONGO_ID_RE.test(fromState)) return fromState;
+    if (fromStorage && MONGO_ID_RE.test(fromStorage)) return fromStorage;
+    return "";
+  });
+  const stepId = activeStepId;
   const pathId = localStorage.getItem("selectedPathId") || "default_path";
   const pathName = localStorage.getItem("selectedPathName") || "Career Path";
   const stepName = localStorage.getItem("selectedStepName") || "Learning Step";
+
+  // Auto-resolve stepId from location state or active path if not set
+  useEffect(() => {
+    if (location.state?.stepId && MONGO_ID_RE.test(location.state.stepId)) {
+      setActiveStepId(location.state.stepId);
+      localStorage.setItem("selectedStepId", location.state.stepId);
+    }
+  }, [location.state?.stepId]);
+
+  useEffect(() => {
+    if (!activeStepId) {
+      const storedPathId = localStorage.getItem("selectedPathId");
+      if (storedPathId && MONGO_ID_RE.test(storedPathId)) {
+        axios
+          .get(`${API}/api/userpaths/steps?pathId=${storedPathId}`)
+          .then((res) => {
+            const steps = res?.data?.data?.steps || [];
+            if (steps.length > 0 && steps[0]?._id) {
+              const targetStep = steps[0];
+              localStorage.setItem("selectedStepId", targetStep._id);
+              if (targetStep.name || targetStep.macro_name) {
+                localStorage.setItem("selectedStepName", targetStep.name || targetStep.macro_name);
+              }
+              setActiveStepId(targetStep._id);
+            }
+          })
+          .catch((err) => console.warn("Could not auto-resolve step for path in marketplace:", err));
+      }
+    }
+  }, [activeStepId]);
 
   // ── Component state ────────────────────────────────────────────────────────
   const [page, setPage] = useState("marketplace");
@@ -1591,28 +1527,10 @@ const UserMarketplace = ({ onStepChange }) => {
   ).toLowerCase();
 
   const [activeLayer, setActiveLayer] = useState(
-    initialRequestedLayer === "macro" ||
-    (initialRequestedLayer === "micro" && location.state?.creditUnlocked?.micro) ||
-    (initialRequestedLayer === "nano" && location.state?.creditUnlocked?.nano)
-      ? initialRequestedLayer
-      : "macro"
+    ["macro", "micro", "nano"].includes(initialRequestedLayer) ? initialRequestedLayer : "macro"
   );
 
-  const visibleLayerPills = useMemo(() => {
-    return LAYER_PILLS.filter(({ key }) => {
-      if (key === "macro") return true;
-      if (key === "micro") return !!unlockedLayers.micro;
-      if (key === "nano") return !!unlockedLayers.nano;
-      return false;
-    });
-  }, [unlockedLayers]);
-
-  // Ensure activeLayer is always one of the unlocked/visible views; fallback to "macro"
-  useEffect(() => {
-    if (activeLayer !== "macro" && !unlockedLayers[activeLayer]) {
-      setActiveLayer("macro");
-    }
-  }, [activeLayer, unlockedLayers]);
+  const visibleLayerPills = LAYER_PILLS;
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQ, setSearchQ] = useState("");
@@ -1621,7 +1539,7 @@ const UserMarketplace = ({ onStepChange }) => {
 
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
-  const [items, setItems] = useState(DEMO_FALLBACK_ITEMS);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [orderInfo, setOrderInfo] = useState(null);
@@ -1790,22 +1708,25 @@ const UserMarketplace = ({ onStepChange }) => {
       .catch((err) => console.error("Failed to load user purchases:", err));
   }, [userEmail]);
 
-  // Fetch marketplace items from DB, fallback to demo items if empty
+  // Fetch marketplace items from DB for active step
   useEffect(() => {
     if (!stepId || !MONGO_ID_RE.test(stepId)) {
-      setItems(DEMO_FALLBACK_ITEMS);
+      setItems([]);
       return;
     }
     setLoading(true);
     axios
-      .get(`${process.env.REACT_APP_API_BASE_URL || "http://localhost:4545"}/api/marketplace/step/${stepId}`, {
+      .get(`${API}/api/marketplace/step/${stepId}`, {
         params: { email: userEmail },
       })
       .then((res) => {
         const fetched = res.data?.data || [];
-        setItems(fetched.length > 0 ? fetched : DEMO_FALLBACK_ITEMS);
+        setItems(fetched);
       })
-      .catch(() => setItems(DEMO_FALLBACK_ITEMS))
+      .catch((err) => {
+        console.error("Marketplace fetch error:", err);
+        setItems([]);
+      })
       .finally(() => setLoading(false));
   }, [stepId, userEmail]);
 
@@ -1825,15 +1746,13 @@ const UserMarketplace = ({ onStepChange }) => {
 
   // Filter & Sort Pipeline (Excluding rejected items)
   const categoryBaseItems = useMemo(() => {
-    // If current view is not unlocked, show completely empty content (no preview/placeholder)
-    if (!isCurrentViewUnlocked) return [];
-
     const q = searchQ.toLowerCase().trim();
     const rejectedSet = new Set((replacementState.rejectedItemIds || []).map((id) => String(id)));
     return items.filter((s) => {
-      const sId = String(s._id || s.id);
-      if (rejectedSet.has(sId)) return false; // Exclude rejected items
-      const isLayerMatched = s.layer === activeLayer;
+      const sId = String(s._id || s.id || "");
+      if (sId && rejectedSet.has(sId)) return false; // Exclude rejected items
+      const itemLayer = String(s.layer || "macro").toLowerCase();
+      const isLayerMatched = itemLayer === activeLayer.toLowerCase();
       const isSearchMatched =
         !q ||
         s.name?.toLowerCase().includes(q) ||
@@ -1842,7 +1761,7 @@ const UserMarketplace = ({ onStepChange }) => {
         s.role?.toLowerCase().includes(q);
       return isLayerMatched && isSearchMatched;
     });
-  }, [items, activeLayer, searchQ, replacementState.rejectedItemIds, isCurrentViewUnlocked]);
+  }, [items, activeLayer, searchQ, replacementState.rejectedItemIds]);
 
   // Apply Hard Filters → Score → Diversify → Sort order
   const filtered = useMemo(() => {
@@ -2277,8 +2196,8 @@ const UserMarketplace = ({ onStepChange }) => {
                 onFilterChange={setFilterState}
                 activeLayer={activeLayer}
                 onLayerChange={setActiveLayer}
-                categoryCounts={isCurrentViewUnlocked ? categoryCounts : { all: 0 }}
-                totalResults={isCurrentViewUnlocked ? filtered.length : 0}
+                categoryCounts={categoryCounts}
+                totalResults={filtered.length}
                 onClearFilters={clearAllFilters}
                 hasActiveFilters={hasActiveFilters}
               />
@@ -2290,10 +2209,6 @@ const UserMarketplace = ({ onStepChange }) => {
                     <div className="mkt-spinner" />
                     <p>Loading services…</p>
                   </div>
-                ) : !isCurrentViewUnlocked ? (
-                  /* Completely empty content when view is not unlocked:
-                     Do not show any locked content, preview, placeholder, or unlock screen. */
-                  null
                 ) : (
                   <MarketplaceGrid
                     services={filtered}

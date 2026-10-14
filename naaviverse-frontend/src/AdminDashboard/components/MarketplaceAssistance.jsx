@@ -284,7 +284,12 @@ export default function MarketplaceAssistance() {
           </div>
         ) : filteredRequests.length === 0 ? (
           <div className="map-empty-state">
-            <div className="map-empty-icon">🔍</div>
+            <div className="map-empty-icon" style={{ display: "flex", justifyContent: "center" }}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7.5" />
+                <line x1="21" y1="21" x2="16.5" y2="16.5" strokeWidth="2.2" />
+              </svg>
+            </div>
             <p className="map-empty-title">No marketplace assistance requests found</p>
             <p className="map-empty-sub">
               {search || statusFilter !== "all"

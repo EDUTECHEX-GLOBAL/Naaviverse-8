@@ -515,6 +515,8 @@ const DraftPathView = () => {
   const addMarketplaceItem = async () => {
     const newItem = {
       role: selectedRole,
+      category: selectedRole,
+      layer: currentLayer,
       name: marketForm.name,
       access: marketForm.access,
       cost: marketForm.cost,

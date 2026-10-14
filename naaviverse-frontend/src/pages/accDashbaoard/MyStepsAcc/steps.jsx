@@ -266,6 +266,8 @@ const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
     if (!form.name || !selectedRole) return;
     onAdd({
       role: selectedRole,
+      category: selectedRole,
+      layer: layerKey,
       name: form.name,
       access: form.access,
       cost: form.cost,

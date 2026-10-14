@@ -283,10 +283,14 @@
 .partner-sidebar-menu-scrollable {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+
+  /* IE and Edge */
   &::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
+    /* Chrome, Safari, Opera */
   }
 
   padding: 12px 10px;
@@ -350,11 +354,11 @@
   &.locked {
     opacity: 0.4;
     cursor: not-allowed;
-    
+
     &:hover {
       background: transparent;
       color: #94a3b8;
-      
+
       .partner-nav-icon {
         stroke: #94a3b8;
       }
