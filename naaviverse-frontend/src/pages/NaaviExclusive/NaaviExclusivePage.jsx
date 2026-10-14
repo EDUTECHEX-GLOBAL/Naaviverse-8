@@ -6,6 +6,7 @@ import axios from "axios";
 import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./NaaviExclusivePage.scss";
 import { validatePersonName } from "../../utils/emailValidator";
+import { SvgCheck } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -47,7 +48,7 @@ const StepIndicator = ({ step }) => (
       const active = step === idx;
       return (
         <div key={label} className={`ne-step ${active ? "active" : ""} ${done ? "done" : ""}`}>
-          <div className="ne-step-circle">{done ? "[check]" : idx}</div>
+          <div className="ne-step-circle">{done ? <SvgCheck size={12} /> : idx}</div>
           <span className="ne-step-label">{label}</span>
         </div>
       );

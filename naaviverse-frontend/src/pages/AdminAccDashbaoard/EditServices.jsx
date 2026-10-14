@@ -107,14 +107,14 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
       );
 
       if (data?.status) {
-        toast.success("[check] Service updated successfully");
+        toast.success("Service updated successfully");
         onSave(data.data);
       } else {
-        toast.error("[error] Update failed");
+        toast.error("Update failed");
       }
     } catch (err) {
       console.error("Update error:", err);
-      toast.error("[error] Update failed - Server error");
+      toast.error("Update failed - Server error");
     } finally {
       setLoading(false);
     }

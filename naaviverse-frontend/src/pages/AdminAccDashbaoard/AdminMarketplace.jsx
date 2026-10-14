@@ -7,6 +7,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import MarketplaceAssistance from "../../AdminDashboard/components/MarketplaceAssistance";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
+import { SvgStarFilled, SvgStarEmpty } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -107,6 +108,21 @@ const getMarketplaceStarRating = (item) => {
 
   const hash = String(item?._id || item?.name || "1").split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return (4.0 + (hash % 10) * 0.1).toFixed(1);
+};
+
+const RenderStars = ({ rating = 5, size = 12 }) => {
+  const numRating = Math.round(Number(rating) || 5);
+  return (
+    <span className="adm-rating-stars" style={{ display: "inline-flex", gap: "2px", verticalAlign: "middle" }}>
+      {Array.from({ length: 5 }, (_, i) =>
+        i < numRating ? (
+          <SvgStarFilled key={i} size={size} color="#f59e0b" />
+        ) : (
+          <SvgStarEmpty key={i} size={size} color="#cbd5e1" />
+        )
+      )}
+    </span>
+  );
 };
 
 const parseFeatures = (features) => {
@@ -444,7 +460,7 @@ const AdminMarketplace = () => {
                     </td>
                     <td data-label="Rating">
                       <span className="adm-rating-badge">
-                        <span className="adm-rating-stars">[star][star][star][star][star]</span>
+                        <RenderStars rating={getMarketplaceStarRating(item)} size={12} />
                         <span>{getMarketplaceStarRating(item)}</span>
                       </span>
                     </td>
@@ -535,7 +551,7 @@ const AdminMarketplace = () => {
                   <div className="adm-chip">
                     <span className="adm-chip__label">Rating</span>
                     <span className="adm-rating-badge adm-rating-badge--modal">
-                      <span className="adm-rating-stars">[star][star][star][star][star]</span>
+                      <RenderStars rating={getMarketplaceStarRating(selectedItem)} size={13} />
                       <span>{getMarketplaceStarRating(selectedItem)}</span>
                     </span>
                   </div>

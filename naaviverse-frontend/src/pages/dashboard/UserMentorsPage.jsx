@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { SvgStarFilled } from "../../utils/SvgIcons";
 import "./userHome.scss";
 
 const MENTORS = [
@@ -46,7 +47,7 @@ export default function UserMentorsPage() {
                 </div>
               </div>
               <div className="uh-mentor-full-right">
-                <div className="uh-mentor-rating">[star] {m.rating}</div>
+                <div className="uh-mentor-rating"><SvgStarFilled size={13} color="#f59e0b" style={{ marginRight: 3, verticalAlign: "middle" }} />{m.rating}</div>
                 <span className="uh-mentor-sessions">{m.sessions} session{m.sessions > 1 ? "s" : ""}</span>
                 <span className={`uh-session-tag st-${m.status}`}>
                   {m.status === "upcoming" ? "Upcoming" : "Completed"}

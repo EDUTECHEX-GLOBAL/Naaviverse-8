@@ -49,8 +49,14 @@ router.patch("/reply/:pathId/:changeRequestId", PathController.replyToChangeRequ
 
 router.patch("/address/:pathId/:changeRequestId", PathController.markChangeRequestAddressed);
 
+const PathFitController = require("../controllers/PathFitController");
+
 // [STAR] VIEW PATH BY MONGO ID (IMPORTANT for frontend View Page)
 router.get("/viewpath/:path_id", PathController.getPathById);
+
+// [HOT] PERSONALIZED PATH FIT ANALYSIS
+router.get("/fit-analysis/:pathId", PathFitController.getSinglePathFit);
+router.post("/batch-fit-analysis", PathFitController.getBatchPathFit);
 
 // BULK UPLOAD PATHS
 router.post("/bulk", PathController.uploadBulkPaths);

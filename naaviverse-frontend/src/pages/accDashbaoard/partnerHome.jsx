@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./partnerHome.scss";
 import { useStore } from "../../components/store/store.ts";
-import { SvgArrowRight, SvgSparkles, SvgZap } from "../../utils/SvgIcons";
+import { SvgArrowRight, SvgSparkles, SvgZap, SvgHourglass, SvgShoppingCart, SvgCheck, SvgTrendingUp } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
 function getPartnerEmail() {
@@ -15,10 +15,10 @@ function getPartnerEmail() {
 }
 
 const NOTIF_CFG = {
-  purchase: { bg: "#dcfce7", color: "#15803d", icon: "[cart]", label: "Purchase" },
-  approval: { bg: "#fef3c7", color: "#b45309", icon: "[check]", label: "Approval" },
-  path: { bg: "#ccfbf1", color: "#0f766e", icon: "[trending]", label: "Path" },
-  system: { bg: "#f1f5f9", color: "#475569", icon: "ℹ️", label: "System" },
+  purchase: { bg: "#dcfce7", color: "#15803d", icon: <SvgShoppingCart size={15} color="#15803d" />, label: "Purchase" },
+  approval: { bg: "#fef3c7", color: "#b45309", icon: <SvgCheck size={15} color="#b45309" />, label: "Approval" },
+  path: { bg: "#ccfbf1", color: "#0f766e", icon: <SvgTrendingUp size={15} color="#0f766e" />, label: "Path" },
+  system: { bg: "#f1f5f9", color: "#475569", icon: <SvgZap size={15} color="#475569" />, label: "System" },
 };
 
 const urgencyOrder = { high: 0, medium: 1, low: 2 };
@@ -523,7 +523,7 @@ export default function PartnerHome({ setispopular }) {
                         <td style={{ fontSize: 12, color: "#64748b" }}>{u.completedSteps}/{u.totalSteps}</td>
                         <td>
                           <span className={`ph-status-pill ${u.status === "completed" ? "ph-status-active" : u.status === "in-progress" ? "ph-status-pending" : "ph-status-inactive"}`}>
-                            {u.status === "completed" ? "● Done" : u.status === "in-progress" ? "[hourglass] Active" : "○ Not Started"}
+                            {u.status === "completed" ? "● Done" : u.status === "in-progress" ? <><SvgHourglass size={12} style={{ marginRight: 3, verticalAlign: "middle" }} /> Active</> : "○ Not Started"}
                           </span>
                         </td>
                       </tr>
@@ -861,7 +861,7 @@ export default function PartnerHome({ setispopular }) {
         <div className={`ph-toggle-note ${isGuideCollapsed ? "ph-toggle-note--collapsed" : "ph-toggle-note--expanded"}`}>
           <div className="ph-tn-bar">
             <div className="ph-tn-bar-left" onClick={() => setIsGuideCollapsed(p => !p)}>
-              <span className="ph-tn-icon">[sparkles]</span>
+              <span className="ph-tn-icon"><SvgSparkles size={16} /></span>
               <span className="ph-tn-title">How to create a path in 3 simple steps</span>
             </div>
             <div className="ph-tn-bar-right">

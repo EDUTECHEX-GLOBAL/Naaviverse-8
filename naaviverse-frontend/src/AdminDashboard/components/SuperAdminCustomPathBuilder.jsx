@@ -10,6 +10,7 @@ import {
   FiSend,
 } from "react-icons/fi";
 import "./SuperAdminCustomPathBuilder.scss";
+import { SvgSparkles } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:4545";
 
@@ -1310,7 +1311,7 @@ export default function SuperAdminCustomPathBuilder({
               disabled={loading}
               onClick={handleSaveAndPublish}
             >
-              <FiSend /> {loading ? "Publishing Pathway..." : isEditMode ? "Update & Republish Pathway" : "[sparkles] Publish Custom Pathway"}
+              <FiSend /> {loading ? "Publishing Pathway..." : isEditMode ? "Update & Republish Pathway" : <><SvgSparkles size={14} style={{ marginRight: 5, verticalAlign: "middle" }} />Publish Custom Pathway</>}
             </button>
           )}
         </div>

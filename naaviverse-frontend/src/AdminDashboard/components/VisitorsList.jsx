@@ -146,13 +146,7 @@ const VisitorsList = () => {
   };
 
   const getCountryFlag = (countryCode) => {
-    if (!countryCode) return '[globe]';
-    const flags = {
-      'US': '', 'IN': '', 'GB': '', 'CA': '', 'AU': '',
-      'DE': '', 'FR': '', 'IT': '', 'ES': '', 'BR': '',
-      'JP': '', 'CN': '', 'RU': '', 'KR': '', 'MX': ''
-    };
-    return flags[countryCode.toUpperCase()] || '[globe]';
+    return <FiGlobe style={{ verticalAlign: 'middle', marginRight: 4 }} />;
   };
 
   const getUniqueCountries = () => {

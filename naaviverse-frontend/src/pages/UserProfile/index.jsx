@@ -12,7 +12,7 @@ import LevelTwoModal from "./LevelTwoModal";
 import LevelThreeModal from "./LevelThreeModal";
 import lg1 from "../login/favicon3.png";
 import "./UserProfile.css";
-import { SvgCheckCircle } from "../../utils/SvgIcons";
+import { SvgCheckCircle, SvgCheck } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -340,7 +340,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">[check] Completed</span>
+                    <span className="up-status-chip up-chip--done"><SvgCheck size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />Completed</span>
                     <span className={`up-chevron ${openBox === 1 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -398,7 +398,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">[check] Completed</span>
+                    <span className="up-status-chip up-chip--done"><SvgCheck size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />Completed</span>
                     <span className={`up-chevron ${openBox === 2 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -444,7 +444,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">[check] Completed</span>
+                    <span className="up-status-chip up-chip--done"><SvgCheck size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />Completed</span>
                     <span className={`up-chevron ${openBox === 3 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -544,7 +544,7 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, existingData, onC
                 style={{ cursor: step > s ? "pointer" : "default" }}
                 title={step > s ? `Go back to ${STEP_LABELS[s - 1]}` : undefined}
               >
-                <span className="up-step-num">{step > s ? "[check]" : s}</span>
+                <span className="up-step-num">{step > s ? <SvgCheck size={12} /> : s}</span>
                 <span className="up-step-label">{STEP_LABELS[s - 1]}</span>
               </div>
               {s < 3 && (

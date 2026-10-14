@@ -12,7 +12,7 @@ import info from "./info.svg";
 import { Loginservice, GoogleLoginservice } from "../../services/loginapis";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { SvgCheck, SvgCheckCircle, SvgClose, SvgWarning } from "../../utils/SvgIcons";
+import { SvgCheck, SvgCheckCircle, SvgClose, SvgWarning, SvgStarFilled } from "../../utils/SvgIcons";
 
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -895,7 +895,7 @@ const Loginpage = ({ initialType }) => {
             stats: [
                 { value: "2K+", label: "Partners" },
                 { value: "50K+", label: "Clients Served" },
-                { value: "4.9[star]", label: "Partner Rating" },
+                { value: <>4.9 <SvgStarFilled size={14} color="#f59e0b" style={{ verticalAlign: "middle" }} /></>, label: "Partner Rating" },
             ],
         },
         ForgotPasswordUsers: {

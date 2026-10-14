@@ -23,8 +23,8 @@ export function getOtpEmailContent({ type, otpCode, recipientName, userType, exp
     : `Enter the code below to complete your sign-in to the ${platformContext}. Don't share this code with anyone — our team will never ask for it.`;
 
   const subject = isForgot
-    ? `Naaviverse Password Reset OTP [lock]`
-    : `Naaviverse Registration Confirmation OTP [lock]`;
+    ? `Naaviverse Password Reset OTP`
+    : `Naaviverse Registration Confirmation OTP`;
 
   // Spaced digits for OTP with compact spacing
   const formattedOtp = String(otpCode).split("").join("&nbsp;");
@@ -134,7 +134,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
   const accessLevelText = isPartner ? "Partner" : "User";
   const targetLoginUrl = loginUrl || (isPartner ? "https://naavinetwork.ai/login?type=partner" : "https://naavinetwork.ai/login");
 
-  const subject = `Account Approved — Welcome to Naaviverse! [party]`;
+  const subject = `Account Approved — Welcome to Naaviverse!`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -165,7 +165,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
 
               <!-- STATUS PILL BADGE -->
               <div style="display: inline-block; background-color: #E6F7F5; border-radius: 20px; padding: 5px 14px; margin-bottom: 14px;">
-                <span style="color: #0D6E63; font-size: 12.5px; font-weight: 600;">[check] Account approved</span>
+                <span style="color: #0D6E63; font-size: 12.5px; font-weight: 600;">✓ Account approved</span>
               </div>
 
               <!-- MAIN HEADING -->

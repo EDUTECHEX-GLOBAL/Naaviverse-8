@@ -28,13 +28,15 @@ const AboutFour = () => {
 }
 
 .block-style-two .list-item li::before {
-    content: "[check]";
+    content: "";
     position: absolute;
     left: 0;
-    top: 0;
-    color: #2273E6;
-    font-size: 18px;
-    font-weight: bold;
+    top: 3px;
+    width: 20px;
+    height: 20px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232273E6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 /* ADD THIS */

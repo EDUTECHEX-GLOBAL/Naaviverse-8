@@ -5,7 +5,7 @@ import axios from "axios";
 import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
 import pathIcon from "../../assets/images/assets/naavi-icon2.webp";
 import stepIcon from "../../assets/images/assets/naavi-icon3.webp";
-import { SvgShoppingBag } from "../../utils/SvgIcons";
+import { SvgShoppingBag, SvgCompass, SvgGlobe, SvgMap } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const getUserFromStorage = () => {
@@ -465,7 +465,7 @@ export default function UserHome({ initialView = "home" }) {
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
                 status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
-                icon: isFree ? "[compass]" : "[bag]️",
+                icon: isFree ? <SvgCompass size={16} /> : <SvgShoppingBag size={16} />,
               };
             });
 
@@ -494,7 +494,7 @@ export default function UserHome({ initialView = "home" }) {
               }),
               rawDate: new Date(up.createdAt || Date.now()).getTime(),
               status: "Free",
-              icon: "[compass]",
+              icon: <SvgCompass size={16} />,
             };
           });
 
@@ -666,7 +666,7 @@ export default function UserHome({ initialView = "home" }) {
           const allPaths = pathsRes.data?.data || [];
           setExplorePaths(allPaths.map(p => ({
             id: p._id,
-            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "[globe]",
+            icon: p.country ? p.country.slice(0, 2).toUpperCase() : <SvgGlobe size={16} />,
             name: p.nameOfPath || p.name,
             desc: p.description || "",
             steps: p.total_steps || p.the_ids?.length || 0,
@@ -978,7 +978,7 @@ export default function UserHome({ initialView = "home" }) {
     if (!myPath) return (
       <div className="uh-panel">
         <div className="uh-no-path">
-          <div className="uh-no-path-icon">[map]️</div>
+          <div className="uh-no-path-icon"><SvgMap size={36} color="#64748b" /></div>
           <div className="uh-no-path-title">No Path Selected Yet</div>
           <p className="uh-no-path-sub">Choose a learning path to start your Naavi journey.</p>
           <button className="uh-no-path-btn" onClick={() => navigate("/dashboard/users/paths")}>

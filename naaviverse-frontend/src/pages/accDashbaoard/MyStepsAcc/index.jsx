@@ -13,6 +13,7 @@ import { useStore } from "../../../components/store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import MenuNav from "../../../components/MenuNav/index.jsx";
 import stepIcon from '../../../assets/images/assets/naavi-icon3.webp';
+import { SvgClock, SvgPin, SvgLink } from "../../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 // ─── Helper: parse duration object → human-readable string ───────────────────
@@ -67,7 +68,7 @@ const LayerCard = ({ type, name, description, length, access }) => {
             {(length || access) && (
                 <div className="layer-meta">
                     {length && (
-                        <span className="meta-chip duration">[clock] {length}</span>
+                        <span className="meta-chip duration"><SvgClock size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{length}</span>
                     )}
                     {access && (
                         <span className={`meta-chip ${isFree ? "free" : "paid"}`}>
@@ -721,7 +722,7 @@ const MyStepsAcc = ({
                         {/* Empty state */}
                         {!loading && filteredSteps?.length === 0 && (
                             <div className="steps-empty">
-                                <div className="steps-empty-icon">[pin]</div>
+                                <div className="steps-empty-icon"><SvgPin size={32} /></div>
                                 <div className="steps-empty-title">No Steps Found</div>
                                 <div className="steps-empty-sub">Try adjusting your search or add a new step.</div>
                             </div>
@@ -753,7 +754,7 @@ const MyStepsAcc = ({
 </h3>
                                         <div className="step-card-badges">
                                             {pathName && (
-                                                <span className="badge-path">[link] {pathName}</span>
+                                                <span className="badge-path"><SvgLink size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{pathName}</span>
                                             )}
                                             <span className={`badge-status ${isActiveStep ? "active" : "inactive"}`}>
                                                 {isActiveStep ? "Active" : "Inactive"}

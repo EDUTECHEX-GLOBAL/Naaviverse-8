@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { SvgClose } from "../../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -126,7 +127,7 @@ const MarketplaceItemCard = ({ item, onRemove }) => (
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
         {item.cost && <span style={styles.marketCardCost}>{item.cost}</span>}
         {onRemove && (
-          <button onClick={onRemove} style={styles.removeBtn} title="Remove">[close]</button>
+          <button onClick={onRemove} style={styles.removeBtn} title="Remove" aria-label="Remove"><SvgClose size={13} /></button>
         )}
       </div>
     </div>

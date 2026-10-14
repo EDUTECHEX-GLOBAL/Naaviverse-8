@@ -15,6 +15,8 @@ const Pathview = memo(({
   onOpenMyRequests,
   myRequestsCount = 0,
   readyRequestsCount = 0,
+  pathFitMap = {},
+  userProfile = null,
 }) => {
   const {
     setPathItemSelected,
@@ -232,7 +234,16 @@ const Pathview = memo(({
         {loading ? (
           renderSkeletons()
         ) : paginatedData.length > 0 ? (
-          paginatedData.map((row, index) => (
+          paginatedData.map((row, index) => {
+            const fit = pathFitMap?.[row._id];
+            const hasStreamMatch = userProfile?.stream && row.raw?.stream?.length
+              ? row.raw.stream.includes(userProfile.stream)
+              : null;
+            const fitCategory = fit?.fitCategory || (hasStreamMatch ? "Good Match" : null);
+            const badgeTone = fit?.badgeTone || (hasStreamMatch ? "mint" : "lavender");
+            const cardHighlight = fit?.cardHighlight || (hasStreamMatch ? `Matches your ${userProfile.stream} stream` : null);
+            const score = fit?.overallScore;
+            return (
             <div
               className="path-card"
               key={row._id}
@@ -252,6 +263,13 @@ const Pathview = memo(({
                   <p className="path-card__desc">{row.description}</p>
                 )}
 
+                {cardHighlight && (
+                  <div className="path-card__fit-snip">
+                    <span className={`fit-snip-dot fit-snip-dot--${badgeTone}`} />
+                    <span className="fit-snip-text">{cardHighlight}</span>
+                  </div>
+                )}
+
                 <div className="path-card__footer">
                   <span
                     className="path-card__cta"
@@ -263,7 +281,8 @@ const Pathview = memo(({
               </div>
             </div>
 
-          ))
+            );
+          })
         ) : (
           <div className="pathview-empty">
             <div className="pathview-empty__icon" style={{ display: "flex", justifyContent: "center" }}>

@@ -151,25 +151,17 @@ export default function UserPathRequestModal({
     }
   }, [userEmail]);
 
-  // Auto-collapse sidebar when modal opens, restore on close
   useEffect(() => {
     if (isOpen) {
-      window.dispatchEvent(new Event("naavi:collapse-sidebar"));
       fetchMyRequests();
       setSubmittedSuccess(false);
       setErrorMsg("");
       setPreviewRequest(null);
       setPreviewPathData(null);
-    } else {
-      window.dispatchEvent(new Event("naavi:expand-sidebar"));
     }
-    return () => {
-      window.dispatchEvent(new Event("naavi:expand-sidebar"));
-    };
   }, [isOpen, fetchMyRequests]);
 
   const handleModalClose = () => {
-    window.dispatchEvent(new Event("naavi:expand-sidebar"));
     onClose();
   };
 

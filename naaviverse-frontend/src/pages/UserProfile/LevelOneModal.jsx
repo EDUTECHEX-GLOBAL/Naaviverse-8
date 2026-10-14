@@ -1208,10 +1208,10 @@ const LevelOneModal = ({
 
             {/* ── Availability feedback ────────────────────────────────────── */}
             {userNameAvailable === true && (
-              <div className="up-username-ok">[check] Username available</div>
+              <div className="up-username-ok"><SvgCheck size={14} style={{ marginRight: 5, verticalAlign: "middle" }} /> Username available</div>
             )}
             {userNameAvailable === false && (
-              <div className="up-username-err">[close] Username already taken</div>
+              <div className="up-username-err"><SvgClose size={14} style={{ marginRight: 5, verticalAlign: "middle" }} /> Username already taken</div>
             )}
             {userNameAvailable === null && isUsernameUnchanged && formData.username && (
               <div className="up-username-ok" style={{ opacity: 0.6 }}>

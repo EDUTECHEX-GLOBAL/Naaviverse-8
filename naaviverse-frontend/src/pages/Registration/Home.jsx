@@ -813,10 +813,10 @@ const NewHomePage = () => {
 
             {showPassReq && (
               <div className='passreqCard'>
-                <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="[check]" /> : <img src={tickMark} alt="○" />} One Capital Letter</div>
-                <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="[check]" /> : <img src={tickMark} alt="○" />} One Special Character</div>
-                <div>{validations.tenCharacters ? <img src={tickMarkValid} alt="[check]" /> : <img src={tickMark} alt="○" />} Ten Characters</div>
-                <div>{validations.oneNumber ? <img src={tickMarkValid} alt="[check]" /> : <img src={tickMark} alt="○" />} One Number</div>
+                <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} One Capital Letter</div>
+                <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} One Special Character</div>
+                <div>{validations.tenCharacters ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} Ten Characters</div>
+                <div>{validations.oneNumber ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} One Number</div>
               </div>
             )}
 

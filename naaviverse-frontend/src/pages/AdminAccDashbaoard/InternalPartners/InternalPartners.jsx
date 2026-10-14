@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Country } from "country-state-city";
 import { getCountryPhoneRules } from "../../UserProfile/LevelOneModal";
 import { validatePersonName } from "../../../utils/emailValidator";
+import { SvgClose } from "../../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -607,7 +608,11 @@ const InternalPartners = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {search && <button className="clear-btn" onClick={() => setSearch("")}>[close]</button>}
+          {search && (
+            <button className="clear-btn" onClick={() => setSearch("")} aria-label="Clear search">
+              <SvgClose size={14} />
+            </button>
+          )}
         </div>
 
         <div className="ip-segment-pills">
@@ -812,7 +817,9 @@ const InternalPartners = () => {
                 <h3>{isEditing ? "Edit Internal Partner" : "Create Internal Partner"}</h3>
                 <p className="m-sub">Directly provision internal partner credentials & assignment</p>
               </div>
-              <button className="m-close" onClick={() => setIsFormModalOpen(false)}>[close]</button>
+              <button className="m-close" onClick={() => setIsFormModalOpen(false)} aria-label="Close modal">
+                <SvgClose size={18} />
+              </button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="m-form">
@@ -1132,7 +1139,9 @@ const InternalPartners = () => {
                 <h3>Reset Password</h3>
                 <p className="m-sub">Issue new temporary access credentials</p>
               </div>
-              <button className="m-close" onClick={() => setIsResetModalOpen(false)}>[close]</button>
+              <button className="m-close" onClick={() => setIsResetModalOpen(false)} aria-label="Close modal">
+                <SvgClose size={18} />
+              </button>
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }}>
@@ -1186,7 +1195,9 @@ const InternalPartners = () => {
                   <span className="d-sub">{selectedPartner.organizationName}</span>
                 </div>
               </div>
-              <button className="m-close" onClick={() => setIsDetailDrawerOpen(false)}>[close]</button>
+              <button className="m-close" onClick={() => setIsDetailDrawerOpen(false)} aria-label="Close drawer">
+                <SvgClose size={18} />
+              </button>
             </div>
 
             <div className="d-nav">

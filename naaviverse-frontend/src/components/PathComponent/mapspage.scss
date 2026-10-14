@@ -13,7 +13,10 @@ $radius-lg: 16px;
 $radius-pill: 40px;
 $shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.18);
 $transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-$sidebar-width: 220px;
+$sidebar-width: 240px;
+:root {
+  --sidebar-width: 240px;
+}
 
 // ─── Root wrapper ─────────────────────────────────────────────
 .mapspage-modern {
@@ -55,12 +58,13 @@ $sidebar-width: 220px;
 .content-modal-backdrop {
   position: fixed;
   top: 0;
-  left: $sidebar-width;
+  left: var(--sidebar-width, #{$sidebar-width});
   right: 0;
   bottom: 0;
   background: rgba(26, 26, 46, 0.5);
   z-index: 150;
   animation: fadeIn 0.2s ease;
+  transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 0;
   padding: 0;
 
@@ -69,7 +73,7 @@ $sidebar-width: 220px;
   outline: none;
 
   @media (max-width: 768px) {
-    left: 0;
+    left: 0 !important;
   }
 }
 
@@ -77,8 +81,9 @@ $sidebar-width: 220px;
 .path-flow-modal {
   position: fixed;
   top: 50%;
-  left: calc(#{$sidebar-width} + (100vw - #{$sidebar-width}) / 2);
+  left: calc(var(--sidebar-width, #{$sidebar-width}) + (100vw - var(--sidebar-width, #{$sidebar-width})) / 2);
   transform: translate(-50%, -50%);
+  transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   width: 90%;
   max-width: 440px;
   background: $bg-card;
@@ -103,6 +108,28 @@ $sidebar-width: 220px;
     width: 92%;
   }
 
+  &--fit {
+    max-width: 640px;
+    width: 94%;
+    max-height: 90vh;
+    padding: 24px 24px 20px;
+
+    .pfm-content-scroll {
+      overflow-y: auto;
+      padding-right: 0;
+      margin-right: 0;
+      max-height: calc(90vh - 48px);
+      scrollbar-width: none; // Firefox
+      -ms-overflow-style: none; // IE/Edge
+
+      &::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    }
+  }
+
   @keyframes modalSlideIn {
     from {
       opacity: 0;
@@ -116,7 +143,7 @@ $sidebar-width: 220px;
   }
 
   @media (max-width: 768px) {
-    left: 50%;
+    left: 50% !important;
     max-width: 95vw;
   }
 }
@@ -259,17 +286,16 @@ $sidebar-width: 220px;
   margin-top: 0 !important;
   padding-top: 0 !important;
   text-align: left;
-  overflow-y: auto;
-  max-height: 100px;
+  overflow: visible;
+  max-height: none;
   flex-shrink: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
-    width: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #d0caff;
-    border-radius: 4px;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -286,14 +312,13 @@ $sidebar-width: 220px;
   overflow-y: auto;
   margin: 0 -4px;
   padding: 0 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #d0caff;
-    border-radius: 4px;
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 
@@ -402,6 +427,13 @@ $sidebar-width: 220px;
   gap: 8px;
   flex-shrink: 0;
   margin-top: 4px;
+
+  &--scroll {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(108, 92, 231, 0.08);
+    padding-bottom: 6px;
+  }
 
   &--bottom {
     margin-top: 12px;

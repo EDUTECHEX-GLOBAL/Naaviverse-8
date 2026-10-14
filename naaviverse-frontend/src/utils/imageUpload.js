@@ -33,7 +33,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Response error:', errorText);
-      throw new Error(`[error] Failed to get presigned URL: ${response.status}`);
+      throw new Error(`Failed to get presigned URL: ${response.status}`);
     }
 
     const data = await response.json();
@@ -42,7 +42,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     const presignedUrl = data.presignedUrl;
 
     if (!presignedUrl) {
-      throw new Error('[error] Presigned URL not received from server');
+      throw new Error('Presigned URL not received from server');
     }
 
     // Upload to S3
@@ -54,10 +54,10 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     });
 
     if (!uploadResponse.ok) {
-      throw new Error(`[error] Failed to upload file to S3`);
+      throw new Error(`Failed to upload file to S3`);
     }
 
-    console.log('[check] File uploaded successfully');
+    console.log('File uploaded successfully');
     
     // Get the final URL
     const fileUrl = data.fileUrl || `https://thenaaviversebucket.s3.amazonaws.com/${fileName}`;

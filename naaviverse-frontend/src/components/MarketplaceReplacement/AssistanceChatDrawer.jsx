@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./AssistanceChatDrawer.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
-import { SvgClose } from "../../utils/SvgIcons";
+import { SvgClose, SvgCheck, SvgHourglass, SvgStarFilled, SvgPin, SvgClock } from "../../utils/SvgIcons";
 
 export default function AssistanceChatDrawer({
   isOpen,
@@ -270,7 +270,7 @@ export default function AssistanceChatDrawer({
           {justAddedService && (
             <div className="afp-toast-banner">
               <div className="atb-left">
-                <span className="atb-icon">[check]</span>
+                <span className="atb-icon"><SvgCheck size={16} color="#15803d" /></span>
                 <span className="atb-msg">
                   Added <strong>{justAddedService.name}</strong> to your cart!
                 </span>
@@ -488,7 +488,7 @@ export default function AssistanceChatDrawer({
                     {/* Waiting notice if no Super Admin reply yet */}
                     {messages.length === 0 ? (
                       <div className="afp-waiting-card">
-                        <div className="awc-icon">[hourglass]</div>
+                        <div className="awc-icon"><SvgHourglass size={24} color="#b45309" /></div>
                         <div className="awc-content">
                           <h4>Inquiry Submitted to Super Admin</h4>
                           <p>
@@ -591,14 +591,14 @@ export default function AssistanceChatDrawer({
                                       </button>
 
                                       {purchased ? (
-                                        <span className="arc-purchased-tag">[check] Purchased</span>
+                                        <span className="arc-purchased-tag"><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> Purchased</span>
                                       ) : (
                                         <button
                                           type="button"
                                           className={`arc-add-btn ${inCart ? "in-cart" : ""}`}
                                           onClick={() => handleAddToCartClick(svc)}
                                         >
-                                          {inCart ? "[check] In Cart" : "+ Add to Cart"}
+                                          {inCart ? <><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> In Cart</> : "+ Add to Cart"}
                                         </button>
                                       )}
                                     </div>
@@ -662,7 +662,7 @@ export default function AssistanceChatDrawer({
 
               {latestRecommendedService ? (
                 <div className="ads-rec-box">
-                  <div className="ads-rec-badge">[star] Super Admin Recommended</div>
+                  <div className="ads-rec-badge"><SvgStarFilled size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> Super Admin Recommended</div>
                   <h4 className="ads-rec-name">{latestRecommendedService.name}</h4>
                   <p className="ads-rec-desc">
                     {latestRecommendedService.goal ||
@@ -716,14 +716,14 @@ export default function AssistanceChatDrawer({
                     </button>
 
                     {isItemPurchased(latestRecommendedService) ? (
-                      <span className="ads-purchased-tag">[check] Purchased & Active</span>
+                      <span className="ads-purchased-tag"><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> Purchased & Active</span>
                     ) : (
                       <button
                         type="button"
                         className={`ads-cart-btn ${isItemInCart(latestRecommendedService) ? "in-cart" : ""}`}
                         onClick={() => handleAddToCartClick(latestRecommendedService)}
                       >
-                        {isItemInCart(latestRecommendedService) ? "[check] In Cart" : "+ Add to Cart"}
+                        {isItemInCart(latestRecommendedService) ? <><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> In Cart</> : "+ Add to Cart"}
                       </button>
                     )}
                   </div>
@@ -736,15 +736,15 @@ export default function AssistanceChatDrawer({
                   </div>
                   <ul className="asb-list">
                     <li>
-                      <span className="asb-check">[check]</span>
+                      <span className="asb-check"><SvgCheck size={14} color="#15803d" /></span>
                       <span>100% curated for your learning path requirements.</span>
                     </li>
                     <li>
-                      <span className="asb-check">[check]</span>
+                      <span className="asb-check"><SvgCheck size={14} color="#15803d" /></span>
                       <span>Verified instructors and accredited certifications.</span>
                     </li>
                     <li>
-                      <span className="asb-check">[check]</span>
+                      <span className="asb-check"><SvgCheck size={14} color="#15803d" /></span>
                       <span>Direct communication channel with Super Admin.</span>
                     </li>
                   </ul>
@@ -766,7 +766,7 @@ export default function AssistanceChatDrawer({
           <div className="mkt-details-modal-panel" onClick={(e) => e.stopPropagation()}>
             <div className="mdm-header">
               <div className="mdm-header-info">
-                <span className="mdm-badge">[star] Super Admin Curated Recommendation</span>
+                <span className="mdm-badge"><SvgStarFilled size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> Super Admin Curated Recommendation</span>
                 <h3 className="mdm-title">{detailsService.name}</h3>
               </div>
               <button
@@ -795,11 +795,11 @@ export default function AssistanceChatDrawer({
                 </div>
                 <div className="mdm-attr-card">
                   <span className="attr-lbl">Delivery Mode</span>
-                  <span className="attr-val">[pin] {detailsService.mode || "Online"}</span>
+                  <span className="attr-val"><SvgPin size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> {detailsService.mode || "Online"}</span>
                 </div>
                 <div className="mdm-attr-card">
                   <span className="attr-lbl">Duration</span>
-                  <span className="attr-val">[clock] {detailsService.duration || "Self-Paced"}</span>
+                  <span className="attr-val"><SvgClock size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> {detailsService.duration || "Self-Paced"}</span>
                 </div>
               </div>
 
@@ -837,14 +837,14 @@ export default function AssistanceChatDrawer({
 
                 <div className="mdm-actions">
                   {isItemPurchased(detailsService) ? (
-                    <div className="mdm-purchased-badge">[check] Purchased & Active</div>
+                    <div className="mdm-purchased-badge"><SvgCheck size={14} style={{ marginRight: 4, verticalAlign: "middle" }} /> Purchased & Active</div>
                   ) : (
                     <button
                       type="button"
                       className={`mdm-cart-btn ${isItemInCart(detailsService) ? "in-cart" : ""}`}
                       onClick={() => handleAddToCartClick(detailsService)}
                     >
-                      {isItemInCart(detailsService) ? "[check] In Cart (Click to Remove)" : "+ Add to Cart"}
+                      {isItemInCart(detailsService) ? <><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> In Cart (Click to Remove)</> : "+ Add to Cart"}
                     </button>
                   )}
 

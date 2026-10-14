@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { SvgClose } from "../../utils/SvgIcons";
 import "./Admincrm.scss";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -190,7 +191,9 @@ const ActivityPopup = ({ item, type, onClose }) => {
             <h3>Activity Timeline</h3>
             <p>{name}</p>
           </div>
-          <button className="apop-close" onClick={onClose}>[close]</button>
+          <button className="apop-close" onClick={onClose} aria-label="Close">
+            <SvgClose size={16} />
+          </button>
         </div>
 
         <div className="apop-body">
@@ -295,7 +298,9 @@ const AdminCRM = () => {
             placeholder={tab === "Users" ? "Search users…" : "Search partners…"}
           />
           {search && (
-            <button className="srch-x" onClick={() => setSearch("")}>[close]</button>
+            <button className="srch-x" onClick={() => setSearch("")} aria-label="Clear search">
+              <SvgClose size={14} />
+            </button>
           )}
         </div>
       </div>

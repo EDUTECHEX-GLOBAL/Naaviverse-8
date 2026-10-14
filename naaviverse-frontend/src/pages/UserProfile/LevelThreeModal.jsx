@@ -481,7 +481,7 @@ const LevelThreeModal = ({
             {loading
               ? "Saving…"
               : creation
-              ? "Complete Profile [check]"
+              ? <>Complete Profile <SvgCheck size={14} style={{ marginLeft: 6, verticalAlign: "middle" }} /></>
               : "Save Changes"}
           </button>
         </div>

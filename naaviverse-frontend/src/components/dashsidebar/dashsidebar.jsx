@@ -102,13 +102,18 @@ const Dashsidebar = ({ isNotOnMainPage, handleChange, approvalStatus, isProfileI
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [imgError,       setImgError]       = useState(false);
   const [mobileOpen,     setMobileOpen]     = useState(false);
-  const [collapsed,      setCollapsed]      = useState(false);
+  const [collapsed,      setCollapsed]      = useState(() => {
+    return localStorage.getItem('userSidebarCollapsed') === 'true';
+  });
   const logoutMenuRef = useRef(null);
 
+  // Keep --sidebar-width CSS variable in sync with collapsed state
   useEffect(() => {
-    // Clear any stale collapsed flag so side section and three dots are visible by default
-    localStorage.removeItem('userSidebarCollapsed');
+    const width = collapsed ? '64px' : '240px';
+    document.documentElement.style.setProperty('--sidebar-width', width);
+  }, [collapsed]);
 
+  useEffect(() => {
     const handleCollapse = () => {
       setCollapsed(true);
       localStorage.setItem('userSidebarCollapsed', 'true');

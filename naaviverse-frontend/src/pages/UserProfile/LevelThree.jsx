@@ -2,6 +2,16 @@ import React, { useEffect, useState } from "react";
 import close from "../../images/close.svg";
 import axios from "axios";
 import styles from "./level3.module.scss";
+import { SvgWrench, SvgMicroscope, SvgPalette, SvgHandshake, SvgRocket, SvgClipboard } from "../../utils/SvgIcons";
+
+const PERSONALITY_ICONS = {
+  realistic: <SvgWrench size={24} color="#ffffff" />,
+  investigative: <SvgMicroscope size={24} color="#ffffff" />,
+  artistic: <SvgPalette size={24} color="#ffffff" />,
+  social: <SvgHandshake size={24} color="#ffffff" />,
+  enterprising: <SvgRocket size={24} color="#ffffff" />,
+  conventional: <SvgClipboard size={24} color="#ffffff" />,
+};
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -309,7 +319,7 @@ const LevelThree = ({
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "22px", flexShrink: 0,
                 }}>
-                  {{"realistic": "[wrench]", "investigative": "[microscope]", "artistic": "[palette]", "social": "[handshake]", "enterprising": "[rocket]", "conventional": "[clipboard]"}[calculatedPersonality]}
+                  {PERSONALITY_ICONS[calculatedPersonality] || null}
                 </div>
                 <div>
                   <div style={{ fontSize: "12px", color: "#6366f1", fontWeight: "600", marginBottom: "2px" }}>

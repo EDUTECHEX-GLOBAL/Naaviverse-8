@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./FindBetterMatchModal.scss";
-import { SvgClose } from "../../utils/SvgIcons";
+import { SvgClose, SvgCheck } from "../../utils/SvgIcons";
 
 const REASONS = [
   {
@@ -208,7 +208,7 @@ export default function FindBetterMatchModal({
                     className={`nbm-chip ${isSelected ? "is-selected" : ""}`}
                     onClick={() => toggleReason(r.id)}
                   >
-                    <span className="nbm-chip-indicator">{isSelected ? "[check]" : "+"}</span>
+                    <span className="nbm-chip-indicator">{isSelected ? <SvgCheck size={11} /> : "+"}</span>
                     <span className="nbm-chip-icon">{r.icon}</span>
                     <span className="nbm-chip-text">{r.label}</span>
                   </button>

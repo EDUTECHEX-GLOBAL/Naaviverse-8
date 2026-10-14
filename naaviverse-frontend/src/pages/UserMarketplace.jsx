@@ -9,7 +9,15 @@ import FindBetterMatchModal from "../components/MarketplaceReplacement/FindBette
 import AssistanceRequestModal from "../components/MarketplaceReplacement/AssistanceRequestModal";
 import AssistanceChatDrawer from "../components/MarketplaceReplacement/AssistanceChatDrawer";
 import { validatePersonName } from "../utils/emailValidator";
-import { SvgClose } from "../utils/SvgIcons";
+import { SvgClose, SvgCheck, SvgStarFilled, SvgStarEmpty } from "../utils/SvgIcons";
+
+/* Helper: render N filled + (5-N) empty star SVGs */
+const RenderStars = ({ count = 5, size = 12 }) => {
+  const stars = [];
+  for (let i = 0; i < count; i++) stars.push(<SvgStarFilled key={`f${i}`} size={size} />);
+  for (let i = count; i < 5; i++) stars.push(<SvgStarEmpty key={`e${i}`} size={size} />);
+  return <>{stars}</>;
+};
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:4545";
 const API = BASE_URL;
@@ -426,7 +434,7 @@ const MarketplaceCard = ({
             </span>
           ) : (
             <span className="mkt-card__rating" title="Rating">
-              <span className="mkt-card__stars">[star][star][star][star][star]</span>
+              <span className="mkt-card__stars"><RenderStars count={5} size={12} /></span>
               <span className="mkt-card__rating-num">{ratingVal}</span>
             </span>
           )}
@@ -540,7 +548,7 @@ const MarketplaceCard = ({
         </div>
 
         {isPurchased ? (
-          <div className="mkt-card__purchased-badge">[check] Purchased</div>
+          <div className="mkt-card__purchased-badge"><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> Purchased</div>
         ) : (
           <button
             className={`mkt-card__add-btn ${inCart ? "added" : ""}`}
@@ -549,7 +557,7 @@ const MarketplaceCard = ({
               onToggleCart(service);
             }}
           >
-            {inCart ? "[check] Added" : "+ Add"}
+            {inCart ? <><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> Added</> : "+ Add"}
           </button>
         )}
       </div>
@@ -670,7 +678,7 @@ const MarketplaceFilterBar = ({
                   onClick={() => handleCategoryToggle(cat.key)}
                 >
                   <span className="mkt-popover-chk">
-                    <span className="mkt-chk-box">{isCatActive(cat.key) ? "[check]" : ""}</span>
+                    <span className="mkt-chk-box">{isCatActive(cat.key) ? <SvgCheck size={12} /> : ""}</span>
                     <span className="mkt-popover-title">{cat.label}</span>
                   </span>
                   <span className="mkt-popover-count">{categoryCounts[cat.key] || 0}</span>
@@ -687,7 +695,7 @@ const MarketplaceFilterBar = ({
             onClick={() => setOpenDropdown(openDropdown === "rating" ? null : "rating")}
           >
             <span className="mkt-btn-label">
-              Rating {filterState.minRating > 0 ? `(${filterState.minRating}+ [star])` : ""}
+              Rating {filterState.minRating > 0 ? <>&nbsp;({filterState.minRating}+ <SvgStarFilled size={12} />)</> : ""}
             </span>
             <span className="mkt-btn-arrow">▾</span>
           </button>
@@ -695,12 +703,12 @@ const MarketplaceFilterBar = ({
             <div className="mkt-pill-popover">
               {[
                 { val: 0, label: "Any rating", stars: "" },
-                { val: 2.0, label: "2.0", stars: "[star][star][star-empty][star-empty][star-empty]" },
-                { val: 2.5, label: "2.5", stars: "[star][star][star][star-empty][star-empty]" },
-                { val: 3.0, label: "3.0", stars: "[star][star][star][star-empty][star-empty]" },
-                { val: 3.5, label: "3.5", stars: "[star][star][star][star][star-empty]" },
-                { val: 4.0, label: "4.0", stars: "[star][star][star][star][star-empty]" },
-                { val: 4.5, label: "4.5", stars: "[star][star][star][star][star]" },
+                { val: 2.0, label: "2.0", starCount: 2 },
+                { val: 2.5, label: "2.5", starCount: 3 },
+                { val: 3.0, label: "3.0", starCount: 3 },
+                { val: 3.5, label: "3.5", starCount: 4 },
+                { val: 4.0, label: "4.0", starCount: 4 },
+                { val: 4.5, label: "4.5", starCount: 5 },
               ].map((r) => (
                 <div
                   key={r.val}
@@ -715,7 +723,7 @@ const MarketplaceFilterBar = ({
                   ) : (
                     <div className="mkt-rating-option-row">
                       <span className="mkt-rating-num">{r.label}</span>
-                      <span className="mkt-rating-stars-gold">{r.stars}</span>
+                      <span className="mkt-rating-stars-gold"><RenderStars count={r.starCount} size={12} /></span>
                     </div>
                   )}
                 </div>
@@ -912,7 +920,7 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
                       </div>
                     </div>
                     <div className="ci-price">{fmtPrice(itemPrice(s))}</div>
-                    <button className="ci-rm" onClick={() => onRemove(s._id)}>[close]</button>
+                    <button className="ci-rm" onClick={() => onRemove(s._id)}><SvgClose size={14} /></button>
                   </div>
                 );
               })}
@@ -953,7 +961,7 @@ const StepBar = ({ currentPage, onStepChange }) => {
               onClick={() => done && onStepChange && onStepChange(s.key)}
               style={{ cursor: done ? "pointer" : "default" }}
             >
-              <span className="sp-n">{done ? "[check]" : s.n}</span>
+              <span className="sp-n">{done ? <SvgCheck size={14} color="#15803d" /> : s.n}</span>
               <span className="sp-lbl">{s.label}</span>
             </div>
             {i < steps.length - 1 && <span className="sp-arr">›</span>}
@@ -1431,7 +1439,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
   <div className="confirmed-page">
     <div className="conf-card">
-      <div className="conf-check">[check]</div>
+      <div className="conf-check"><SvgCheck size={32} color="#15803d" /></div>
       <h2 className="conf-title">Booking Confirmed!</h2>
       <p className="conf-sub">Your services have been booked successfully. You'll receive a confirmation email with session details and next steps.</p>
       <div className="conf-details">

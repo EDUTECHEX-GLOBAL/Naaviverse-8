@@ -7,6 +7,22 @@ import * as XLSX from "xlsx";
 import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./PartnerExclusiveDashboard.scss";
 import { validatePersonName } from "../../utils/emailValidator";
+import { SvgStarFilled, SvgStarEmpty, SvgCheck } from "../../utils/SvgIcons";
+
+const RenderStars = ({ rating = 3, size = 12 }) => {
+  const r = Math.max(0, Math.min(5, Math.round(Number(rating) || 3)));
+  return (
+    <span style={{ display: "inline-flex", gap: "2px", verticalAlign: "middle" }}>
+      {Array.from({ length: 5 }, (_, i) =>
+        i < r ? (
+          <SvgStarFilled key={i} size={size} color="#f59e0b" />
+        ) : (
+          <SvgStarEmpty key={i} size={size} color="#cbd5e1" />
+        )
+      )}
+    </span>
+  );
+};
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -834,7 +850,7 @@ export default function PartnerExclusiveDashboard() {
                                     </div>
                                   </td>
                                   <td className="px-fb-stars">
-                                    {"[star]".repeat(fb.rating || 3)}{"[star-empty]".repeat(5 - (fb.rating || 3))}
+                                    <RenderStars rating={fb.rating || 3} size={12} />
                                   </td>
                                   <td>
                                     <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`}>
@@ -871,7 +887,7 @@ export default function PartnerExclusiveDashboard() {
                                   </div>
                                 </div>
                                 <div className="px-fb-rating">
-                                  {"[star]".repeat(fb.rating || 3)}{"[star-empty]".repeat(5 - (fb.rating || 3))}
+                                  <RenderStars rating={fb.rating || 3} size={13} />
                                 </div>
                               </div>
                               <p className="px-fb-body">{fb.comment}</p>
@@ -1043,7 +1059,7 @@ export default function PartnerExclusiveDashboard() {
                           onClick={handleTicketSubmit}
                           disabled={!ticketSubject.trim() || !ticketMessage.trim()}
                         >
-                          <Icon.Send /> {ticketSubmitted ? "Sent [check]" : "Send to super admin"}
+                          <Icon.Send /> {ticketSubmitted ? <>Sent <SvgCheck size={14} style={{ marginLeft: 4, verticalAlign: "middle" }} /></> : "Send to super admin"}
                         </button>
                       </div>
                     </div>

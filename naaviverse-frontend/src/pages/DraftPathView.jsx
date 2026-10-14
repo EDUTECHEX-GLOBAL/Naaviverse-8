@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../components/Pathview/journey.scss";
 import EditPathForm from "./MyPaths/paths";
-import { SvgClose, SvgMessageCircle } from "../utils/SvgIcons";
+import { SvgClose, SvgMessageCircle, SvgCheck } from "../utils/SvgIcons";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -1147,7 +1147,7 @@ const DraftPathView = () => {
                           background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
                           color: cr.status === "addressed" ? "#065f46" : "#92400e",
                         }}>
-                          {cr.status === "addressed" ? "[check] Addressed" : "Pending"}
+                          {cr.status === "addressed" ? <><SvgCheck size={11} style={{ marginRight: 3, verticalAlign: "middle" }} />Addressed</> : "Pending"}
                         </span>
                       </div>
 
@@ -1432,7 +1432,7 @@ const DraftPathView = () => {
                               background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
                               color: cr.status === "addressed" ? "#065f46" : "#92400e",
                             }}>
-                              {cr.status === "addressed" ? "[check] Addressed" : "Pending"}
+                              {cr.status === "addressed" ? <><SvgCheck size={11} style={{ marginRight: 3, verticalAlign: "middle" }} />Addressed</> : "Pending"}
                             </span>
                             <svg width="14" height="14" viewBox="0 0 24 24"
                               fill="none" stroke="#94a3b8" strokeWidth="2">

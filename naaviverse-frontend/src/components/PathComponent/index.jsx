@@ -13,7 +13,8 @@ import logActivity from "../../utils/activityLogger";
 import UserPathRequestModal from "../UserPathRequestModal/UserPathRequestModal";
 
 import "./mapspage.scss";
-import { SvgArrowLeft } from "../../utils/SvgIcons";
+import { SvgArrowLeft, SvgClose, SvgClock } from "../../utils/SvgIcons";
+import PathFitAnalysis from "../PathFitAnalysis/PathFitAnalysis";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -59,6 +60,7 @@ const PathComponent = () => {
   const [loading, setLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [approvedPaths, setApprovedPaths] = useState([]);
+  const [pathFitMap, setPathFitMap] = useState({});
 
   const [userProfile, setUserProfile] = useState(() => {
     try {
@@ -208,6 +210,32 @@ const PathComponent = () => {
     userProfileId,  // ← stable string instead of object reference
   ]);
 
+  // ── Fetch Batch Fit Analysis for Explore Paths ─────────────────
+  useEffect(() => {
+    if (!approvedPaths || approvedPaths.length === 0) {
+      setPathFitMap({});
+      return;
+    }
+
+    const fetchBatchFit = async () => {
+      try {
+        const pathIds = approvedPaths.map((p) => p._id).filter(Boolean);
+        const res = await axios.post(`${BASE_URL}/api/paths/batch-fit-analysis`, {
+          email: user?.email || userProfile?.email,
+          profile: userProfile,
+          pathIds,
+        });
+        if (res.data?.status && res.data.data) {
+          setPathFitMap(res.data.data);
+        }
+      } catch (err) {
+        console.warn("Batch fit analysis fetch failed:", err?.message);
+      }
+    };
+
+    fetchBatchFit();
+  }, [approvedPaths, userProfileId, userProfile?.stream, userProfile?.grade, userProfile?.personality]);
+
   // ── Open "View Path" modal ────────────────────────────────────
   const handleViewPath = (path) => {
     setModalPath(path);
@@ -328,6 +356,8 @@ const PathComponent = () => {
               onOpenMyRequests={handleOpenMyRequests}
               myRequestsCount={userPathRequests.length}
               readyRequestsCount={userPathRequests.filter((r) => r.status === "created").length}
+              pathFitMap={pathFitMap}
+              userProfile={userProfile}
             />
           </div>
         </div>
@@ -345,8 +375,9 @@ const PathComponent = () => {
 
       {/* ── VIEW PATH MODAL ── */}
       {modalStep === "view" && modalPath && (
-        <div className="path-flow-modal">
-          <button className="pfm-close" onClick={closeModal}>[close]</button>
+        <div className="path-flow-modal path-flow-modal--fit">
+          <button className="pfm-close" onClick={closeModal} title="Close"><SvgClose size={14} /></button>
+          <div className="pfm-content-scroll">
 
           <div className="pfm-icon">
             {(modalPath.nameOfPath || "P").charAt(0).toUpperCase()}
@@ -361,16 +392,19 @@ const PathComponent = () => {
             <p className="pfm-desc" style={{ marginTop: 0 }}>{modalPath.description}</p>
           )}
 
-          <div className="pfm-btns">
-            <button className="pfm-btn pfm-btn--outline" onClick={handleExplore}>
-              Explore Path
-            </button>
-            <button className="pfm-btn pfm-btn--primary" onClick={() => setModalStep("confirm")}>
-              Select This Path
-            </button>
-            <button className="pfm-btn pfm-btn--ghost" onClick={closeModal}>
-              ← Back
-            </button>
+            <PathFitAnalysis path={modalPath} userProfile={userProfile} />
+
+            <div className="pfm-btns pfm-btns--scroll">
+              <button className="pfm-btn pfm-btn--outline" onClick={handleExplore}>
+                Explore Path
+              </button>
+              <button className="pfm-btn pfm-btn--primary" onClick={() => setModalStep("confirm")}>
+                Select This Path
+              </button>
+              <button className="pfm-btn pfm-btn--ghost" onClick={closeModal}>
+                ← Back
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -378,7 +412,7 @@ const PathComponent = () => {
       {/* ── EXPLORE STEPS MODAL ── */}
       {modalStep === "explore" && modalPath && (
         <div className="path-flow-modal path-flow-modal--wide">
-          <button className="pfm-close" onClick={closeModal}>[close]</button>
+          <button className="pfm-close" onClick={closeModal} title="Close"><SvgClose size={14} /></button>
           <button className="pfm-back-btn" onClick={() => setModalStep("view")}>← Back</button>
 
           <div className="pfm-explore-header">
@@ -411,7 +445,7 @@ const PathComponent = () => {
                         {step.macro_description && (
                           <div className="pfm-step-desc">{step.macro_description}</div>
                         )}
-                        {dur && <div className="pfm-step-dur">[clock] {dur}</div>}
+                        {dur && <div className="pfm-step-dur"><SvgClock size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{dur}</div>}
                       </div>
                     </div>
                   );
@@ -433,7 +467,7 @@ const PathComponent = () => {
 
      {modalStep === "confirm" && modalPath && (
   <div className="path-flow-modal">
-    <button className="pfm-close" onClick={closeModal}>[close]</button>
+    <button className="pfm-close" onClick={closeModal} title="Close" aria-label="Close"><SvgClose size={14} /></button>
 
     {/* CENTERED ICON - no wrapper div */}
     <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
@@ -473,7 +507,7 @@ const PathComponent = () => {
       {/* ── SUCCESS MODAL ── */}
       {modalStep === "success" && modalPath && (
         <div className="path-flow-modal">
-          <button className="pfm-close" onClick={closeModal}>[close]</button>
+          <button className="pfm-close" onClick={closeModal} title="Close" aria-label="Close"><SvgClose size={14} /></button>
 
           <div className="pfm-icon pfm-icon--success">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -510,7 +544,7 @@ const PathComponent = () => {
               <h3 className="coords-sidebar__title">My Coordinates</h3>
             </div>
           </div>
-          <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)}>[close]</button>
+          <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)} title="Close" aria-label="Close"><SvgClose size={14} /></button>
         </div>
 
         <span className="coords-sidebar__hint" style={{ display: 'block' }}>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./userHome.scss";
-import { SvgShoppingBag } from "../../utils/SvgIcons";
+import { SvgShoppingBag, SvgCompass } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -120,7 +120,7 @@ export default function UserPurchasesPage() {
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
                 status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
-                icon: isFree ? "[compass]" : "[bag]️",
+                icon: isFree ? <SvgCompass size={16} /> : <SvgShoppingBag size={16} />,
               };
             });
 
@@ -148,7 +148,7 @@ export default function UserPurchasesPage() {
               }),
               rawDate: new Date(up.createdAt || Date.now()).getTime(),
               status: "Free",
-              icon: "[compass]",
+              icon: <SvgCompass size={16} />,
             };
           });
 

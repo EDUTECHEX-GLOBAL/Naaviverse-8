@@ -1,4 +1,5 @@
 import React, { Fragment } from 'react';
+import { SvgClock, SvgTarget, SvgSparkles } from "../../utils/SvgIcons";
 
 const VisionContentTwo = [
     {
@@ -6,21 +7,21 @@ const VisionContentTwo = [
         desc: `Naaviverse began with a simple goal — turning complex workflows into smart, seamless digital experiences.`,
         fade: 'fade-up',
         dataDelay: '',
-        icon: ''
+        icon: <SvgClock size={36} color="#0d9488" />
     },
     {
         title: 'Our Mission',
         desc: `To automate processes, simplify operations, and empower smarter decisions through intelligent technology.`,
         fade: 'fade-up',
         dataDelay: '100',
-        icon: '[target]'
+        icon: <SvgTarget size={36} color="#2563eb" />
     },
     {
         title: 'Our Vision',
         desc: `To build a future where systems work effortlessly, enabling faster growth and continuous innovation.`,
         fade: 'fade-up',
         dataDelay: '200',
-        icon: ''
+        icon: <SvgSparkles size={36} color="#7c3aed" />
     }
 ];
 

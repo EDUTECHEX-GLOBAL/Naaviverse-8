@@ -8,7 +8,7 @@ import CoinComponent from "../dashboard/MallProduct/CoinComponent.jsx";
 import { useRazorpayPayment } from "../../app/useRazorpayPayment";
 import { useNavigate } from "react-router-dom";
 import logo from "../../logos/naavi_final_logo2.png";
-import { SvgClose } from "../../utils/SvgIcons";
+import { SvgClose, SvgCheck } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -139,7 +139,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
       {/* ── Submitted badge ── */}
       {!open && hasResult && (
         <div className="feedback-result" onClick={(e) => { e.stopPropagation(); setOpen(true); }}>
-          <span className="feedback-result__badge">[check] {resultLabel}</span>
+          <span className="feedback-result__badge"><SvgCheck size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{resultLabel}</span>
           <span className="feedback-result__edit">Change</span>
         </div>
       )}
@@ -804,7 +804,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         <div className="step-bar">
           <div className="sp active"><span className="sp-n">1</span>Current Step</div>
           <span className="sp-arr">›</span>
-          <div className="sp active"><span className="sp-n">[check]</span>Subscription</div>
+          <div className="sp active"><span className="sp-n"><SvgCheck size={12} /></span>Subscription</div>
           <span className="sp-arr">›</span>
           <div className="sp"><span className="sp-n">3</span>Marketplace</div>
           <span className="sp-arr">›</span>
@@ -1182,8 +1182,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           <div className="comp-bar">
             <div className="cb-left"><span className="cb-q">Did You Complete This Step?</span></div>
             <div className="cb-btns">
-              <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>[close] Failed</button>
-              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>[check] Yes, Completed</button>
+              <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}><SvgClose size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />Failed</button>
+              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}><SvgCheck size={13} style={{ marginRight: 4, verticalAlign: "middle" }} />Yes, Completed</button>
             </div>
           </div>
         )}

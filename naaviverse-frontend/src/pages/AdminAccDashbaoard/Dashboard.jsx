@@ -7,7 +7,7 @@ import marketplaceReplacementService from "../../services/marketplaceReplacement
 import AssistanceRequestDetailsModal from "../../AdminDashboard/components/AssistanceRequestDetailsModal";
 import AssistanceDetailsPage from "../../AdminDashboard/components/AssistanceDetailsPage";
 import SuperAdminCustomPathBuilder from "../../AdminDashboard/components/SuperAdminCustomPathBuilder";
-import { SvgBuilding, SvgClock, SvgGraduation, SvgPin } from "../../utils/SvgIcons";
+import { SvgBuilding, SvgClock, SvgGraduation, SvgPin, SvgCheck, SvgClose, SvgBan, SvgHourglass, SvgSparkles, SvgClipboard, SvgGlobe } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -938,7 +938,7 @@ export default function Dashboard() {
                               <div className="pr-item-title-row">
                                 <span className="pr-item-goal">{req.targetGoal}</span>
                                 {req.targetInstitution && (
-                                  <span className="pr-item-inst">[building] {req.targetInstitution}</span>
+                                  <span className="pr-item-inst"><SvgBuilding size={13} style={{ marginRight: 4, verticalAlign: "middle" }} /> {req.targetInstitution}</span>
                                 )}
                               </div>
                               <div className="pr-item-sub">
@@ -1547,7 +1547,7 @@ export default function Dashboard() {
                         <td className="date-cell">{p.date}</td>
                         <td>
                           <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                            {p.status === "completed" ? "[check] Done" : "Pending"}
+                            {p.status === "completed" ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Done</> : "Pending"}
 
                           </span>
                         </td>
@@ -1584,7 +1584,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{p.user}</h2>
                 <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                  {p.status === "completed" ? "[check] Completed" : "Pending"}
+                  {p.status === "completed" ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Completed</> : "Pending"}
                 </span>
               </div>
               <div style={{ fontSize: 13, color: "var(--slate-400)" }}>{p.email}</div>
@@ -1612,7 +1612,7 @@ export default function Dashboard() {
             <DetailItem label="Total Steps" value={`${p.steps} steps`} />
             <DetailItem label="Micro Lessons" value={`${p.microLessons} lessons`} />
             <DetailItem label="Purchase Date" value={p.date} />
-            <DetailItem label="Status" value={p.status === "completed" ? "[check] Completed" : "[hourglass] Pending"} />
+            <DetailItem label="Status" value={p.status === "completed" ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Completed</> : <><SvgHourglass size={12} style={{ marginRight: 4 }} /> Pending</>} />
           </div>
           <div className="details-section-title">Buyer Details</div>
           <div className="details-grid">
@@ -1678,12 +1678,12 @@ export default function Dashboard() {
                 <h2>{req.targetGoal}</h2>
                 <span className={`status-pill ${req.status}`}>
                   {req.status === "created"
-                    ? "[check] Created & Ready"
+                    ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Created & Ready</>
                     : req.status === "in_progress"
-                    ? "<SvgSettings size={14} /> In Progress"
+                    ? <><SvgClock size={12} style={{ marginRight: 4 }} /> In Progress</>
                     : req.status === "rejected"
-                    ? "[close] Rejected"
-                    : "[hourglass] Pending Review"}
+                    ? <><SvgClose size={12} style={{ marginRight: 4 }} /> Rejected</>
+                    : <><SvgHourglass size={12} style={{ marginRight: 4 }} /> Pending Review</>}
                 </span>
               </div>
               <span className="role-chip path-req">
@@ -1747,7 +1747,7 @@ export default function Dashboard() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              {req.status === "created" ? "Edit / Reconfigure Path" : "[sparkles] Create Custom Path & Steps"}
+              {req.status === "created" ? "Edit / Reconfigure Path" : <><SvgSparkles size={14} style={{ marginRight: 4 }} /> Create Custom Path & Steps</>}
             </button>
 
             {req.status !== "in_progress" && req.status !== "created" && (
@@ -1797,7 +1797,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{selected.businessName}</h2>
                 <span className={`status-pill ${selected.status}`}>
-                  {selected.status === "approved" ? "[check] Verified" : selected.status === "rejected" ? "[close] Rejected" : selected.status === "deactivated" ? "[ban] Deactivated" : "[hourglass] Pending"}
+                  {selected.status === "approved" ? <><SvgCheck size={13} style={{ marginRight: 4 }} /> Verified</> : selected.status === "rejected" ? <><SvgClose size={13} style={{ marginRight: 4 }} /> Rejected</> : selected.status === "deactivated" ? <><SvgBan size={13} style={{ marginRight: 4 }} /> Deactivated</> : <><SvgHourglass size={13} style={{ marginRight: 4 }} /> Pending</>}
                 </span>
               </div>
               <span className={`role-chip ${isPartner ? "partner" : "user"}`}>
@@ -2000,15 +2000,15 @@ export default function Dashboard() {
                 </button>
                 <PortalDropdown anchorRef={scopeDropdownRef} isOpen={showScopeDropdown} onClose={() => setShowScopeDropdown(false)}>
                   <button className={partnerScope === "all" ? "partner-active" : ""} onClick={() => { setPartnerScope("all"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">[clipboard]</span> All Partners
+                    <span className="menu-icon"><SvgClipboard size={14} /></span> All Partners
                     <span className="menu-count partner-count">{partnerData.length}</span>
                   </button>
                   <button className={partnerScope === "internal" ? "scope-internal-active" : ""} onClick={() => { setPartnerScope("internal"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">[building]</span> Internal
+                    <span className="menu-icon"><SvgBuilding size={14} /></span> Internal
                     <span className="menu-count scope-internal-count">{internalCount}</span>
                   </button>
                   <button className={partnerScope === "external" ? "scope-external-active" : ""} onClick={() => { setPartnerScope("external"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">[globe]</span> External
+                    <span className="menu-icon"><SvgGlobe size={14} /></span> External
                     <span className="menu-count scope-external-count">{externalCount}</span>
                   </button>
                 </PortalDropdown>
@@ -2095,12 +2095,12 @@ export default function Dashboard() {
                           <td>
                             <span className={`status-pill ${req.status}`}>
                               {req.status === "created"
-                                ? "[check] Created"
+                                ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Created</>
                                 : req.status === "in_progress"
-                                ? "<SvgSettings size={14} /> In Progress"
+                                ? <><SvgClock size={12} style={{ marginRight: 4 }} /> In Progress</>
                                 : req.status === "rejected"
-                                ? "[close] Rejected"
-                                : "[hourglass] Pending"}
+                                ? <><SvgClose size={12} style={{ marginRight: 4 }} /> Rejected</>
+                                : <><SvgHourglass size={12} style={{ marginRight: 4 }} /> Pending</>}
                             </span>
                           </td>
                           <td className="date-cell">
@@ -2162,7 +2162,7 @@ export default function Dashboard() {
                       {isPartnerView && (
                         <td>
                           <span className={`scope-badge ${item.partnerScope === "internal" ? "scope-internal" : "scope-external"}`}>
-                            {item.partnerScope === "internal" ? "[building] Internal" : "[globe] External"}
+                            {item.partnerScope === "internal" ? <><SvgBuilding size={12} style={{ marginRight: 4 }} /> Internal</> : <><SvgGlobe size={12} style={{ marginRight: 4 }} /> External</>}
                           </span>
                         </td>
                       )}
