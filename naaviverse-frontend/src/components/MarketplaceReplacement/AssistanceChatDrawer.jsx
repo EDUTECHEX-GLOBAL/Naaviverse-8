@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import "./AssistanceChatDrawer.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
+import { SvgClose } from "../../utils/SvgIcons";
 
 export default function AssistanceChatDrawer({
   isOpen,
@@ -269,7 +270,7 @@ export default function AssistanceChatDrawer({
           {justAddedService && (
             <div className="afp-toast-banner">
               <div className="atb-left">
-                <span className="atb-icon">✓</span>
+                <span className="atb-icon">[check]</span>
                 <span className="atb-msg">
                   Added <strong>{justAddedService.name}</strong> to your cart!
                 </span>
@@ -411,7 +412,7 @@ export default function AssistanceChatDrawer({
                         onClick={handleCreateDirectRequest}
                         disabled={creatingNew || !newReqMessage.trim()}
                       >
-                        {creatingNew ? "Connecting to Super Admin..." : "🚀 Start Chat with Super Admin"}
+                        {creatingNew ? "Connecting to Super Admin..." : "Start Chat with Super Admin"}
                       </button>
 
                       {requests.length > 0 && (
@@ -487,7 +488,7 @@ export default function AssistanceChatDrawer({
                     {/* Waiting notice if no Super Admin reply yet */}
                     {messages.length === 0 ? (
                       <div className="afp-waiting-card">
-                        <div className="awc-icon">⏳</div>
+                        <div className="awc-icon">[hourglass]</div>
                         <div className="awc-content">
                           <h4>Inquiry Submitted to Super Admin</h4>
                           <p>
@@ -513,7 +514,15 @@ export default function AssistanceChatDrawer({
                             className={`chat-bubble-wrap ${isAdmin ? "admin-bubble-wrap" : "user-bubble-wrap"}`}
                           >
                             <div className="bubble-sender-meta">
-                              <span className="sender-name">{isAdmin ? "🛡️ Naavi Super Admin" : "You"}</span>
+                              <span className="sender-name" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                {isAdmin ? (
+                                  <>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    </svg> Naavi Super Admin
+                                  </>
+                                ) : "You"}
+                              </span>
                               <span className="sender-time">
                                 {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                               </span>
@@ -526,7 +535,11 @@ export default function AssistanceChatDrawer({
                               {svc && (
                                 <div className="admin-rec-card">
                                   <div className="arc-top-row">
-                                    <span className="arc-badge">★ Super Admin Pick</span>
+                                    <span className="arc-badge" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                      </svg> Super Admin Pick
+                                    </span>
                                     {svc.category && <span className="arc-cat-tag">{svc.category}</span>}
                                   </div>
 
@@ -534,9 +547,28 @@ export default function AssistanceChatDrawer({
                                   <p className="arc-desc">{svc.goal || svc.desc || svc.description}</p>
 
                                   <div className="arc-meta-pills">
-                                    {svc.provider && <span className="arc-pill">🏢 {svc.provider}</span>}
-                                    {svc.mode && <span className="arc-pill">📍 {svc.mode}</span>}
-                                    {svc.duration && <span className="arc-pill">⏱ {svc.duration}</span>}
+                                    {svc.provider && (
+                                      <span className="arc-pill" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                                          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                        </svg> {svc.provider}
+                                      </span>
+                                    )}
+                                    {svc.mode && (
+                                      <span className="arc-pill" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                                        </svg> {svc.mode}
+                                      </span>
+                                    )}
+                                    {svc.duration && (
+                                      <span className="arc-pill" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                        </svg> {svc.duration}
+                                      </span>
+                                    )}
                                   </div>
 
                                   <div className="arc-footer">
@@ -559,14 +591,14 @@ export default function AssistanceChatDrawer({
                                       </button>
 
                                       {purchased ? (
-                                        <span className="arc-purchased-tag">✓ Purchased</span>
+                                        <span className="arc-purchased-tag">[check] Purchased</span>
                                       ) : (
                                         <button
                                           type="button"
                                           className={`arc-add-btn ${inCart ? "in-cart" : ""}`}
                                           onClick={() => handleAddToCartClick(svc)}
                                         >
-                                          {inCart ? "✓ In Cart" : "+ Add to Cart"}
+                                          {inCart ? "[check] In Cart" : "+ Add to Cart"}
                                         </button>
                                       )}
                                     </div>
@@ -604,7 +636,9 @@ export default function AssistanceChatDrawer({
                 </div>
               ) : (
                 <div className="afp-empty-selection">
-                  <span style={{ fontSize: 36 }}>💬</span>
+                  <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
                   <h3>Select an inquiry to view conversation</h3>
                   <p>Choose an inquiry from the left sidebar or create a new inquiry for this step.</p>
                   <button
@@ -628,7 +662,7 @@ export default function AssistanceChatDrawer({
 
               {latestRecommendedService ? (
                 <div className="ads-rec-box">
-                  <div className="ads-rec-badge">★ Super Admin Recommended</div>
+                  <div className="ads-rec-badge">[star] Super Admin Recommended</div>
                   <h4 className="ads-rec-name">{latestRecommendedService.name}</h4>
                   <p className="ads-rec-desc">
                     {latestRecommendedService.goal ||
@@ -682,14 +716,14 @@ export default function AssistanceChatDrawer({
                     </button>
 
                     {isItemPurchased(latestRecommendedService) ? (
-                      <span className="ads-purchased-tag">✓ Purchased & Active</span>
+                      <span className="ads-purchased-tag">[check] Purchased & Active</span>
                     ) : (
                       <button
                         type="button"
                         className={`ads-cart-btn ${isItemInCart(latestRecommendedService) ? "in-cart" : ""}`}
                         onClick={() => handleAddToCartClick(latestRecommendedService)}
                       >
-                        {isItemInCart(latestRecommendedService) ? "✓ In Cart" : "+ Add to Cart"}
+                        {isItemInCart(latestRecommendedService) ? "[check] In Cart" : "+ Add to Cart"}
                       </button>
                     )}
                   </div>
@@ -697,20 +731,20 @@ export default function AssistanceChatDrawer({
               ) : (
                 <div className="ads-support-box">
                   <div className="asb-header">
-                    <span className="asb-icon">🛡️</span>
+                    <span className="asb-icon">️</span>
                     <h4>Counselor Guarantee</h4>
                   </div>
                   <ul className="asb-list">
                     <li>
-                      <span className="asb-check">✓</span>
+                      <span className="asb-check">[check]</span>
                       <span>100% curated for your learning path requirements.</span>
                     </li>
                     <li>
-                      <span className="asb-check">✓</span>
+                      <span className="asb-check">[check]</span>
                       <span>Verified instructors and accredited certifications.</span>
                     </li>
                     <li>
-                      <span className="asb-check">✓</span>
+                      <span className="asb-check">[check]</span>
                       <span>Direct communication channel with Super Admin.</span>
                     </li>
                   </ul>
@@ -732,7 +766,7 @@ export default function AssistanceChatDrawer({
           <div className="mkt-details-modal-panel" onClick={(e) => e.stopPropagation()}>
             <div className="mdm-header">
               <div className="mdm-header-info">
-                <span className="mdm-badge">★ Super Admin Curated Recommendation</span>
+                <span className="mdm-badge">[star] Super Admin Curated Recommendation</span>
                 <h3 className="mdm-title">{detailsService.name}</h3>
               </div>
               <button
@@ -740,7 +774,7 @@ export default function AssistanceChatDrawer({
                 className="mdm-close-btn"
                 onClick={() => setDetailsService(null)}
               >
-                ✕
+                <SvgClose size={14} />
               </button>
             </div>
 
@@ -761,11 +795,11 @@ export default function AssistanceChatDrawer({
                 </div>
                 <div className="mdm-attr-card">
                   <span className="attr-lbl">Delivery Mode</span>
-                  <span className="attr-val">📍 {detailsService.mode || "Online"}</span>
+                  <span className="attr-val">[pin] {detailsService.mode || "Online"}</span>
                 </div>
                 <div className="mdm-attr-card">
                   <span className="attr-lbl">Duration</span>
-                  <span className="attr-val">⏱ {detailsService.duration || "Self-Paced"}</span>
+                  <span className="attr-val">[clock] {detailsService.duration || "Self-Paced"}</span>
                 </div>
               </div>
 
@@ -803,14 +837,14 @@ export default function AssistanceChatDrawer({
 
                 <div className="mdm-actions">
                   {isItemPurchased(detailsService) ? (
-                    <div className="mdm-purchased-badge">✓ Purchased & Active</div>
+                    <div className="mdm-purchased-badge">[check] Purchased & Active</div>
                   ) : (
                     <button
                       type="button"
                       className={`mdm-cart-btn ${isItemInCart(detailsService) ? "in-cart" : ""}`}
                       onClick={() => handleAddToCartClick(detailsService)}
                     >
-                      {isItemInCart(detailsService) ? "✓ In Cart (Click to Remove)" : "+ Add to Cart"}
+                      {isItemInCart(detailsService) ? "[check] In Cart (Click to Remove)" : "+ Add to Cart"}
                     </button>
                   )}
 

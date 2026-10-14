@@ -66,6 +66,7 @@ import EditServiceForm from "./EditServices";
 import Subscriptions from "./Subscriptions.jsx";
 import AdminFeedback from "./AdminFeedback.jsx";
 import InternalPartners from "./InternalPartners/InternalPartners.jsx";
+import { SvgClose, SvgEdit, SvgEye, SvgTrash } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -1362,7 +1363,7 @@ const AccDashboard = () => {
                   className="drawer-close"
                   onClick={() => setServiceDrawerOpen(false)}
                 >
-                  ✕
+                  <SvgClose size={14} />
                 </button>
               </div>
 
@@ -1372,14 +1373,14 @@ const AccDashboard = () => {
                     className="drawer-action-btn primary"
                     onClick={() => setServiceMode("view")}
                   >
-                    👁 View Service
+                    <SvgEye size={14} /> View Service
                   </button>
 
                   <button
                     className="drawer-action-btn"
                     onClick={() => setServiceMode("edit")}
                   >
-                    ✏️ Edit Service
+                    <SvgEdit size={14} />️ Edit Service
                   </button>
 
                   <button
@@ -1397,7 +1398,7 @@ const AccDashboard = () => {
                       }
                     }}
                   >
-                    🗑 Delete Service
+                    <SvgTrash size={14} /> Delete Service
                   </button>
                 </div>
               )}

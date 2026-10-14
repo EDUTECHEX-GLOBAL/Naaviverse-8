@@ -47,7 +47,7 @@ const StepIndicator = ({ step }) => (
       const active = step === idx;
       return (
         <div key={label} className={`ne-step ${active ? "active" : ""} ${done ? "done" : ""}`}>
-          <div className="ne-step-circle">{done ? "✓" : idx}</div>
+          <div className="ne-step-circle">{done ? "[check]" : idx}</div>
           <span className="ne-step-label">{label}</span>
         </div>
       );

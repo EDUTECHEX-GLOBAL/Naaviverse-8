@@ -1,4 +1,5 @@
 import React, { Fragment, useRef, useEffect, useState } from "react";
+import { SvgStarFilled } from "../../utils/SvgIcons";
 
 const testimonials = [
   {
@@ -59,13 +60,13 @@ const handleMouseMove = (e) => {
   sliderRef.current.scrollLeft = scrollLeft.current - walk;
 };
 
-  // ⭐ yellow stars
+  // [star] yellow stars
   const renderStars = () =>
     Array.from({ length: 5 }).map((_, i) => (
-      <span key={i} style={{ color: "#FFD700" }}>★</span>
+      <span key={i} style={{ color: "#FFD700" }}><SvgStarFilled size={14} /></span>
     ));
 
-  // 👁 detect section visibility
+  // [eye] detect section visibility
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -79,7 +80,7 @@ const handleMouseMove = (e) => {
     return () => observer.disconnect();
   }, []);
 
-  // 🔁 auto scroll when visible
+  // [refresh] auto scroll when visible
   useEffect(() => {
     if (!isVisible) return;
 
@@ -101,7 +102,7 @@ const handleMouseMove = (e) => {
 
   }, [isVisible, isHovering]);
 
-  // 🎨 styles
+  // [palette] styles
   const styles = `
     .success-section {
       overflow: hidden;

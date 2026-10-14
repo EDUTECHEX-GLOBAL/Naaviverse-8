@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // 1️⃣ Fetch step
+    // 1️ Fetch step
     const step = await Step.findById(stepId);
     if (!step) {
       return res.status(404).json({
@@ -24,21 +24,21 @@ router.get("/", async (req, res) => {
       });
     }
 
-    // 2️⃣ MACRO VIEW (string → object)
+    // 2️ MACRO VIEW (string → object)
     const macroDescription =
       step.macro_description?.trim() ||
       step.description ||
       "";
 
-    // 3️⃣ MICRO VIEW (string)
+    // 3️ MICRO VIEW (string)
     const microDescription =
       step.micro_description?.trim() || "";
 
-    // 4️⃣ NANO VIEW (STRING — 🔥 FIX)
+    // 4️ NANO VIEW (STRING — [HOT] FIX)
     const nanoDescription =
       step.nano_description?.trim() || "";
 
-    // 5️⃣ Payload EXACTLY matches StepViews schema
+    // 5️ Payload EXACTLY matches StepViews schema
     const payload = {
       stepId,
       pathId,
@@ -53,7 +53,7 @@ router.get("/", async (req, res) => {
       },
     };
 
-    // 6️⃣ Find existing StepView
+    // 6️ Find existing StepView
     let view = await StepViews.findOne({ stepId, pathId });
 
     if (view) {
@@ -65,7 +65,7 @@ router.get("/", async (req, res) => {
       return res.json({ success: true, data: view });
     }
 
-    // 7️⃣ Create new StepView
+    // 7️ Create new StepView
     const created = await StepViews.create(payload);
     return res.json({ success: true, data: created });
 

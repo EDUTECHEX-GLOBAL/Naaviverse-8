@@ -28,7 +28,7 @@ const AboutFour = () => {
 }
 
 .block-style-two .list-item li::before {
-    content: "✔";
+    content: "[check]";
     position: absolute;
     left: 0;
     top: 0;

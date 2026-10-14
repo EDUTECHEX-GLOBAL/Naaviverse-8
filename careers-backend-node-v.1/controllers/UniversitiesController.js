@@ -6,11 +6,11 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /* ===========================
-   1️⃣  SEED UNIVERSITIES (College Scorecard)
+   1️  SEED UNIVERSITIES (College Scorecard)
 =========================== */
 const addUniversities = async (req, res) => {
   try {
-    console.log("🇺🇸 Starting U.S. universities seeding...");
+    console.log(" Starting U.S. universities seeding...");
 
     const API_KEY = process.env.COLLEGE_SCORECARD_KEY;
     if (!API_KEY) {
@@ -35,7 +35,7 @@ const addUniversities = async (req, res) => {
     const result = [];
 
     for (const st of states) {
-      console.log(`\n🔎 Processing state: ${st}`);
+      console.log(`\n[SEARCH] Processing state: ${st}`);
       let page = 0;
 
       while (true) {
@@ -51,7 +51,7 @@ const addUniversities = async (req, res) => {
           const response = await axios.get(url);
           data = response.data;
         } catch (err) {
-          console.log("❌ Error fetching:", url, err.message || "");
+          console.log("[ERROR] Error fetching:", url, err.message || "");
           break;
         }
 
@@ -86,17 +86,17 @@ const addUniversities = async (req, res) => {
       }
     }
 
-    console.log(`\n🎉 Total U.S. universities collected: ${result.length}`);
+    console.log(`\n[DONE] Total U.S. universities collected: ${result.length}`);
 
-    console.log("🧹 Deleting old U.S. universities from DB...");
+    console.log("[CLEAN] Deleting old U.S. universities from DB...");
     await universitiesModel.deleteMany({ country: { $regex: /^united states/i } });
 
     if (result.length > 0) {
-      console.log("💾 Inserting new universities (bulk)...");
+      console.log("[SAVE] Inserting new universities (bulk)...");
       await universitiesModel.insertMany(result, { ordered: false });
     }
 
-    console.log("✅ Seeding complete.");
+    console.log("[OK] Seeding complete.");
     return res.json({
       status: true,
       message: "Universities seeded successfully",
@@ -114,7 +114,7 @@ const addUniversities = async (req, res) => {
 };
 
 /* ===========================
-   2️⃣  FETCH UNIVERSITIES
+   2️  FETCH UNIVERSITIES
 =========================== */
 const fetchUniversities = async (req, res) => {
   try {
@@ -151,7 +151,7 @@ const fetchUniversities = async (req, res) => {
 };
 
 /* ===========================
-   3️⃣  AI PROGRAM GENERATOR — GROQ VERSION
+   3️  AI PROGRAM GENERATOR — GROQ VERSION
 =========================== */
 const Groq = require("groq-sdk");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -168,7 +168,7 @@ Respond ONLY in pure JSON:
 
   try {
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",   // ✅ FIXED MODEL
+      model: "llama-3.1-8b-instant",   // [OK] FIXED MODEL
       messages: [{ role: "user", content: prompt }],
       temperature: 0.4,
       max_tokens: 200,
@@ -190,7 +190,7 @@ Respond ONLY in pure JSON:
 
 
 /* ===========================
-   4️⃣  FORMATTED UNIVERSITIES WITH AI (cached)
+   4️  FORMATTED UNIVERSITIES WITH AI (cached)
 =========================== */
 const fetchFormattedUniversities = async (req, res) => {
   try {
@@ -198,7 +198,7 @@ const fetchFormattedUniversities = async (req, res) => {
     if (req.query.state) filter["state-province"] = req.query.state;
     if (req.query.country) filter.country = req.query.country;
 
-    // ✔ Allow up to 5000 instead of 200
+    // [OK] Allow up to 5000 instead of 200
     const limit = Math.min(parseInt(req.query.limit || "5000", 10), 5000);
 
     const universities = await universitiesModel.find(filter).limit(limit);

@@ -5,13 +5,13 @@ const Razorpay = require("razorpay");
 
 const Payment          = require("../models/PaymentModel");
 const Subscription     = require("../models/SubscriptionModel");
-const VaultTransaction = require("../models/VaultTransactionModel");          // ✅ ADDED
+const VaultTransaction = require("../models/VaultTransactionModel");          // [OK] ADDED
 const { sendInvoiceEmail } = require("../utils/sendInvoiceEmail");
 const { trackMarketplaceEvent } = require("../services/MarketplaceRankingService");
 
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-console.log("🔑 KEY_ID :", process.env.RAZORPAY_KEY_ID);
-console.log("🔑 SECRET :", process.env.RAZORPAY_SECRET_KEY ? "✅ EXISTS" : "❌ MISSING");
+console.log("[KEY] KEY_ID :", process.env.RAZORPAY_KEY_ID);
+console.log("[KEY] SECRET :", process.env.RAZORPAY_SECRET_KEY ? "[OK] EXISTS" : "[ERROR] MISSING");
 console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
 const razorpay = new Razorpay({
@@ -52,7 +52,7 @@ function derivePlanFields(productName = "", planTierOverride = null, tierOverrid
 // ═════════════════════════════════════════
 router.post("/create-order", async (req, res) => {
   try {
-    console.log("📦 Body received:", req.body);
+    console.log("[PKG] Body received:", req.body);
 
     const {
       userEmail,
@@ -66,7 +66,7 @@ router.post("/create-order", async (req, res) => {
       tier:     tierFromBody,
     } = req.body;
 
-    console.log("📦 productName:", productName, "| planTierFromBody:", planTierFromBody, "| tierFromBody:", tierFromBody);
+    console.log("[PKG] productName:", productName, "| planTierFromBody:", planTierFromBody, "| tierFromBody:", tierFromBody);
 
     const isMarketplace = productId?.startsWith("micro-") || productId?.startsWith("nano-") || productId?.startsWith("macro-") || billingMethod === "lifetime";
     
@@ -79,7 +79,7 @@ router.post("/create-order", async (req, res) => {
       tier = derived.tier;
 
       if (!planTier) {
-        console.error("❌ Cannot derive planTier. productName:", productName, "planTierFromBody:", planTierFromBody);
+        console.error("[ERROR] Cannot derive planTier. productName:", productName, "planTierFromBody:", planTierFromBody);
         return res.status(400).json({
           success: false,
           error: `Invalid plan selected. Received productName="${productName}", planTier="${planTierFromBody}"`,
@@ -101,7 +101,7 @@ router.post("/create-order", async (req, res) => {
       }
     }
 
-    console.log(`✅ Derived: planTier=${planTier}, tier=${tier}`);
+    console.log(`[OK] Derived: planTier=${planTier}, tier=${tier}`);
 
     const payment = await Payment.create({
       userEmail,
@@ -117,7 +117,7 @@ router.post("/create-order", async (req, res) => {
       partnerId: req.body.partnerId || null,
       partnerEmail: req.body.partnerEmail ? String(req.body.partnerEmail).toLowerCase().trim() : null,
     });
-    console.log("✅ Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier, "| partnerEmail:", payment.partnerEmail);
+    console.log("[OK] Payment record created:", payment._id, "| tier:", tier, "| planTier:", planTier, "| partnerEmail:", payment.partnerEmail);
 
     const order = await razorpay.orders.create({
       amount:   amount * 100,
@@ -132,7 +132,7 @@ router.post("/create-order", async (req, res) => {
         tier,
       },
     });
-    console.log("✅ Razorpay order created:", order.id);
+    console.log("[OK] Razorpay order created:", order.id);
 
     payment.razorpayOrderId = order.id;
     await payment.save();
@@ -141,7 +141,7 @@ router.post("/create-order", async (req, res) => {
 
   } catch (err) {
     const errorMsg = err.message || (err.error && err.error.description) || String(err);
-    console.error("❌ Create Order Error:", errorMsg, err);
+    console.error("[ERROR] Create Order Error:", errorMsg, err);
     return res.status(500).json({ success: false, error: errorMsg });
   }
 });
@@ -205,7 +205,7 @@ router.post("/verify", async (req, res) => {
     const resolvedPlanTier = payment.planTier || null;
     const resolvedTier     = payment.tier     || "micro";
 
-    console.log(`✅ Resolved: planTier=${resolvedPlanTier}, tier=${resolvedTier}`);
+    console.log(`[OK] Resolved: planTier=${resolvedPlanTier}, tier=${resolvedTier}`);
 
     // ── 5. Upsert subscription ────────────────────────────────────
     await Subscription.findOneAndUpdate(
@@ -226,7 +226,7 @@ router.post("/verify", async (req, res) => {
       },
       { upsert: true, new: true }
     );
-    console.log(`✅ Subscription upserted: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
+    console.log(`[OK] Subscription upserted: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
     // ── 6. Credit wallet if standard plan tier exists (skip for marketplace) ──
     const isMkt = payment.productId?.startsWith("micro-") || payment.productId?.startsWith("nano-") || payment.productId?.startsWith("macro-") || payment.billingMethod === "lifetime";
     if (!isMkt && resolvedPlanTier && PLAN_CREDITS[resolvedPlanTier]) {
@@ -244,9 +244,9 @@ router.post("/verify", async (req, res) => {
             paymentId:   razorpay_payment_id,
           },
         });
-        console.log(`✅ Wallet credited: ${credits} credits → ${payment.userEmail}`);
+        console.log(`[OK] Wallet credited: ${credits} credits → ${payment.userEmail}`);
       } catch (walletErr) {
-        console.error("❌ Wallet credit failed:", walletErr.message);
+        console.error("[ERROR] Wallet credit failed:", walletErr.message);
       }
     }
 
@@ -260,7 +260,7 @@ router.post("/verify", async (req, res) => {
       razorpayPaymentId: razorpay_payment_id,
       razorpayOrderId:   razorpay_order_id,
       createdAt:         payment.createdAt || new Date(),
-    }).catch(err => console.error("❌ Invoice email failed (non-blocking):", err.message));
+    }).catch(err => console.error("[ERROR] Invoice email failed (non-blocking):", err.message));
 
     return res.json({
       success: true,
@@ -268,7 +268,7 @@ router.post("/verify", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Verify Error:", err);
+    console.error("[ERROR] Verify Error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -352,7 +352,7 @@ const handlePaymentFailure = async (req, res) => {
         payment.amount = Number(amount);
       }
       await payment.save();
-      console.log(`⚠️ Payment record ${payment._id} updated to failed: ${finalReason}`);
+      console.log(`[WARN]️ Payment record ${payment._id} updated to failed: ${finalReason}`);
       return res.json({
         success: true,
         message: "Payment status updated to failed",
@@ -380,7 +380,7 @@ const handlePaymentFailure = async (req, res) => {
         errorSource: finalSource,
         errorStep: finalStep,
       });
-      console.log(`⚠️ New failed payment record created: ${newPayment._id} for ${targetEmail}`);
+      console.log(`[WARN]️ New failed payment record created: ${newPayment._id} for ${targetEmail}`);
       return res.json({
         success: true,
         message: "Failed payment recorded",
@@ -394,7 +394,7 @@ const handlePaymentFailure = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Record failure error:", err);
+    console.error("[ERROR] Record failure error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -417,13 +417,13 @@ router.post("/webhook", async (req, res) => {
         .digest("hex");
 
       if (expectedSignature !== signature) {
-        console.warn("⚠️ Invalid Razorpay webhook signature");
+        console.warn("[WARN]️ Invalid Razorpay webhook signature");
         return res.status(400).json({ success: false, message: "Invalid webhook signature" });
       }
     }
 
     const event = req.body?.event;
-    console.log(`🔔 Razorpay Webhook Event: ${event}`);
+    console.log(`[BELL] Razorpay Webhook Event: ${event}`);
 
     if (event === "payment.failed") {
       const paymentEntity = req.body?.payload?.payment?.entity;
@@ -460,7 +460,7 @@ router.post("/webhook", async (req, res) => {
           payment.errorSource = errorSource || payment.errorSource;
           payment.errorStep = errorStep || payment.errorStep;
           await payment.save();
-          console.log(`⚠️ Webhook updated payment ${payment._id} to failed`);
+          console.log(`[WARN]️ Webhook updated payment ${payment._id} to failed`);
         } else if (email) {
           await Payment.create({
             userEmail: String(email).toLowerCase().trim(),
@@ -480,14 +480,14 @@ router.post("/webhook", async (req, res) => {
             errorSource,
             errorStep,
           });
-          console.log(`⚠️ Webhook created new failed payment record for ${email}`);
+          console.log(`[WARN]️ Webhook created new failed payment record for ${email}`);
         }
       }
     }
 
     return res.json({ status: "ok" });
   } catch (err) {
-    console.error("❌ Webhook error:", err);
+    console.error("[ERROR] Webhook error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
@@ -504,7 +504,7 @@ router.get("/transactions", async (req, res) => {
     const payments = await Payment.find(query).sort({ createdAt: -1 });
     return res.json({ success: true, data: payments });
   } catch (err) {
-    console.error("❌ Fetch transactions error:", err);
+    console.error("[ERROR] Fetch transactions error:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -538,7 +538,7 @@ router.get("/invoice/:paymentId", async (req, res) => {
     return res.send(pdfBuffer);
 
   } catch (err) {
-    console.error("❌ Invoice download error:", err);
+    console.error("[ERROR] Invoice download error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -581,7 +581,7 @@ router.post("/marketplace-order", async (req, res) => {
         status:        "paid",
       });
 
-      console.log(`✅ Marketplace Free order created: ${payment._id} | ${userEmail} | ${tier}`);
+      console.log(`[OK] Marketplace Free order created: ${payment._id} | ${userEmail} | ${tier}`);
       return res.json({
         success: true,
         free: true,
@@ -614,11 +614,11 @@ router.post("/marketplace-order", async (req, res) => {
     payment.razorpayOrderId = order.id;
     await payment.save();
 
-    console.log(`✅ Marketplace order created: ${order.id} | ₹${numTotal} | ${tier}`);
+    console.log(`[OK] Marketplace order created: ${order.id} | ₹${numTotal} | ${tier}`);
     return res.json({ success: true, order, paymentId: payment._id });
 
   } catch (err) {
-    console.error("❌ Marketplace Order Error:", err.message);
+    console.error("[ERROR] Marketplace Order Error:", err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -697,7 +697,7 @@ router.post("/marketplace-verify", async (req, res) => {
         },
         { upsert: true, new: true }
       );
-      console.log(`✅ Marketplace subscription activated: ${payment.userEmail} — ${tier}`);
+      console.log(`[OK] Marketplace subscription activated: ${payment.userEmail} — ${tier}`);
     }
 
     // 5. Credit wallet tokens
@@ -715,7 +715,7 @@ router.post("/marketplace-verify", async (req, res) => {
       console.warn("Wallet credit failed:", e.message);
     }
 
-    console.log(`✅ Marketplace payment verified: ${razorpay_payment_id}`);
+    console.log(`[OK] Marketplace payment verified: ${razorpay_payment_id}`);
     for (const item of items) {
       await trackMarketplaceEvent({
         serviceId: item._id || item.service_id,
@@ -731,7 +731,7 @@ router.post("/marketplace-verify", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Marketplace Verify Error:", err);
+    console.error("[ERROR] Marketplace Verify Error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -807,7 +807,7 @@ router.post("/mock-purchase", async (req, res) => {
         },
         { upsert: true, new: true }
       );
-      console.log(`✅ Mock marketplace subscription activated: ${userEmail} — ${tier}`);
+      console.log(`[OK] Mock marketplace subscription activated: ${userEmail} — ${tier}`);
     }
 
     return res.json({
@@ -819,7 +819,7 @@ router.post("/mock-purchase", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Mock purchase error:", err);
+    console.error("[ERROR] Mock purchase error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -840,7 +840,7 @@ router.get("/user-purchases", async (req, res) => {
     ).lean();
     return res.json({ success: true, purchases: payments });
   } catch (err) {
-    console.error("❌ User purchases fetch error:", err);
+    console.error("[ERROR] User purchases fetch error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });

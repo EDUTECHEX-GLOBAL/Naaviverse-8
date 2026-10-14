@@ -15,7 +15,7 @@ router.post("/batch", async (req, res) => {
     skip = parseInt(skip);
     limit = parseInt(limit);
 
-    console.log(`🔁 Regenerating batch: skip=${skip}, limit=${limit}`);
+    console.log(`[SYNC] Regenerating batch: skip=${skip}, limit=${limit}`);
 
     // Fetch universities
     const universities = await Universities.find()
@@ -33,7 +33,7 @@ router.post("/batch", async (req, res) => {
     const results = [];
 
     for (const uni of universities) {
-      console.log(`🔥 Regenerating for: ${uni.name}`);
+      console.log(`[HOT] Regenerating for: ${uni.name}`);
 
       try {
         const aiRes = await axios.post(
@@ -94,7 +94,7 @@ Return ONLY JSON:
         });
 
       } catch (err) {
-        console.log("❌ Error for:", uni.name, err.message);
+        console.log("[ERROR] Error for:", uni.name, err.message);
 
         results.push({
           university: uni.name,
@@ -113,7 +113,7 @@ Return ONLY JSON:
     });
 
   } catch (err) {
-    console.log("❌ Batch Error:", err);
+    console.log("[ERROR] Batch Error:", err);
     return res.status(500).json({
       success: false,
       error: err.message,

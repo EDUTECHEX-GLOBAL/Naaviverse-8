@@ -67,7 +67,7 @@ const LayerCard = ({ type, name, description, length, access }) => {
             {(length || access) && (
                 <div className="layer-meta">
                     {length && (
-                        <span className="meta-chip duration">⏱ {length}</span>
+                        <span className="meta-chip duration">[clock] {length}</span>
                     )}
                     {access && (
                         <span className={`meta-chip ${isFree ? "free" : "paid"}`}>
@@ -721,7 +721,7 @@ const MyStepsAcc = ({
                         {/* Empty state */}
                         {!loading && filteredSteps?.length === 0 && (
                             <div className="steps-empty">
-                                <div className="steps-empty-icon">📌</div>
+                                <div className="steps-empty-icon">[pin]</div>
                                 <div className="steps-empty-title">No Steps Found</div>
                                 <div className="steps-empty-sub">Try adjusting your search or add a new step.</div>
                             </div>
@@ -753,7 +753,7 @@ const MyStepsAcc = ({
 </h3>
                                         <div className="step-card-badges">
                                             {pathName && (
-                                                <span className="badge-path">🔗 {pathName}</span>
+                                                <span className="badge-path">[link] {pathName}</span>
                                             )}
                                             <span className={`badge-status ${isActiveStep ? "active" : "inactive"}`}>
                                                 {isActiveStep ? "Active" : "Inactive"}

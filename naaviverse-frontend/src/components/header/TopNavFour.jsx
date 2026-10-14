@@ -5,6 +5,7 @@ import ThemeMainMenu from "./ThemeMainMenu";
 import Naavi from "../../assets/images/logo/naavi_final_logo2.png";
 import SideTogglePanel from "./SideToggler";
 import "./topnav.scss";
+import { SvgRedDot } from "../../utils/SvgIcons";
 
 const TopNavFour = () => {
   const [navbar, setNavbar] = useState(false);
@@ -97,7 +98,7 @@ const TopNavFour = () => {
 
        
 
-      {/* 🔴 SIDE PANEL — RENDER ONCE ONLY */}
+      {/* <SvgRedDot size={14} /> SIDE PANEL — RENDER ONCE ONLY */}
       <SideTogglePanel isOpen={isSidebarOpen} onClose={closeSidebar} isMobile={isMobile} />
     </Fragment>
   );

@@ -146,13 +146,13 @@ const VisitorsList = () => {
   };
 
   const getCountryFlag = (countryCode) => {
-    if (!countryCode) return '🌐';
+    if (!countryCode) return '[globe]';
     const flags = {
-      'US': '🇺🇸', 'IN': '🇮🇳', 'GB': '🇬🇧', 'CA': '🇨🇦', 'AU': '🇦🇺',
-      'DE': '🇩🇪', 'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'BR': '🇧🇷',
-      'JP': '🇯🇵', 'CN': '🇨🇳', 'RU': '🇷🇺', 'KR': '🇰🇷', 'MX': '🇲🇽'
+      'US': '', 'IN': '', 'GB': '', 'CA': '', 'AU': '',
+      'DE': '', 'FR': '', 'IT': '', 'ES': '', 'BR': '',
+      'JP': '', 'CN': '', 'RU': '', 'KR': '', 'MX': ''
     };
-    return flags[countryCode.toUpperCase()] || '🌐';
+    return flags[countryCode.toUpperCase()] || '[globe]';
   };
 
   const getUniqueCountries = () => {
@@ -270,7 +270,14 @@ const VisitorsList = () => {
           </div>
         ) : currentVisitors.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">👥</div>
+            <div className="empty-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <p>No visitors found</p>
             {visitors.length > 0 && (
               <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>

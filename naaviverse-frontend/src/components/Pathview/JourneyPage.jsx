@@ -27,7 +27,7 @@ const JourneyPage = () => {
       if (response.data.success) {
         setJourneyPageData(response.data.data);
 
-        // ✅ Log that user opened their journey / path steps view
+        // [check] Log that user opened their journey / path steps view
         const pathName = response.data.data?.school || "Selected Path";
         const pathId   = localStorage.getItem("selectedPathId") || "";
         logActivity({
@@ -52,7 +52,7 @@ const JourneyPage = () => {
     localStorage.setItem("selectedStepId",   step._id);
     localStorage.setItem("selectedStepData", JSON.stringify(step));
 
-    // ✅ Log step viewed — with path context
+    // [check] Log step viewed — with path context
     const pathName = journeyPageData?.school || localStorage.getItem("selectedPathName") || "";
     const pathId   = localStorage.getItem("selectedPathId") || "";
 

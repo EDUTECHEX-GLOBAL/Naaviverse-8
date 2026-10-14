@@ -309,7 +309,7 @@ const LevelThree = ({
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "22px", flexShrink: 0,
                 }}>
-                  {{"realistic": "🔧", "investigative": "🔬", "artistic": "🎨", "social": "🤝", "enterprising": "🚀", "conventional": "📋"}[calculatedPersonality]}
+                  {{"realistic": "[wrench]", "investigative": "[microscope]", "artistic": "[palette]", "social": "[handshake]", "enterprising": "[rocket]", "conventional": "[clipboard]"}[calculatedPersonality]}
                 </div>
                 <div>
                   <div style={{ fontSize: "12px", color: "#6366f1", fontWeight: "600", marginBottom: "2px" }}>

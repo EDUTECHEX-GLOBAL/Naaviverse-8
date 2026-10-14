@@ -12,14 +12,14 @@ router.put("/restore/:id", [verifyToken], StepsController.restoreStep);
 
 router.put("/detach/:stepId", StepsController.detachStepFromPath);
 router.put("/toggle-status/:stepId", StepsController.toggleStepStatus);
-// ⭐ BULK UPLOAD (KEEP BEFORE dynamic routes)
+// [STAR] BULK UPLOAD (KEEP BEFORE dynamic routes)
 router.post("/bulk", StepsController.bulkUploadSteps);
 console.log("bulkUploadSteps =>", StepsController.bulkUploadSteps);
  
 
 
 
-// ⭐ ADD THIS — MUST BE ABOVE /:id ⭐
+// [STAR] ADD THIS — MUST BE ABOVE /:id [STAR]
 router.get("/partner", StepsController.getStepsByPartner);
 
 router.patch("/editstep", StepsController.editStep);

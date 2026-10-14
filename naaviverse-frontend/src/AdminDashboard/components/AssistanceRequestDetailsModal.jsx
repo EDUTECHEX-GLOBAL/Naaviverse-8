@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AdminMarketplaceRecommendationModal from "./AdminMarketplaceRecommendationModal";
+import { SvgClose, SvgStarFilled } from "../../utils/SvgIcons";
 
 const REASON_LABELS = {
   too_expensive: "Too expensive",
@@ -142,7 +143,7 @@ export default function AssistanceRequestDetailsModal({
               Path: <strong>{request.pathName}</strong> › Step: <strong>{request.stepName}</strong>
             </div>
           </div>
-          <button className="aadd-close-btn" onClick={onClose}>✕</button>
+          <button className="aadd-close-btn" onClick={onClose}><SvgClose size={14} /></button>
         </div>
 
         {/* Action Toolbar */}
@@ -165,7 +166,7 @@ export default function AssistanceRequestDetailsModal({
             className="aadd-rec-btn"
             onClick={() => setShowRecModal(true)}
           >
-            ★ Recommend Marketplace Item
+            <SvgStarFilled size={14} /> Recommend Marketplace Item
           </button>
         </div>
 
@@ -234,7 +235,15 @@ export default function AssistanceRequestDetailsModal({
                   return (
                     <div key={m.id} className={`adm-msg-wrap ${isAdmin ? "from-admin" : "from-user"}`}>
                       <div className="adm-msg-header">
-                        <span className="adm-msg-name">{isAdmin ? "🛡️ You (Super Admin)" : m.senderName}</span>
+                        <span className="adm-msg-name" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          {isAdmin ? (
+                            <>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                              </svg> You (Super Admin)
+                            </>
+                          ) : m.senderName}
+                        </span>
                         <span className="adm-msg-time">
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </span>
@@ -243,7 +252,11 @@ export default function AssistanceRequestDetailsModal({
                         <div className="adm-msg-text">{m.message}</div>
                         {m.recommendedService && (
                           <div className="admin-rec-attached">
-                            <div className="ara-tag">★ Recommended to User</div>
+                            <div className="ara-tag" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                              </svg> Recommended to User
+                            </div>
                             <div className="ara-title">{m.recommendedService.name}</div>
                             <div className="ara-price">
                               Price: {!m.recommendedService.cost || m.recommendedService.cost === "0"

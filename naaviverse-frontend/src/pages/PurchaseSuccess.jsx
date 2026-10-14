@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SvgCheck } from "../utils/SvgIcons";
 
 const PurchaseSuccess = () => {
     const location = useLocation();
@@ -45,7 +46,7 @@ const PurchaseSuccess = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontFamily: 'Inter, system-ui, sans-serif',
+            fontFamily: "'Poppins', sans-serif",
             color: '#f0f4ff'
         }}>
             <div style={{
@@ -65,7 +66,7 @@ const PurchaseSuccess = () => {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     margin: '0 auto 24px',
                     fontSize: 32, color: '#10b981'
-                }}>✓</div>
+                }}><SvgCheck size={14} /></div>
 
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: 12 }}>
                     Purchase Successful!

@@ -1,4 +1,4 @@
-// ✅ CORRECTED App.js
+// [check] CORRECTED App.js
 import React, { Fragment, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import AOS from "aos";
@@ -54,6 +54,7 @@ import PurchaseSuccess from "./pages/PurchaseSuccess";
 import RoutePage from "./pages/RoutePage/routepage";
 import NaaviExclusivePage from "./pages/NaaviExclusive/NaaviExclusivePage";
 import PartnerExclusiveDashboard from "./pages/NaaviExclusive/PartnerExclusiveDashboard";
+import { SvgCheckCircle } from "./utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -115,7 +116,7 @@ function App() {
           <Route path="/dashboard/users/notifications" element={<Dashboard />} />
           <Route path="/dashboard/users/home" element={<Dashboard />} />
 
-          {/* ✅ MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
+          {/* <SvgCheckCircle size={14} /> MUST be before /:id wildcard so it doesn't get caught by MallProduct */}
           <Route path="/dashboard/users/Marketplace" element={<Dashboard />} />
 
           {/* This wildcard catches everything else like /dashboard/users/some-product-code */}
@@ -148,7 +149,7 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard/profile" element={<AdminProfilePage />} />
 
-          {/* ✅ Replace single route with nested sub-routes */}
+          {/* <SvgCheckCircle size={14} /> Replace single route with nested sub-routes */}
           <Route path="/admin/dashboard/accountants" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/crm" element={<AdminAccDashbaoard />} />
           <Route path="/admin/dashboard/paths" element={<AdminAccDashbaoard />} />

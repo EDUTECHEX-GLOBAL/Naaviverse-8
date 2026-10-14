@@ -9,6 +9,7 @@ import FindBetterMatchModal from "../components/MarketplaceReplacement/FindBette
 import AssistanceRequestModal from "../components/MarketplaceReplacement/AssistanceRequestModal";
 import AssistanceChatDrawer from "../components/MarketplaceReplacement/AssistanceChatDrawer";
 import { validatePersonName } from "../utils/emailValidator";
+import { SvgClose } from "../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || "http://localhost:4545";
 const API = BASE_URL;
@@ -171,7 +172,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
             onClick={() => handleAction("helpful")}
             title="Mark Helpful"
           >
-            👍
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
           </button>
           <button
             type="button"
@@ -179,7 +180,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
             onClick={() => handleAction("notRelevant")}
             title="Mark Not Relevant"
           >
-            👎
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>
           </button>
           <button
             type="button"
@@ -187,7 +188,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
             onClick={() => handleAction("comment")}
             title="Add Comment"
           >
-            💬
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </button>
           {(selected || commentText) && (
             <button
@@ -196,7 +197,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
               onClick={clearFeedback}
               title="Clear Feedback"
             >
-              ✕
+              <SvgClose size={14} />
             </button>
           )}
         </div>
@@ -425,7 +426,7 @@ const MarketplaceCard = ({
             </span>
           ) : (
             <span className="mkt-card__rating" title="Rating">
-              <span className="mkt-card__stars">★★★★★</span>
+              <span className="mkt-card__stars">[star][star][star][star][star]</span>
               <span className="mkt-card__rating-num">{ratingVal}</span>
             </span>
           )}
@@ -452,9 +453,15 @@ const MarketplaceCard = ({
 
         {/* Meta Row: Duration & Reviews */}
         <div className="mkt-card__meta-row">
-          <span className="mkt-card__meta-item">⏱ {service.duration || "Self-Paced"}</span>
+          <span className="mkt-card__meta-item" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {service.duration || "Self-Paced"}
+          </span>
           <span className="mkt-card__meta-dot">•</span>
-          <span className="mkt-card__meta-item">💬 {reviewCount.toLocaleString()} reviews</span>
+          <span className="mkt-card__meta-item" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            {reviewCount.toLocaleString()} reviews
+          </span>
         </div>
 
         {/* Match Meter (SIGNATURE ELEMENT) */}
@@ -533,7 +540,7 @@ const MarketplaceCard = ({
         </div>
 
         {isPurchased ? (
-          <div className="mkt-card__purchased-badge">✓ Purchased</div>
+          <div className="mkt-card__purchased-badge">[check] Purchased</div>
         ) : (
           <button
             className={`mkt-card__add-btn ${inCart ? "added" : ""}`}
@@ -542,7 +549,7 @@ const MarketplaceCard = ({
               onToggleCart(service);
             }}
           >
-            {inCart ? "✓ Added" : "+ Add"}
+            {inCart ? "[check] Added" : "+ Add"}
           </button>
         )}
       </div>
@@ -663,7 +670,7 @@ const MarketplaceFilterBar = ({
                   onClick={() => handleCategoryToggle(cat.key)}
                 >
                   <span className="mkt-popover-chk">
-                    <span className="mkt-chk-box">{isCatActive(cat.key) ? "✓" : ""}</span>
+                    <span className="mkt-chk-box">{isCatActive(cat.key) ? "[check]" : ""}</span>
                     <span className="mkt-popover-title">{cat.label}</span>
                   </span>
                   <span className="mkt-popover-count">{categoryCounts[cat.key] || 0}</span>
@@ -680,7 +687,7 @@ const MarketplaceFilterBar = ({
             onClick={() => setOpenDropdown(openDropdown === "rating" ? null : "rating")}
           >
             <span className="mkt-btn-label">
-              Rating {filterState.minRating > 0 ? `(${filterState.minRating}+ ★)` : ""}
+              Rating {filterState.minRating > 0 ? `(${filterState.minRating}+ [star])` : ""}
             </span>
             <span className="mkt-btn-arrow">▾</span>
           </button>
@@ -688,12 +695,12 @@ const MarketplaceFilterBar = ({
             <div className="mkt-pill-popover">
               {[
                 { val: 0, label: "Any rating", stars: "" },
-                { val: 2.0, label: "2.0", stars: "★★☆☆☆" },
-                { val: 2.5, label: "2.5", stars: "★★★☆☆" },
-                { val: 3.0, label: "3.0", stars: "★★★☆☆" },
-                { val: 3.5, label: "3.5", stars: "★★★★☆" },
-                { val: 4.0, label: "4.0", stars: "★★★★☆" },
-                { val: 4.5, label: "4.5", stars: "★★★★★" },
+                { val: 2.0, label: "2.0", stars: "[star][star][star-empty][star-empty][star-empty]" },
+                { val: 2.5, label: "2.5", stars: "[star][star][star][star-empty][star-empty]" },
+                { val: 3.0, label: "3.0", stars: "[star][star][star][star-empty][star-empty]" },
+                { val: 3.5, label: "3.5", stars: "[star][star][star][star][star-empty]" },
+                { val: 4.0, label: "4.0", stars: "[star][star][star][star][star-empty]" },
+                { val: 4.5, label: "4.5", stars: "[star][star][star][star][star]" },
               ].map((r) => (
                 <div
                   key={r.val}
@@ -767,7 +774,7 @@ const MarketplaceFilterBar = ({
         {/* Clear Filters Button */}
         {hasActiveFilters && (
           <button className="mkt-clear-pill-btn" onClick={onClearFilters}>
-            ✕ Clear filters
+            <SvgClose size={14} /> Clear filters
           </button>
         )}
       </div>
@@ -905,7 +912,7 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
                       </div>
                     </div>
                     <div className="ci-price">{fmtPrice(itemPrice(s))}</div>
-                    <button className="ci-rm" onClick={() => onRemove(s._id)}>✕</button>
+                    <button className="ci-rm" onClick={() => onRemove(s._id)}>[close]</button>
                   </div>
                 );
               })}
@@ -946,7 +953,7 @@ const StepBar = ({ currentPage, onStepChange }) => {
               onClick={() => done && onStepChange && onStepChange(s.key)}
               style={{ cursor: done ? "pointer" : "default" }}
             >
-              <span className="sp-n">{done ? "✓" : s.n}</span>
+              <span className="sp-n">{done ? "[check]" : s.n}</span>
               <span className="sp-lbl">{s.label}</span>
             </div>
             {i < steps.length - 1 && <span className="sp-arr">›</span>}
@@ -1218,7 +1225,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 
         const rzp = new window.Razorpay(options);
         rzp.on("payment.failed", async (response) => {
-          console.warn("⚠️ Marketplace payment failed:", response?.error);
+          console.warn("[warning]️ Marketplace payment failed:", response?.error);
           const err = response?.error || {};
           const failureReason = err.description || err.reason || "Marketplace payment was declined or failed";
           try {
@@ -1241,7 +1248,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             });
             window.dispatchEvent(new CustomEvent("naavi:payment-updated", { detail: { status: "failed" } }));
           } catch (postErr) {
-            console.error("❌ Failed to report marketplace payment failure:", postErr);
+            console.error("[error] Failed to report marketplace payment failure:", postErr);
           }
           setSubmitting(false);
           setPayError(`Payment failed: ${failureReason}. Please try again.`);
@@ -1424,7 +1431,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
 const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
   <div className="confirmed-page">
     <div className="conf-card">
-      <div className="conf-check">✓</div>
+      <div className="conf-check">[check]</div>
       <h2 className="conf-title">Booking Confirmed!</h2>
       <p className="conf-sub">Your services have been booked successfully. You'll receive a confirmation email with session details and next steps.</p>
       <div className="conf-details">
@@ -2097,7 +2104,7 @@ const UserMarketplace = ({ onStepChange }) => {
       {exclusiveSuccessToast && (
         <div className="mkt-toast-banner">
           <div className="mkt-toast-inner">
-            <span style={{ fontSize: 20 }}>✅</span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             <div>
               <div className="mkt-toast-title">Marketplace Enrollment Successful!</div>
               <div className="mkt-toast-sub">
@@ -2107,7 +2114,7 @@ const UserMarketplace = ({ onStepChange }) => {
             </div>
           </div>
           <button className="mkt-toast-dismiss" onClick={() => setExclusiveSuccessToast(null)}>
-            ✕
+            <SvgClose size={14} />
           </button>
         </div>
       )}
@@ -2133,7 +2140,7 @@ const UserMarketplace = ({ onStepChange }) => {
                   />
                   {searchQ && (
                     <button className="mkt-si-clear" onClick={() => setSearchQ("")}>
-                      ✕
+                      <SvgClose size={14} />
                     </button>
                   )}
                 </div>

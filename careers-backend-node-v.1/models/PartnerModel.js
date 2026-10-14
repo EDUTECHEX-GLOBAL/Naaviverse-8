@@ -28,16 +28,16 @@ const partnerSchema = new mongoose.Schema({
   phone: { type: String },
   phoneNumber: { type: String },
 
-  // ❌ OLD generic field: type
+  // [ERROR] OLD generic field: type
   // type: { type: String },
 
-  // ✅ Partner Category & Type
+  // [OK] Partner Category & Type
   partnerType: {
     type: String,
     default: "Distributor"
   },
 
-  // ✅ Internal Partner management fields
+  // [OK] Internal Partner management fields
   creationSource: {
     type: String,
     enum: ["self_registered", "admin_created"],

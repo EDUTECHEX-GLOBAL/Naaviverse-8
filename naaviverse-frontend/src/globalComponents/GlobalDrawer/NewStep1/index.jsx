@@ -369,7 +369,7 @@ const createNewStep = () => {
   delete payload.microDescription;
   delete payload.nanoDescription;
 
-  console.log("🚀 STEP CREATE PAYLOAD:", payload);
+  console.log("[rocket] STEP CREATE PAYLOAD:", payload);
 
   axios
     .post(`${BASE_URL}/api/steps/add`, payload)

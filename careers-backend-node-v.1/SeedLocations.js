@@ -56,10 +56,10 @@ mongoose.connection.once('open', async () => {
       });
     }
 
-    console.log("✅ Seeder import finished!");
+    console.log("[OK] Seeder import finished!");
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error during seeding:", err);
+    console.error("[ERROR] Error during seeding:", err);
     process.exit(1);
   }
 });

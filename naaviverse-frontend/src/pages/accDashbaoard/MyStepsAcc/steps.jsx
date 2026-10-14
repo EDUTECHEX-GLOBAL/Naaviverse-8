@@ -126,7 +126,7 @@ const MarketplaceItemCard = ({ item, onRemove }) => (
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
         {item.cost && <span style={styles.marketCardCost}>{item.cost}</span>}
         {onRemove && (
-          <button onClick={onRemove} style={styles.removeBtn} title="Remove">✕</button>
+          <button onClick={onRemove} style={styles.removeBtn} title="Remove">[close]</button>
         )}
       </div>
     </div>

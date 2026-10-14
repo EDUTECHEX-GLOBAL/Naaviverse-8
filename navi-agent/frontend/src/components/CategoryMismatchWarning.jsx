@@ -1,5 +1,6 @@
 import React from "react";
 import "./CategoryMismatchWarning.scss";
+import { IconArrowRight } from "../pages/Icons";
 
 /**
  * CategoryMismatchWarning Component
@@ -81,7 +82,7 @@ export default function CategoryMismatchWarning({
             <span className="tag selected" title="Currently Selected Category">
               Selected: <strong>{selectedCategory.label}</strong>
             </span>
-            <span className="tag-arrow">➔</span>
+            <span className="tag-arrow"><IconArrowRight size={14} /></span>
             <span className="tag detected" title="Inferred Category from Inputs">
               Detected: <strong>{detectedCategory.label}</strong>
             </span>

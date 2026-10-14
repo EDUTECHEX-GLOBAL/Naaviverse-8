@@ -9,7 +9,7 @@ import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
 import stepIcon from '../../assets/images/assets/naavi-icon1.webp';
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 
-// ✅ URL map for each section
+// [check] URL map for each section
 const ROUTE_MAP = {
   Overview:          "/admin/dashboard/accountants",
   CRM:               "/admin/dashboard/crm",

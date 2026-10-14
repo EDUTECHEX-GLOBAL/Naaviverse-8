@@ -6,21 +6,21 @@ const VisionContentTwo = [
         desc: `Naaviverse began with a simple goal — turning complex workflows into smart, seamless digital experiences.`,
         fade: 'fade-up',
         dataDelay: '',
-        icon: '📜'
+        icon: ''
     },
     {
         title: 'Our Mission',
         desc: `To automate processes, simplify operations, and empower smarter decisions through intelligent technology.`,
         fade: 'fade-up',
         dataDelay: '100',
-        icon: '🎯'
+        icon: '[target]'
     },
     {
         title: 'Our Vision',
         desc: `To build a future where systems work effortlessly, enabling faster growth and continuous innovation.`,
         fade: 'fade-up',
         dataDelay: '200',
-        icon: '🔮'
+        icon: ''
     }
 ];
 

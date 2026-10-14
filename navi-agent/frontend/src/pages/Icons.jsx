@@ -290,3 +290,25 @@ export const IconChevronUp = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+export const IconSparkles = ({ size = 18, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3l1.912 4.888L18.8 9.8l-4.888 1.912L12 16.6l-1.912-4.888L5.2 9.8l4.888-1.912L12 3z" />
+    <path d="M5 3v4" />
+    <path d="M3 5h4" />
+    <path d="M19 15v4" />
+    <path d="M17 17h4" />
+  </svg>
+);
+
+export const IconZap = ({ size = 18, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
+export const IconArrowRight = ({ size = 18, color = "currentColor" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);

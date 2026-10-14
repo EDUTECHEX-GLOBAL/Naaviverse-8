@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./userHome.scss";
+import { SvgShoppingBag } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -119,7 +120,7 @@ export default function UserPurchasesPage() {
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
                 status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
-                icon: isFree ? "🧭" : "🛍️",
+                icon: isFree ? "[compass]" : "[bag]️",
               };
             });
 
@@ -147,7 +148,7 @@ export default function UserPurchasesPage() {
               }),
               rawDate: new Date(up.createdAt || Date.now()).getTime(),
               status: "Free",
-              icon: "🧭",
+              icon: "[compass]",
             };
           });
 
@@ -158,7 +159,7 @@ export default function UserPurchasesPage() {
           setPurchases(allPurchases);
         }
       } catch (err) {
-        console.error("❌ Purchases fetch error:", err);
+        console.error("[error] Purchases fetch error:", err);
       } finally {
         setPurchasesLoading(false);
       }
@@ -208,7 +209,7 @@ export default function UserPurchasesPage() {
           <div className="uh-loading">Loading purchases…</div>
         ) : displayedPurchases.length === 0 ? (
           <div className="uh-no-purchases" style={{ padding: "60px 20px", textAlign: "center", color: "#64748b" }}>
-            <div style={{ fontSize: "2.5rem", marginBottom: "12px" }}>🛍️</div>
+            <div style={{ fontSize: "2.5rem", marginBottom: "12px" }}><SvgShoppingBag size={14} />️</div>
             <strong>No {filterType} purchases found</strong>
             <p style={{ margin: "6px 0 0", fontSize: "0.85rem" }}>
               {filterType === "paid"

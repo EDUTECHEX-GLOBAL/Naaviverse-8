@@ -1314,7 +1314,7 @@ $paid-light : #FEE2E2;
       flex: 1;
     }
 
-    // Labeled rows: "Email you@x.com", "Rating ★ 4.5", "Access Free"
+    // Labeled rows: "Email you@x.com", "Rating [star] 4.5", "Access Free"
     td[data-label] {
       display: flex !important;
       justify-content: space-between;

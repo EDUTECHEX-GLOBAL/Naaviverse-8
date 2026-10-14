@@ -10,7 +10,7 @@ const Universities = require("../models/UniversitiesModel");
 // const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
 /**************************************************************
- *  1️⃣ FORMATTED LIST
+ *  1️ FORMATTED LIST
  **************************************************************/
 router.get("/formatted/list", async (req, res) => {
   try {
@@ -47,7 +47,7 @@ router.get("/formatted/list", async (req, res) => {
 });
 
     /**************************************************************
- *  8️⃣ NAME SEARCH (For Destination Field Autocomplete)
+ *  8️ NAME SEARCH (For Destination Field Autocomplete)
  **************************************************************/
 router.get("/search", async (req, res) => {
   try {
@@ -79,7 +79,7 @@ router.get("/search", async (req, res) => {
 });
 
 /**************************************************************
- *  2️⃣ FIND OR CREATE + GENERATE USING PERPLEXITY
+ *  2️ FIND OR CREATE + GENERATE USING PERPLEXITY
  **************************************************************/
 router.get("/find-or-create", async (req, res) => {
   try {
@@ -89,12 +89,12 @@ router.get("/find-or-create", async (req, res) => {
       return res.status(400).json({ status: false, error: "University name is required" });
     }
 
-    // 1️⃣ Search DB (case-insensitive)
+    // 1️ Search DB (case-insensitive)
     let uni = await Universities.findOne({
       name: { $regex: new RegExp("^" + name + "$", "i") }
     });
 
-    // 2️⃣ If not found → CREATE NEW ENTRY
+    // 2️ If not found → CREATE NEW ENTRY
     if (!uni) {
       uni = await Universities.create({
         name,
@@ -110,7 +110,7 @@ router.get("/find-or-create", async (req, res) => {
 
 
     /**************************************************************
-     * 🚨 FIX: If generatedProgram is missing OR steps are empty → call AI
+     * [ALERT] FIX: If generatedProgram is missing OR steps are empty → call AI
      **************************************************************/
     const needsAI =
       !uni.generatedProgram ||
@@ -158,7 +158,7 @@ let generated;
 try {
   generated = JSON.parse(content);
 
-  // 🔥 AUTO-GENERATE STEP IDs HERE
+  // [HOT] AUTO-GENERATE STEP IDs HERE
   generated.steps = generated.steps.map((step, index) => ({
     ...step,
     step_id: `${uni._id}_step_${index}`
@@ -185,7 +185,7 @@ try {
 });
 
 /**************************************************************
- *  3️⃣ MANUAL UPDATE
+ *  3️ MANUAL UPDATE
  **************************************************************/
 router.post("/updateAI", async (req, res) => {
   try {
@@ -220,7 +220,7 @@ router.post("/updateAI", async (req, res) => {
 });
 
 /**************************************************************
- *  4️⃣ GET ALL UNIVERSITIES
+ *  4️ GET ALL UNIVERSITIES
  **************************************************************/
 router.get("/", async (req, res) => {
   try {
@@ -236,7 +236,7 @@ router.get("/", async (req, res) => {
 });
 
 /**************************************************************
- *  5️⃣ GET BY ID
+ *  5️ GET BY ID
  **************************************************************/
 router.get("/:id", async (req, res) => {
   try {
@@ -250,7 +250,7 @@ router.get("/:id", async (req, res) => {
 });
 
 /**************************************************************
- *  6️⃣ PROGRAM ONLY
+ *  6️ PROGRAM ONLY
  **************************************************************/
 router.get("/:id/program", async (req, res) => {
   try {
@@ -269,13 +269,13 @@ router.get("/:id/program", async (req, res) => {
 });
 
 /**************************************************************
- *  7️⃣ STEPS ONLY  (THE FIX IS HERE)
+ *  7️ STEPS ONLY  (THE FIX IS HERE)
  **************************************************************/
 router.get("/:id/steps", async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 🔥 FIXED — correct model name
+    // [HOT] FIXED — correct model name
     const uni = await Universities.findById(id);
 
     if (!uni) {

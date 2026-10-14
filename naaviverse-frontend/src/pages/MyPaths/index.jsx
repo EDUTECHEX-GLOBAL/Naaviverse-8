@@ -13,6 +13,7 @@ import lg1 from "../../static/images/login/lg1.svg";
 import CurrentStep from "../CurrentStep";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
+import { SvgCheckCircle } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -20,7 +21,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { sideNav, setsideNav } = useStore();
-  // ✅ FIX: Safe parsing with fallback
+  // [check] FIX: Safe parsing with fallback
   let userDetails = null;
   try {
     const raw = localStorage.getItem("partner");
@@ -31,11 +32,11 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       const partnerRaw = localStorage.getItem("partner");
       const p = partnerRaw ? JSON.parse(partnerRaw) : null;
       const email = p?.email || p?.user?.email || localStorage.getItem("loginEmail") || null;
-      console.log("🔍 getPartnerEmail:", email, "from partner:", !!p, "loginEmail:", localStorage.getItem("loginEmail"));
+      console.log("[search] getPartnerEmail:", email, "from partner:", !!p, "loginEmail:", localStorage.getItem("loginEmail"));
       return email;
     } catch (e) {
       const fallback = localStorage.getItem("loginEmail") || null;
-      console.log("🔍 getPartnerEmail fallback:", fallback);
+      console.log("[search] getPartnerEmail fallback:", fallback);
       return fallback;
     }
   };
@@ -77,10 +78,10 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
   const [selectedServices, setSelectedServices] = useState([]);
   const [localSearch, setLocalSearch] = useState(search || "");
 
-  // ✅ FIX: stepCounts stores real DB step counts per path _id
+  // [check] FIX: stepCounts stores real DB step counts per path _id
   const [stepCounts, setStepCounts] = useState({});
 
-  // ✅ FIX: fetchStepCounts hits the same endpoint DraftPathView uses
+  // [check] FIX: fetchStepCounts hits the same endpoint DraftPathView uses
   const fetchStepCounts = async (paths) => {
     const counts = {};
     await Promise.all(
@@ -138,7 +139,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     let endpoint = "";
 
     if (!email) {
-      console.warn("❌ MyPaths getAllPaths: No partner email found, skipping fetch");
+      console.warn("[error] MyPaths getAllPaths: No partner email found, skipping fetch");
       setLoading(false);
       return;
     }
@@ -156,7 +157,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
         ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setPartnerPathData(combined);
         fetchStepCounts(combined);
-      }).catch((err) => { console.error("❌ Error fetching draft paths (getAllPaths):", err); }).finally(() => setLoading(false));
+      }).catch((err) => { console.error("[error] Error fetching draft paths (getAllPaths):", err); }).finally(() => setLoading(false));
       return;
     } else if (!admin && mypathsMenu === "Pending Approval") {
       endpoint = `/api/paths/get?email=${email}&status=waitingforapproval`;
@@ -166,18 +167,18 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
       endpoint = `/api/paths/get?email=${email}&status=active`;
     }
 
-    console.log("➡️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
+    console.log("[arrow-right]️ FINAL API CALL:", `${BASE_URL}${endpoint}`);
 
     axios
       .get(`${BASE_URL}${endpoint}`)
       .then((response) => {
-        // ✅ FIX 1: also call fetchStepCounts after loading paths
+        // [check] FIX 1: also call fetchStepCounts after loading paths
         const paths = response?.data?.data || [];
         setPartnerPathData(paths);
         fetchStepCounts(paths);
       })
       .catch((error) => {
-        console.log("❌ Error fetching partnerPathData:", error);
+        console.log("[error] Error fetching partnerPathData:", error);
       })
       .finally(() => setLoading(false));
   };
@@ -208,13 +209,13 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     getAllServices();
   }, [selectedStepId]);
 
-  // ✅ FIX: Force re-fetch on every mount (handles returning from DraftPathView)
+  // [check] FIX: Force re-fetch on every mount (handles returning from DraftPathView)
   const [mountKey, setMountKey] = useState(0);
   useEffect(() => {
     setMountKey((k) => k + 1);
   }, []);
 
-  // ✅ FIX 2: URL-based fetch also calls fetchStepCounts after loading
+  // [check] FIX 2: URL-based fetch also calls fetchStepCounts after loading
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
@@ -227,13 +228,13 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     };
 
     const status = tabToStatus[tab] || "active";
-    // ✅ FIX: Read partner email fresh from localStorage (not stale closure)
+    // [check] FIX: Read partner email fresh from localStorage (not stale closure)
     const email = getPartnerEmail();
 
-    console.log("📋 MyPaths useEffect triggered. tab:", tab, "status:", status, "email:", email, "mountKey:", mountKey);
+    console.log("[clipboard] MyPaths useEffect triggered. tab:", tab, "status:", status, "email:", email, "mountKey:", mountKey);
 
     if (!email) {
-      console.warn("❌ MyPaths useEffect: No partner email found, skipping fetch. tab=", tab);
+      console.warn("[error] MyPaths useEffect: No partner email found, skipping fetch. tab=", tab);
       setLoading(false);
       return;
     }
@@ -246,19 +247,19 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     if (status === "draft") {
       const url1 = `${BASE_URL}/api/paths/get?email=${encodeURIComponent(email)}&status=draft`;
       const url2 = `${BASE_URL}/api/paths/get?email=${encodeURIComponent(email)}&status=changesrequested`;
-      console.log("📋 Fetching draft paths:", url1, url2);
+      console.log("[clipboard] Fetching draft paths:", url1, url2);
       Promise.all([
         axios.get(url1),
         axios.get(url2),
       ]).then(([res1, res2]) => {
-        console.log("✅ Draft paths response:", res1.data?.total, "draft,", res2.data?.total, "changesrequested");
+        console.log("[check] Draft paths response:", res1.data?.total, "draft,", res2.data?.total, "changesrequested");
         const combined = [
           ...(res1.data?.data || []),
           ...(res2.data?.data || []),
         ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setPartnerPathData(combined);
         fetchStepCounts(combined);
-      }).catch((err) => { console.error("❌ Error fetching draft paths:", err); }).finally(() => setLoading(false));
+      }).catch((err) => { console.error("[error] Error fetching draft paths:", err); }).finally(() => setLoading(false));
       return;
     } else if (status === "waitingforapproval") {
       endpoint = `/api/paths/get?email=${encodeURIComponent(email)}&status=waitingforapproval`;
@@ -271,13 +272,13 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
     axios
       .get(`${BASE_URL}${endpoint}`)
       .then((response) => {
-        // ✅ FIX 2: also call fetchStepCounts after loading paths
+        // [check] FIX 2: also call fetchStepCounts after loading paths
         const paths = response?.data?.data || [];
         setPartnerPathData(paths);
         fetchStepCounts(paths);
       })
       .catch((error) => {
-        console.log("❌ Error fetching partnerPathData:", error);
+        console.log("[error] Error fetching partnerPathData:", error);
       })
       .finally(() => setLoading(false));
 
@@ -415,7 +416,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
 
   const viewPathById = (id) => {
     if (!id) {
-      console.error("❌ NO ID SENT TO API");
+      console.error("[error] NO ID SENT TO API");
       return;
     }
     setViewPathLoading(true);
@@ -849,7 +850,7 @@ const MyPaths = ({ search, admin, fetchAllServicesAgain, stpesMenu }) => {
                           })()}
                         </div>
 
-                        {/* ✅ FIX 3: Stats Row - use stepCounts from DB, fallback to the_ids */}
+                        {/* <SvgCheckCircle size={14} /> FIX 3: Stats Row - use stepCounts from DB, fallback to the_ids */}
                         <div className="path-stats-row">
                           <div className="stats-group">
                             <span className="stat-badge">

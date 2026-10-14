@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-// ✅ SUPER ADMIN API
+// [check] SUPER ADMIN API
 const API = `${BASE_URL}/api/admin/auth`;
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -34,10 +34,10 @@ const AdminLogin = () => {
         password: password.trim(),
       });
 
-      // 🔐 SAVE SUPER ADMIN TOKEN
+      // [lock] SAVE SUPER ADMIN TOKEN
       localStorage.setItem("superAdminToken", res.data.token);
 
-      // 🚀 REDIRECT TO SUPER ADMIN DASHBOARD
+      // [rocket] REDIRECT TO SUPER ADMIN DASHBOARD
       navigate("/admin-dashboard/admin-home");
 
     } catch (err) {

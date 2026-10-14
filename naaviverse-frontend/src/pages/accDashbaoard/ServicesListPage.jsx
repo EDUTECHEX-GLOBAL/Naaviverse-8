@@ -4,6 +4,7 @@ import axios from "axios";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import "./ServicesListPage.scss";
 import { useNavigate, useLocation } from "react-router-dom";
+import { SvgClose } from "../../utils/SvgIcons";
 const ServicesListPage = () => {
   const navigate = useNavigate();
 const location = useLocation();
@@ -240,7 +241,7 @@ const location = useLocation();
                 className="close-button"
                 onClick={() => setSelectedService(null)}
               >
-                ✕
+                <SvgClose size={14} />
               </button>
             </div>
 

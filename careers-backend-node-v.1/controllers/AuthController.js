@@ -5,7 +5,7 @@ require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const UserPath = require("../models/UserPathsModel"); // 👈 ADD THIS
+const UserPath = require("../models/UserPathsModel"); // <- ADD THIS
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const {
   generateOTP,
@@ -290,7 +290,7 @@ if (!user.selectedPath) {
 const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
   
 
-    // ✅ Log login activity — non-blocking, never breaks login
+    // [OK] Log login activity — non-blocking, never breaks login
     logActivityInternal({
       userId: user._id.toString(),
       email:  user.email,
@@ -577,7 +577,7 @@ const googleLogin = async (req, res) => {
         });
 
         await user.save();
-        console.log("✅ Created new Google User:", cleanEmail);
+        console.log("[OK] Created new Google User:", cleanEmail);
       } else {
         let changed = false;
         if (!user.OTPverified) {
@@ -674,7 +674,7 @@ const googleLogin = async (req, res) => {
       partner.partnerId = `${prefix}-${code}-${year}-${shortId}`;
       await partner.save();
 
-      console.log("✅ Created new Google Partner:", cleanEmail);
+      console.log("[OK] Created new Google Partner:", cleanEmail);
     } else {
       let changed = false;
       if (!partner.OTPverified) {

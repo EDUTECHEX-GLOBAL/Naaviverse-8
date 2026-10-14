@@ -88,7 +88,7 @@ const TransactionPage = ({
           setTxnData(subscriptionTxns);
         }
       })
-      .catch(err => console.error("❌ Transaction fetch error:", err))
+      .catch(err => console.error("[error] Transaction fetch error:", err))
       .finally(() => setIsTxnLoading(false));
   }, []);
 
@@ -123,7 +123,7 @@ const TransactionPage = ({
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("❌ Invoice download error:", err);
+      console.error("[error] Invoice download error:", err);
       alert("Failed to download invoice. Please try again.");
     } finally {
       setDownloadingId(null);

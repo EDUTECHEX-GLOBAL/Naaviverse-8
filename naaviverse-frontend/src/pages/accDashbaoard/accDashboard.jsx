@@ -71,6 +71,7 @@ import MyStepsAcc from "./MyStepsAcc/index.jsx";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import PathPage from "../../components/Pathview/PathPage";
+import { SvgArrowLeft, SvgBan, SvgCheck, SvgCheckCircle, SvgWarning } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const getPartner = () => {
@@ -88,7 +89,7 @@ const getPartner = () => {
 };
 
 const AccDashboard = () => {
-  const location = useLocation();   // ✅ MUST COME FIRST
+  const location = useLocation();   // <SvgCheckCircle size={14} /> MUST COME FIRST
   let navigate = useNavigate();
 
   const {
@@ -254,7 +255,7 @@ const AccDashboard = () => {
   }, []);
 
 
-  // ✅ FIX — add location.pathname as dependency so it re-runs on URL change
+  // [check] FIX — add location.pathname as dependency so it re-runs on URL change
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/dashboard/accountants/paths')) {
@@ -290,7 +291,7 @@ const AccDashboard = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (didFetchCountriesRef.current) return;  // ⛔ prevents 2nd execution
+    if (didFetchCountriesRef.current) return;  // <SvgBan size={14} /> prevents 2nd execution
     didFetchCountriesRef.current = true;
 
     console.log("useEffect for countries running...");
@@ -633,10 +634,10 @@ const AccDashboard = () => {
     GetAllCurrencies()
       .then((res) => {
         const result = res?.data;
-        console.log("📦 Currency API result:", result);
+        console.log("[package] Currency API result:", result);
 
         if (result?.status && Array.isArray(result.currencies)) {
-          console.log("💰 Raw currencies:", result.currencies.slice(0, 5), "...");
+          console.log("[dollar] Raw currencies:", result.currencies.slice(0, 5), "...");
 
           const formatted = result.currencies.map((c) => ({
             coinName: c.code,
@@ -644,17 +645,17 @@ const AccDashboard = () => {
             fullName: c.currency,
           }));
 
-          console.log("🔁 Formatted currencies:", formatted.slice(0, 5), "...");
+          console.log("[refresh] Formatted currencies:", formatted.slice(0, 5), "...");
 
           setallCurrencies(formatted);
         } else {
-          console.warn("⚠️ Currencies not found or invalid structure");
+          console.warn("[warning]️ Currencies not found or invalid structure");
         }
 
         setIsCurrencies(false);
       })
       .catch((err) => {
-        console.error("❌ Currency fetch failed:", err?.response?.data || err);
+        console.error("[error] Currency fetch failed:", err?.response?.data || err);
         setIsCurrencies(false);
       });
   }, [isCurrencies]);
@@ -809,9 +810,9 @@ const AccDashboard = () => {
         body
       );
 
-      console.log("BULK STEP RESPONSE:", res.data);  // 👈 ADD THIS
+      console.log("BULK STEP RESPONSE:", res.data);  // [arrow-left] ADD THIS
 
-      if (res.data?.status === true) {               // 👈 MAKE CHECK STRICT
+      if (res.data?.status === true) {               // <SvgArrowLeft size={14} /> MAKE CHECK STRICT
         alert(`Uploaded ${res.data.count} steps successfully`);
         setpstep(12);
       } else {
@@ -935,12 +936,12 @@ const AccDashboard = () => {
       ...(currentStepId ? { step_id: currentStepId } : {}),
 
       // REQUIRED BACKEND FIELDS
-      name: serviceNameInput,                 // ✔ MUST BE `name`
-      chargingtype: billingType,              // ✔ MUST BE `chargingtype`
-      description: serviceDescription,        // ✔ MUST BE `description`
+      name: serviceNameInput,                 // <SvgCheck size={14} /> MUST BE `name`
+      chargingtype: billingType,              // <SvgCheck size={14} /> MUST BE `chargingtype`
+      description: serviceDescription,        // <SvgCheck size={14} /> MUST BE `description`
 
       product_code: serviceCodeInput,
-      product_icon: coverImageS3url,          // ✔ Use uploaded S3 URL
+      product_icon: coverImageS3url,          // <SvgCheck size={14} /> Use uploaded S3 URL
       revenue_account: userDetails.email,
       client_app: "naavi",
 
@@ -1090,7 +1091,7 @@ const AccDashboard = () => {
     const userDetails = JSON.parse(localStorage.getItem("partner"));
 
     if (!userDetails || !userDetails.email) {
-      console.warn("⚠ No partner user found in localStorage.");
+      console.warn("[warning] No partner user found in localStorage.");
       return;
     }
 
@@ -1283,7 +1284,7 @@ const AccDashboard = () => {
   // };
 
   const handleSavePath = () => {
-    console.log("📨 FINAL PATH STEPS SUBMITTED:", pathSteps);
+    console.log("[mail] FINAL PATH STEPS SUBMITTED:", pathSteps);
     // save logic...
   };
 
@@ -1440,19 +1441,19 @@ const AccDashboard = () => {
   }, []);
 
   const pathSubmission = (totalStepsOverride) => {
-    console.log("🚀 ---- PATH SUBMISSION TRIGGERED ----");
+    console.log("[rocket] ---- PATH SUBMISSION TRIGGERED ----");
 
-    // ✅ FIX: Use partner email from localStorage (same source as MyPaths, Marketplace, MyStepsAcc)
+    // [check] FIX: Use partner email from localStorage (same source as MyPaths, Marketplace, MyStepsAcc)
     const currentPartner = getPartner();
     const finalEmail =
       currentPartner?.email ||
       currentPartner?.user?.email ||
       localStorage.getItem("loginEmail");
 
-    console.log("🔥 FINAL EMAIL USED:", finalEmail);
+    console.log("[fire] FINAL EMAIL USED:", finalEmail);
 
     if (!finalEmail) {
-      console.log("❌ Partner email missing. Cannot create path.");
+      console.log("[error] Partner email missing. Cannot create path.");
       alert("Partner email missing. Please login again.");
       return;
     }
@@ -1508,33 +1509,33 @@ const AccDashboard = () => {
       performance: gradeAvg[0],
     };
 
-    // 9️⃣ Log the payload before sending
-    console.log("📦 PAYLOAD GOING TO API:", payload);
+    // 9️ Log the payload before sending
+    console.log("[package] PAYLOAD GOING TO API:", payload);
 
     setCreatingPath(true);
 
-    // 🔟 Send request
+    // [hash] Send request
     axios
       .post(`${BASE_URL}/api/paths/add`, payload)
       .then((response) => {
-        console.log("✅ API RESPONSE:", response.data);
+        console.log("[check] API RESPONSE:", response.data);
 
         if (response.data?.status) {
           const createdPathId = response.data.data._id;
 
-          // 1️⃣ Save path id (optional)
+          // 1️ Save path id (optional)
           localStorage.setItem("selectedPathId", createdPathId);
 
-          // 2️⃣ Close create-path UI first
+          // 2️ Close create-path UI first
           setCreatingPath(false);
 
-          // 3️⃣ Reset the popup/modal
+          // 3️ Reset the popup/modal
           resetpop();
 
-          // 4️⃣ Set viewPathMode to true to show the path view
+          // 4️ Set viewPathMode to true to show the path view
           setViewPathMode(true);
 
-          // 5️⃣ Navigate to view path
+          // 5️ Navigate to view path
           setTimeout(() => {
             navigate(`/dashboard/accountants/path/${createdPathId}`, {
               replace: true,
@@ -1543,7 +1544,7 @@ const AccDashboard = () => {
         }
       })
       .catch((err) => {
-        console.log("❌ API ERROR:", err.response?.data || err);
+        console.log("[error] API ERROR:", err.response?.data || err);
         setCreatingPath(false);
       });
   };
@@ -1755,7 +1756,7 @@ const AccDashboard = () => {
     link.click();
     document.body.removeChild(link);
 
-    // 🔥 Delay closing modal
+    // [fire] Delay closing modal
     setTimeout(() => {
       resetpop();
     }, 300);
@@ -1815,7 +1816,7 @@ const AccDashboard = () => {
           />
         )}
 
-        {/* ✅ Sidebar OUTSIDE dashboard-body so ::after blur never touches it */}
+        {/* <SvgCheckCircle size={14} /> Sidebar OUTSIDE dashboard-body so ::after blur never touches it */}
         <AccDashsidebar
           accStatus={JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus}
           isOpen={sidebarOpen}
@@ -2225,7 +2226,7 @@ const AccDashboard = () => {
           JSON.parse(localStorage.getItem("partner") || "{}")?.approvalStatus === "approved" ? (
 
           <>
-            {/* ✅ BLUR OVERLAY */}
+            {/* <SvgCheckCircle size={14} /> BLUR OVERLAY */}
             <div
               onClick={() => resetpop()}
               style={{
@@ -3455,7 +3456,7 @@ const AccDashboard = () => {
 
             {dashPasswordError && (
               <div style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: "8px", fontSize: "0.82rem", marginBottom: "16px" }}>
-                ⚠️ {dashPasswordError}
+                <SvgWarning size={14} />️ {dashPasswordError}
               </div>
             )}
 

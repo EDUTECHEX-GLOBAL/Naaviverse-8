@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./pathview.scss";
 import { useNavigate } from "react-router-dom";
+import { SvgParty } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const PathView = ({ selectedUniversity, onClose }) => {
@@ -115,7 +116,7 @@ const PathView = ({ selectedUniversity, onClose }) => {
         {/* Already Selected Path */}
         {isSelected && !showSteps && !showConfirm && (
           <div className="congrats-box">
-            <h3>🎉 You Already Selected This Path</h3>
+            <h3><SvgParty size={14} /> You Already Selected This Path</h3>
             <button className="panel-btn" onClick={() => navigate("/dashboard/journey")}>
               Go To My Journey
             </button>

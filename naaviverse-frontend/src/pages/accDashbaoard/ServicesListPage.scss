@@ -511,19 +511,19 @@ $pastel-amber: #fde68a;
     min-width: 0;
     
     .step-mini-name {
-  font-size: 13px;     // 🔥 reduce title
+  font-size: 13px;     // [fire] reduce title
   font-weight: 600;
   margin: 0 0 2px 0;
   line-height: 1.2;
 }
 
 .step-mini-desc {
-  font-size: 10px;     // 🔥 reduce description
+  font-size: 10px;     // [fire] reduce description
   color: #64748b;
   margin: 0;
   line-height: 1.3;
   
-  display: -webkit-box;      // 🔥 limit to 2 lines
+  display: -webkit-box;      // [fire] limit to 2 lines
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;

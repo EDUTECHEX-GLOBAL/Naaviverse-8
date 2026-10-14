@@ -124,7 +124,7 @@ const createSubscription = async (req, res) => {
       subscription,
     });
   } catch (err) {
-    console.error("❌ createSubscription error:", err);
+    console.error("[ERROR] createSubscription error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -210,7 +210,7 @@ const checkStatus = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ checkStatus error:", err);
+    console.error("[ERROR] checkStatus error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -232,7 +232,7 @@ const getUserSubscriptions = async (req, res) => {
 
     return res.json({ success: true, total: subscriptions.length, subscriptions });
   } catch (err) {
-    console.error("❌ getUserSubscriptions error:", err);
+    console.error("[ERROR] getUserSubscriptions error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -253,7 +253,7 @@ const cancelSubscription = async (req, res) => {
     await sub.save();
     return res.json({ success: true, message: "Subscription cancelled successfully.", subscription: sub });
   } catch (err) {
-    console.error("❌ cancelSubscription error:", err);
+    console.error("[ERROR] cancelSubscription error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -291,7 +291,7 @@ const renewSubscription = async (req, res) => {
     await sub.save();
     return res.json({ success: true, message: "Subscription renewed successfully.", subscription: sub });
   } catch (err) {
-    console.error("❌ renewSubscription error:", err);
+    console.error("[ERROR] renewSubscription error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -340,7 +340,7 @@ const getAllSubscriptions = async (req, res) => {
       subscriptions: enriched,
     });
   } catch (err) {
-    console.error("❌ getAllSubscriptions error:", err);
+    console.error("[ERROR] getAllSubscriptions error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -394,7 +394,7 @@ const checkStepUnlock = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("❌ checkStepUnlock error:", err);
+    console.error("[ERROR] checkStepUnlock error:", err);
     return res.status(500).json({ status: false, error: err.message });
   }
 };
@@ -483,7 +483,7 @@ const unlockStep = async (req, res) => {
       remainingBalance: remaining,
     });
   } catch (err) {
-    console.error("❌ unlockStep error:", err);
+    console.error("[ERROR] unlockStep error:", err);
     return res.status(500).json({ status: false, error: err.message });
   }
 };

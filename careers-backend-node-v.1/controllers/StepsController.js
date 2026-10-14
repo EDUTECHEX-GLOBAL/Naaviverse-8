@@ -4,7 +4,7 @@ const pathModel = require('../models/PathModel');
 const axios = require('axios');
 const mongoose = require('mongoose');
 
-// ✅ Activity logging
+// [OK] Activity logging
 const { logEvent } = require('./ActivityController');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ const addStep = async (req, res) => {
       { new: true }
     );
 
-    // ✅ Log step created activity
+    // [OK] Log step created activity
     if (req.body.email) {
       const { displayName, partnerType } = await getPartnerInfo(req.body.email);
       const pathName = existingPath?.name || existingPath?.title || "a path";
@@ -182,7 +182,7 @@ const updateStep = async (req, res) => {
       return res.json({ status: false, message: "Step not found or inactive" });
     }
 
-    // ✅ Log step updated activity
+    // [OK] Log step updated activity
     const email = updatedStep.email || req.body.email;
     if (email) {
       const { displayName, partnerType } = await getPartnerInfo(email);
@@ -245,7 +245,7 @@ const editStep = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    // ✅ Log step edited activity
+    // [OK] Log step edited activity
     const email = existingStep.email || req.body.email;
     if (email) {
       const { displayName, partnerType } = await getPartnerInfo(email);
@@ -285,7 +285,7 @@ const deleteStep = async (req, res) => {
         stepId, { status: "inactive" }, { new: true }
       );
 
-      // ✅ Log step deactivated
+      // [OK] Log step deactivated
       if (step.email) {
         const { displayName, partnerType } = await getPartnerInfo(step.email);
         logEvent({
@@ -304,7 +304,7 @@ const deleteStep = async (req, res) => {
     } else if (step.status === "inactive") {
       const deletedStep = await stepModel.findByIdAndDelete(stepId);
 
-      // ✅ Log step permanently deleted
+      // [OK] Log step permanently deleted
       if (step.email) {
         const { displayName, partnerType } = await getPartnerInfo(step.email);
         logEvent({
@@ -343,7 +343,7 @@ const toggleStepStatus = async (req, res) => {
     step.status = step.status === "active" ? "inactive" : "active";
     await step.save();
 
-    // ✅ Log toggle activity
+    // [OK] Log toggle activity
     if (step.email) {
       const { displayName, partnerType } = await getPartnerInfo(step.email);
       logEvent({
@@ -377,7 +377,7 @@ const restoreStep = async (req, res) => {
     return res.json({ status: false, message: 'Data not found' });
   }
 
-  // ✅ Log restore activity
+  // [OK] Log restore activity
   if (restoreStepData.email) {
     const { displayName, partnerType } = await getPartnerInfo(restoreStepData.email);
     logEvent({
@@ -592,7 +592,7 @@ const bulkUploadSteps = async (req, res) => {
     const formatted = records.map((r) => ({ ...r, email, path_id: r.path_id, status: "active" }));
     const inserted = await stepModel.insertMany(formatted, { ordered: false });
 
-    // ✅ Log bulk upload activity
+    // [OK] Log bulk upload activity
     const { displayName, partnerType } = await getPartnerInfo(email);
     logEvent({
       role:        "partner",

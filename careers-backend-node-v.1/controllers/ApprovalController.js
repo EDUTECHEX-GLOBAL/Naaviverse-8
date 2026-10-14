@@ -52,7 +52,7 @@ exports.createApproval = async (req, res) => {
   }
 };
 
-// ✅ GET approvals — filtered by role if provided
+// [OK] GET approvals — filtered by role if provided
 // Enriches Partner approvals with partnerScope: "internal" | "external"
 exports.getApprovals = async (req, res) => {
   try {
@@ -105,7 +105,7 @@ exports.getApprovals = async (req, res) => {
   }
 };
 
-// ✅ GET approval status by email + role
+// [OK] GET approval status by email + role
 exports.getApprovalByEmail = async (req, res) => {
   try {
     const { email, role } = req.query;
@@ -130,7 +130,7 @@ exports.getApprovalByEmail = async (req, res) => {
   }
 };
 
-// ✅ UPDATE approval status — role-aware email notification & DB status sync
+// [OK] UPDATE approval status — role-aware email notification & DB status sync
 exports.updateApproval = async (req, res) => {
   try {
     const { id } = req.params;
@@ -184,7 +184,7 @@ exports.updateApproval = async (req, res) => {
   }
 };
 
-// ✅ DEACTIVATE approval & mark user/partner deactivated in DB
+// [OK] DEACTIVATE approval & mark user/partner deactivated in DB
 exports.deactivateApproval = async (req, res) => {
   try {
     const { id } = req.params;
@@ -219,7 +219,7 @@ exports.deactivateApproval = async (req, res) => {
   }
 };
 
-// ✅ DELETE approval & delete user/partner from DB
+// [OK] DELETE approval & delete user/partner from DB
 exports.deleteApproval = async (req, res) => {
   try {
     const { id } = req.params;

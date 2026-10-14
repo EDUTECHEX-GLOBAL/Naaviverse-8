@@ -13,6 +13,7 @@ import logActivity from "../../utils/activityLogger";
 import UserPathRequestModal from "../UserPathRequestModal/UserPathRequestModal";
 
 import "./mapspage.scss";
+import { SvgArrowLeft } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -253,7 +254,7 @@ const PathComponent = () => {
     try {
       setConfirmLoading(true);
       localStorage.setItem("selectedPathId", pathId);
-      localStorage.setItem("selectedPathOwner", email); // 👈 store owner
+      localStorage.setItem("selectedPathOwner", email); // <SvgArrowLeft size={14} /> store owner
       localStorage.setItem("selectedPathName", modalPath?.nameOfPath || modalPath?.name || "");
       localStorage.removeItem("selectedPathCountry");
       localStorage.removeItem("selectedPathUniversity");
@@ -345,7 +346,7 @@ const PathComponent = () => {
       {/* ── VIEW PATH MODAL ── */}
       {modalStep === "view" && modalPath && (
         <div className="path-flow-modal">
-          <button className="pfm-close" onClick={closeModal}>✕</button>
+          <button className="pfm-close" onClick={closeModal}>[close]</button>
 
           <div className="pfm-icon">
             {(modalPath.nameOfPath || "P").charAt(0).toUpperCase()}
@@ -377,7 +378,7 @@ const PathComponent = () => {
       {/* ── EXPLORE STEPS MODAL ── */}
       {modalStep === "explore" && modalPath && (
         <div className="path-flow-modal path-flow-modal--wide">
-          <button className="pfm-close" onClick={closeModal}>✕</button>
+          <button className="pfm-close" onClick={closeModal}>[close]</button>
           <button className="pfm-back-btn" onClick={() => setModalStep("view")}>← Back</button>
 
           <div className="pfm-explore-header">
@@ -410,7 +411,7 @@ const PathComponent = () => {
                         {step.macro_description && (
                           <div className="pfm-step-desc">{step.macro_description}</div>
                         )}
-                        {dur && <div className="pfm-step-dur">⏱ {dur}</div>}
+                        {dur && <div className="pfm-step-dur">[clock] {dur}</div>}
                       </div>
                     </div>
                   );
@@ -432,7 +433,7 @@ const PathComponent = () => {
 
      {modalStep === "confirm" && modalPath && (
   <div className="path-flow-modal">
-    <button className="pfm-close" onClick={closeModal}>✕</button>
+    <button className="pfm-close" onClick={closeModal}>[close]</button>
 
     {/* CENTERED ICON - no wrapper div */}
     <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
@@ -472,7 +473,7 @@ const PathComponent = () => {
       {/* ── SUCCESS MODAL ── */}
       {modalStep === "success" && modalPath && (
         <div className="path-flow-modal">
-          <button className="pfm-close" onClick={closeModal}>✕</button>
+          <button className="pfm-close" onClick={closeModal}>[close]</button>
 
           <div className="pfm-icon pfm-icon--success">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -509,7 +510,7 @@ const PathComponent = () => {
               <h3 className="coords-sidebar__title">My Coordinates</h3>
             </div>
           </div>
-          <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)}>✕</button>
+          <button className="coords-sidebar__close" onClick={() => setCoordsOpen(false)}>[close]</button>
         </div>
 
         <span className="coords-sidebar__hint" style={{ display: 'block' }}>

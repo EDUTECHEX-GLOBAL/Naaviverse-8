@@ -65,7 +65,7 @@ export const marketplaceReplacementService = {
     all[key] = {
       ...current,
       activeReplacementItem: replacementItem,
-      whyRecommended: whyRecommended.length > 0 ? whyRecommended : ["✓ Super Admin Recommended Selection"],
+      whyRecommended: whyRecommended.length > 0 ? whyRecommended : ["[check] Super Admin Recommended Selection"],
     };
     setStored(STORAGE_KEYS.REPLACEMENTS, all);
   },
@@ -186,19 +186,19 @@ export const marketplaceReplacementService = {
     const whyRecommended = [];
     if (reasons.includes("too_expensive")) {
       const isFree = !replacement?.cost || String(replacement?.cost).toLowerCase() === "0";
-      whyRecommended.push(isFree ? "✓ 100% Free resource" : "✓ Significantly lower cost");
+      whyRecommended.push(isFree ? "[check] 100% Free resource" : "[check] Significantly lower cost");
     }
     if (reasons.includes("offline_preferred")) {
-      whyRecommended.push("✓ Fits offline / in-person format");
+      whyRecommended.push("[check] Fits offline / in-person format");
     }
     if (reasons.includes("online_preferred")) {
-      whyRecommended.push("✓ 100% Online flexible access");
+      whyRecommended.push("[check] 100% Online flexible access");
     }
     if (reasons.includes("rating_not_suitable") || reasons.includes("wrong_level")) {
-      whyRecommended.push("✓ Top-rated alternative with verified curriculum");
+      whyRecommended.push("[check] Top-rated alternative with verified curriculum");
     }
     if (whyRecommended.length === 0) {
-      whyRecommended.push("✓ High relevance match for your step preferences");
+      whyRecommended.push("[check] High relevance match for your step preferences");
     }
 
     const updatedState = {
@@ -552,8 +552,8 @@ export const marketplaceReplacementService = {
         userEmail: userEmail,
         replacementItem: service,
         whyRecommended: [
-          "✓ Super Admin Recommended Solution",
-          `✓ Tailored for ${service.category || service.role || "your roadmap milestone"}`,
+          "[check] Super Admin Recommended Solution",
+          `[check] Tailored for ${service.category || service.role || "your roadmap milestone"}`,
         ],
       });
     }

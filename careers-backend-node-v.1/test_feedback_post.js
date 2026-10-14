@@ -31,9 +31,9 @@ mongoose.connect(database_url, {
       action: "comment",
       comment: "this step is not useful for me"
     });
-    console.log("\n✅ Backend response:", JSON.stringify(res.data, null, 2));
+    console.log("\n[OK] Backend response:", JSON.stringify(res.data, null, 2));
   } catch (err) {
-    console.error("\n❌ Backend error:", err.response ? JSON.stringify(err.response.data, null, 2) : err.message);
+    console.error("\n[ERROR] Backend error:", err.response ? JSON.stringify(err.response.data, null, 2) : err.message);
   }
 
   mongoose.connection.close();

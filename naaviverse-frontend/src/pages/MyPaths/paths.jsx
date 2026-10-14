@@ -7,7 +7,7 @@ if (!document.getElementById(STYLE_ID)) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Serif+Display&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
     /* ── Overlay ────────────────────────────────────── */
     .epm-overlay {
@@ -62,9 +62,9 @@ if (!document.getElementById(STYLE_ID)) {
       flex-shrink: 0;
     }
     .epm-header-title {
-      font-family: 'DM Serif Display', serif;
+      font-family: 'Poppins', sans-serif;
       font-size: 1.3rem;
-      font-weight: 400;
+      font-weight: 600;
       color: #0d1b2a;
       margin: 0 0 3px;
       letter-spacing: -0.015em;
@@ -298,8 +298,8 @@ if (!document.getElementById(STYLE_ID)) {
       margin-bottom: 4px;
     }
     .epm-success h3 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 1.2rem; font-weight: 400;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem; font-weight: 600;
       color: #0d1b2a; margin: 0;
     }
     .epm-success p { font-size: 0.81rem; color: #64748b; margin: 0; }

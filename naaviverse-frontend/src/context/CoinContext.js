@@ -207,10 +207,10 @@ useEffect(() => {
   const fetchCountries = async () => {
     try {
       const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/countries`);
-      console.log("✅ Countries fetched:", res.data);
+      console.log("[check] Countries fetched:", res.data);
       setCountryApiValue(res.data);
     } catch (err) {
-      console.error("❌ Error fetching countries:", err);
+      console.error("[error] Error fetching countries:", err);
     }
   };
 

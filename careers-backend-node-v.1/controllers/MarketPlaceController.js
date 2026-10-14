@@ -7,7 +7,7 @@ const {
   recalculateAllMarketplaceScores,
 } = require("../services/MarketplaceRankingService");
 
-// ✅ Activity logging
+// [OK] Activity logging
 const { logEvent } = require("./ActivityController");
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ const addMarketplaceItem = async (req, res) => {
       );
     }
 
-    // ✅ Log marketplace listing created
+    // [OK] Log marketplace listing created
     if (partner_email) {
       const { displayName, partnerType } = await getPartnerInfo(partner_email);
       logEvent({
@@ -319,7 +319,7 @@ const linkMarketplaceToStep = async (req, res) => {
       { new: true }
     );
 
-    // ✅ Log listing linked/unlinked activity
+    // [OK] Log listing linked/unlinked activity
     if (updated?.partner_email) {
       const { displayName, partnerType } = await getPartnerInfo(updated.partner_email);
       const action = step_id ? "Linked to Step" : "Unlinked from Step";
@@ -372,7 +372,7 @@ const updateMarketplaceItem = async (req, res) => {
       { new: true, runValidators: true }
     );
     
-    // ✅ Log marketplace listing updated
+    // [OK] Log marketplace listing updated
     if (updatedItem?.partner_email) {
       const { displayName, partnerType } = await getPartnerInfo(updatedItem.partner_email);
       logEvent({
@@ -719,7 +719,7 @@ module.exports = {
   updateMarketplaceAnalytics,
   recalculateMarketplaceRankings,
   linkMarketplaceToStep,
-  updateMarketplaceItem, // ✅ Export the new function
+  updateMarketplaceItem, // [OK] Export the new function
   getMarketplaceItemById,
   getMarketplaceByPartnerId,
   getAllPurchases,

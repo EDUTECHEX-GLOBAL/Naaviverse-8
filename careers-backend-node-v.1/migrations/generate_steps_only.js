@@ -69,7 +69,7 @@ async function generateStepsBatch(input) {
 
     return JSON.parse(content);
   } catch (err) {
-    console.log("❌ Steps Batch Error:", err.message);
+    console.log("[ERROR] Steps Batch Error:", err.message);
     return null;
   }
 }
@@ -81,7 +81,7 @@ async function generateStepsBatch(input) {
   await mongoose.connect(process.env.DATABASE_URI);
   console.log("Connected to MongoDB");
 
-  // 🔍 Find only universities missing STEPS
+  // [SEARCH] Find only universities missing STEPS
   const pending = await Universities.find({
     generatedProgram: { $exists: true },
     $or: [
@@ -106,7 +106,7 @@ async function generateStepsBatch(input) {
     const result = await generateStepsBatch(batch);
 
     if (!result) {
-      console.log("⚠️ Retry in 5 seconds...");
+      console.log("[WARN]️ Retry in 5 seconds...");
       await WAIT(5000);
       i -= BATCH_SIZE;
       continue;
@@ -132,10 +132,10 @@ async function generateStepsBatch(input) {
       );
     }
 
-    console.log("⏳ Waiting 4 seconds...");
+    console.log("[WAIT] Waiting 4 seconds...");
     await WAIT(4000);
   }
 
-  console.log("🎉 STEPS GENERATION COMPLETE!");
+  console.log("[DONE] STEPS GENERATION COMPLETE!");
   process.exit(0);
 })();

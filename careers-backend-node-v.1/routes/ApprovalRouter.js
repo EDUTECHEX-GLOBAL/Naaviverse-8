@@ -7,7 +7,7 @@ router.post("/create", ApprovalController.createApproval);
 // GET all approvals (admin)
 router.get("/get", ApprovalController.getApprovals);
 
-// ✅ NEW: GET approval status by email
+// [OK] NEW: GET approval status by email
 // Usage: GET /api/approval/status?email=xxx@gmail.com
 router.get("/status", ApprovalController.getApprovalByEmail);
 

@@ -89,7 +89,7 @@ const getServices = async (req, res) => {
   try {
     const services = await serviceModel.find({
       productcreatoremail: req.query.productcreatoremail,
-      status: "active", // 👈 KEY FIX
+      status: "active", // <- KEY FIX
     });
 
     return res.status(200).json({

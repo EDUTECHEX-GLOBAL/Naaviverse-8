@@ -4,7 +4,7 @@ const pathSchema = new mongoose.Schema(
   {
     email: { type: String, required: true },
 
-    // 🔥 MAIN NAME FIELD (UI expects nameOfPath)
+    // [HOT] MAIN NAME FIELD (UI expects nameOfPath)
     nameOfPath: { type: String, required: true },
 
     // Backward compatibility (old DB stored "name")
@@ -35,7 +35,7 @@ feature_coordinates: {
     program: { type: String },
     university: [{ type: String }],
 
-    // 🔥 Steps attached to this path
+    // [HOT] Steps attached to this path
     the_ids: [
       {
         step_id: { type: mongoose.Types.ObjectId, required: true },
@@ -48,7 +48,7 @@ feature_coordinates: {
       }
     ],
 
-    // 🔥 Path Type (from UI)
+    // [HOT] Path Type (from UI)
     path_type: {
       type: String,
       enum: ['education', 'career', 'immigration'],
@@ -61,7 +61,7 @@ feature_coordinates: {
       default: 'K12'
     },
 
-    // 🔥 Filters
+    // [HOT] Filters
     personality: {
       type: String,
       enum: [
@@ -110,7 +110,7 @@ changeRequests: [
   }
 ],
 
-    // 🔥 Arrays
+    // [HOT] Arrays
     financialSituation: [
       { type: String, enum: ['0-25L', '25L-75L', '75L-3CR', '3CR+', 'Other'] }
     ],

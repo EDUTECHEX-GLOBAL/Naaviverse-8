@@ -11,7 +11,7 @@ const purchaseSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
 
   billingFrequency: { type: String, default: "One-Time" },
-  status: { type: String, default: "Pending" },   // 👈 ADD THIS
+  status: { type: String, default: "Pending" },   // <- ADD THIS
   partnerId: { type: String, default: null },
 
   date: { type: Date, default: Date.now }

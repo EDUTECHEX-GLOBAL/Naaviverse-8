@@ -208,7 +208,12 @@ const SubscriptionList = () => {
           </div>
         ) : currentSubscriptions.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">📧</div>
+            <div className="empty-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+            </div>
             <p>No subscriptions found</p>
             {subscriptions.length > 0 && (
               <Button size="small" onClick={clearFilters} type="link">Clear filters</Button>

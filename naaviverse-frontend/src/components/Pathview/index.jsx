@@ -3,6 +3,7 @@ import Skeleton from "react-loading-skeleton";
 import { useCoinContextData } from "../../context/CoinContext";
 import "./pathview.scss";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
+import { SvgClose } from "../../utils/SvgIcons";
 const ITEMS_PER_PAGE = 6;
 
 const Pathview = memo(({
@@ -177,7 +178,7 @@ const Pathview = memo(({
                 title="Clear search"
                 type="button"
               >
-                ✕
+                <SvgClose size={14} />
               </button>
             )}
           </div>

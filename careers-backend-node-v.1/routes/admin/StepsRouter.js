@@ -5,7 +5,7 @@ const controller = require("../../controllers/admin/StepsController");
 const { verifyToken, verifyAdmin } = require("../../middlewares/authJwt");
 
 
-// 🔥 protect ALL admin routes
+// [HOT] protect ALL admin routes
 router.use(verifyToken, verifyAdmin);
 
 // -------- STATIC ROUTES FIRST --------

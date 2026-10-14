@@ -85,7 +85,7 @@ const CreateNewStep = ({ inlineMode = false, pathId: propPathId, onSuccess, onCa
     }
   };
 
-  // 🔥 STEP 3: Auto-select exact match when typing
+  // [fire] STEP 3: Auto-select exact match when typing
   useEffect(() => {
     const exactMatch = availablePaths.find(
       p => p.nameOfPath?.toLowerCase() === searchPath.toLowerCase()

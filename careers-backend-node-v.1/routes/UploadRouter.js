@@ -18,7 +18,7 @@ router.get('/test', (req, res) => {
 // Generate presigned URL for S3 upload
 router.post('/get-presigned-url', async (req, res) => {
   try {
-    console.log('📦 Request received for presigned URL:', req.body);
+    console.log('[PKG] Request received for presigned URL:', req.body);
     
     const { fileName, fileType } = req.body;
     
@@ -37,11 +37,11 @@ router.post('/get-presigned-url', async (req, res) => {
       ACL: 'public-read'
     };
 
-    console.log('🔑 Generating presigned URL with params:', params);
+    console.log('[KEY] Generating presigned URL with params:', params);
     
     const presignedUrl = await s3.getSignedUrlPromise('putObject', params);
     
-    console.log('✅ Presigned URL generated');
+    console.log('[OK] Presigned URL generated');
     
     res.json({ 
       success: true,
@@ -50,7 +50,7 @@ router.post('/get-presigned-url', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error generating presigned URL:', error);
+    console.error('[ERROR] Error generating presigned URL:', error);
     res.status(500).json({ 
       success: false,
       error: 'Failed to generate upload URL',

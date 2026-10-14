@@ -54,7 +54,7 @@ micro_access: { type: String, enum: ["paid","free"], default: "free" },
 micro_instructions: { type: String },
 micro_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 micro_chances: { type: String },
-micro_marketplace: { type: Array, default: [] }, // ✅ ADDED
+micro_marketplace: { type: Array, default: [] }, // [OK] ADDED
 
 // ─── MACRO ────────────────────────────────────────────────────────────────────
 macro_description: { type: String },
@@ -64,7 +64,7 @@ macro_access: { type: String, enum: ["paid","free"], default: "free" },
 macro_instructions: { type: String },
 macro_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 macro_chances: { type: String },
-macro_marketplace: { type: Array, default: [] }, // ✅ ADDED
+macro_marketplace: { type: Array, default: [] }, // [OK] ADDED
 
 // ─── NANO ─────────────────────────────────────────────────────────────────────
 nano_description: { type: String },
@@ -74,7 +74,7 @@ nano_access: { type: String, enum: ["paid","free"], default: "free" },
 nano_instructions: { type: String },
 nano_cost: { type: String, enum: ['free','an number','vendors descrestion','paid'], default: 'free' },
 nano_chances: { type: String },
-nano_marketplace: { type: Array, default: [] }, // ✅ ADDED
+nano_marketplace: { type: Array, default: [] }, // [OK] ADDED
 
     microservices: [{type: Schema.Types.ObjectId, ref: "naavi_services",},],
     macroservices: [{type: Schema.Types.ObjectId, ref: "naavi_services",},],

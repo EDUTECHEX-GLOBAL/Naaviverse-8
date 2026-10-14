@@ -18,13 +18,13 @@ const MenuNav = ({
   const isAdminUser = !!localStorage.getItem("adminuser");
   const isUserRoute = window.location.pathname.startsWith("/dashboard/users");
 
-  // ✅ Partners use their own sidebar — no MenuNav needed
+  // [check] Partners use their own sidebar — no MenuNav needed
   if (isPartner) return null;
 
-  // ✅ User dashboard — return null completely, sidebar handles everything
+  // [check] User dashboard — return null completely, sidebar handles everything
   if (isUserRoute) return null;
 
-  // ✅ Non-admin, non-partner, non-user route — just empty nav bar
+  // [check] Non-admin, non-partner, non-user route — just empty nav bar
   if (!isAdminUser) {
     return <div className="dash-nav" style={{ minHeight: "70px" }} />;
   }

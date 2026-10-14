@@ -134,19 +134,19 @@ const submitReplacement = async (req, res) => {
     const whyRecommended = [];
     if (reasons.includes("too_expensive")) {
       const isFree = !replacement?.cost || String(replacement?.cost).toLowerCase() === "0";
-      whyRecommended.push(isFree ? "✓ 100% Free resource" : "✓ Significantly lower budget");
+      whyRecommended.push(isFree ? "[OK] 100% Free resource" : "[OK] Significantly lower budget");
     }
     if (reasons.includes("offline_preferred")) {
-      whyRecommended.push("✓ Fits offline / in-person format");
+      whyRecommended.push("[OK] Fits offline / in-person format");
     }
     if (reasons.includes("online_preferred")) {
-      whyRecommended.push("✓ 100% Online flexible access");
+      whyRecommended.push("[OK] 100% Online flexible access");
     }
     if (reasons.includes("rating_not_suitable") || reasons.includes("wrong_level")) {
-      whyRecommended.push("✓ Top-rated alternative with verified outcomes");
+      whyRecommended.push("[OK] Top-rated alternative with verified outcomes");
     }
     if (whyRecommended.length === 0) {
-      whyRecommended.push("✓ High relevance score for your current step");
+      whyRecommended.push("[OK] High relevance score for your current step");
     }
 
     const updatedHistory = [

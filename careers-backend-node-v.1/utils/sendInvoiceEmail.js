@@ -75,13 +75,13 @@ function buildHtml(payment, invNo) {
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Naavi Invoice ${invNo}</title>
 </head>
-<body style="margin:0;padding:0;background:#f0f3fa;font-family:Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#f0f3fa;font-family:'Poppins',Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f3fa;padding:32px 0;">
 <tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0"
   style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
 
-  <!-- ✅ HEADER — white background, logo shows naturally, text is dark -->
+  <!-- [OK] HEADER — white background, logo shows naturally, text is dark -->
   <tr>
     <td style="background:#ffffff;padding:24px 36px 20px;border-bottom:1px solid #E5E7EB;">
       <table width="100%" cellpadding="0" cellspacing="0">
@@ -105,7 +105,7 @@ function buildHtml(payment, invNo) {
   <!-- SUCCESS BANNER -->
   <tr>
     <td style="background:#E1F5EE;padding:24px 36px;text-align:center;">
-      <div style="font-size:20px;font-weight:700;color:#085041;">✅ Payment Successful!</div>
+      <div style="font-size:20px;font-weight:700;color:#085041;">[OK] Payment Successful!</div>
       <div style="font-size:13px;color:#0F6E56;margin-top:4px;">
         Your <strong>${payment.planTier || "Gold"}</strong> plan is now active.
       </div>
@@ -225,7 +225,7 @@ function buildHtml(payment, invNo) {
     </td>
   </tr>
 
-  <!-- ✅ FOOTER — white background, support email in teal green, dark text -->
+  <!-- [OK] FOOTER — white background, support email in teal green, dark text -->
   <tr>
     <td style="background:#ffffff;padding:20px 36px 28px;border-top:1px solid #E5E7EB;">
       <table width="100%" cellpadding="0" cellspacing="0">
@@ -277,7 +277,7 @@ async function sendInvoiceEmail(payment) {
   };
 
   await createTransporter().sendMail(mailOptions);
-  console.log(`✅ Invoice email sent → ${payment.userEmail}  [${invNo}]`);
+  console.log(`[OK] Invoice email sent → ${payment.userEmail}  [${invNo}]`);
 }
 
 module.exports = { sendInvoiceEmail };

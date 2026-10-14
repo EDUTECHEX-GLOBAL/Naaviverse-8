@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
+import { SvgHourglass, SvgXCircle } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -20,14 +21,14 @@ const PartnerProtectedRoute = ({ children }) => {
       return;
     }
 
-    // ✅ Correct URL: /api/approvals/status (plural — matches app.js mount)
+    // [check] Correct URL: /api/approvals/status (plural — matches app.js mount)
     axios
       .get(`${BASE_URL}/api/approvals/status?email=${partner.email}`)
       .then((res) => {
         const liveStatus = res.data?.data?.status; // "approved" | "pending" | "rejected"
 
-        console.log("✅ Approval response:", res.data);
-        console.log("✅ liveStatus:", liveStatus);
+        console.log("[check] Approval response:", res.data);
+        console.log("[check] liveStatus:", liveStatus);
 
         if (liveStatus === "approved") {
           localStorage.setItem("partner", JSON.stringify({
@@ -72,7 +73,7 @@ const PartnerProtectedRoute = ({ children }) => {
       <div style={styles.page}>
         <div style={styles.overlay} />
         <div style={{ ...styles.card, padding: "40px 60px" }}>
-          <div style={{ fontSize: "32px", marginBottom: "16px" }}>⏳</div>
+          <div style={{ fontSize: "32px", marginBottom: "16px" }}><SvgHourglass size={14} /></div>
           <p style={styles.message}>Verifying your account status…</p>
         </div>
       </div>
@@ -85,7 +86,7 @@ const PartnerProtectedRoute = ({ children }) => {
       <div style={styles.page}>
         <div style={styles.overlay} />
         <div style={styles.card}>
-          <div style={styles.iconCircle}>⏳</div>
+          <div style={styles.iconCircle}><SvgHourglass size={14} /></div>
           <h2 style={styles.title}>Account Under Review</h2>
           <p style={styles.message}>
             Your profile has been submitted successfully.<br />
@@ -105,7 +106,7 @@ const PartnerProtectedRoute = ({ children }) => {
       <div style={styles.page}>
         <div style={styles.overlay} />
         <div style={{ ...styles.card, borderTop: "4px solid #EF4444" }}>
-          <div style={{ ...styles.iconCircle, background: "#FEE2E2" }}>❌</div>
+          <div style={{ ...styles.iconCircle, background: "#FEE2E2" }}><SvgXCircle size={14} /></div>
           <h2 style={{ ...styles.title, color: "#DC2626" }}>Account Not Approved</h2>
           <p style={styles.message}>
             Unfortunately, your account was not approved.<br />

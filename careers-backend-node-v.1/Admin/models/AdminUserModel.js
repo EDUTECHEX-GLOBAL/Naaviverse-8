@@ -16,7 +16,7 @@ const adminUserSchema = new mongoose.Schema({
     required: true
   },
 
-  // ✅ FIXED: role must be INSIDE schema
+  // [OK] FIXED: role must be INSIDE schema
   role: {
     type: String,
     enum: ["admin", "super-admin"],
@@ -26,7 +26,7 @@ const adminUserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-// 🔥 AUTO HASH PASSWORD
+// [HOT] AUTO HASH PASSWORD
 adminUserSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
@@ -34,7 +34,7 @@ adminUserSchema.pre("save", async function(next) {
 });
 
 
-// 🔥 compare helper
+// [HOT] compare helper
 adminUserSchema.methods.comparePassword = function(password) {
   return bcrypt.compare(password, this.password);
 };

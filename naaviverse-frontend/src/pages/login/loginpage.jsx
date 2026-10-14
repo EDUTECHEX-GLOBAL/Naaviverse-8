@@ -12,6 +12,7 @@ import info from "./info.svg";
 import { Loginservice, GoogleLoginservice } from "../../services/loginapis";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { SvgCheck, SvgCheckCircle, SvgClose, SvgWarning } from "../../utils/SvgIcons";
 
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -223,7 +224,7 @@ const Loginpage = ({ initialType }) => {
                 });
 
                 const googleUser = googleRes.data;
-                console.log("✅ Google user fetched:", googleUser?.email);
+                console.log("[check] Google user fetched:", googleUser?.email);
 
                 const storedRole = localStorage.getItem("googleAuthRole") || loginType || "Users";
                 const targetRole = (storedRole === "Accountants" || storedRole === "partner") ? "Accountants" : "Users";
@@ -465,7 +466,7 @@ const Loginpage = ({ initialType }) => {
             const response = await Loginservice(obj, loginType);
             const result = response.data;
 
-            console.log("🔥 FULL LOGIN RESPONSE:", result);
+            console.log("[fire] FULL LOGIN RESPONSE:", result);
 
             if (!result?.token) {
                 console.error("Login failed:", result?.message || "Unknown error");
@@ -496,7 +497,7 @@ const Loginpage = ({ initialType }) => {
 
             localStorage.setItem("loginEmail", emailToStore);
 
-            console.log("🔥 STORED EMAIL:", emailToStore);
+            console.log("[fire] STORED EMAIL:", emailToStore);
 
             if (loginType === "Users") {
                 if (result.user) {
@@ -584,7 +585,7 @@ const Loginpage = ({ initialType }) => {
                         const liveStatus = approvalRes.data?.data?.status;
                         if (liveStatus) {
                             approvalStatus = liveStatus;
-                            console.log("✅ Approval status fetched at login:", liveStatus);
+                            console.log("[check] Approval status fetched at login:", liveStatus);
                         } else if (!approvalStatus) {
                             approvalStatus = "not_submitted";
                         }
@@ -610,7 +611,7 @@ const Loginpage = ({ initialType }) => {
                             website: raw.website,
                             mustChangePassword: rawMustChange,
                         };
-                        console.log("✅ Partner profile fetched at login:", profileData.businessName);
+                        console.log("[check] Partner profile fetched at login:", profileData.businessName);
                     }
                 } catch (profileErr) {
                     console.warn("Could not fetch partner profile at login:", profileErr?.message);
@@ -634,11 +635,11 @@ const Loginpage = ({ initialType }) => {
                 };
                 localStorage.setItem("partner", JSON.stringify(enrichedPartner));
 
-                console.log("✅ Partner saved to localStorage. mustChangePassword:", mustChange, "approvalStatus:", approvalStatus);
+                console.log("[check] Partner saved to localStorage. mustChangePassword:", mustChange, "approvalStatus:", approvalStatus);
 
                 // Check if internal partner must update temporary password
                 if (mustChange) {
-                    console.log("🔒 Partner must change temporary password before dashboard access");
+                    console.log("[lock] Partner must change temporary password before dashboard access");
                     setPartnerContext({
                         partnerData: enrichedPartner,
                         emailToStore,
@@ -894,7 +895,7 @@ const Loginpage = ({ initialType }) => {
             stats: [
                 { value: "2K+", label: "Partners" },
                 { value: "50K+", label: "Clients Served" },
-                { value: "4.9★", label: "Partner Rating" },
+                { value: "4.9[star]", label: "Partner Rating" },
             ],
         },
         ForgotPasswordUsers: {
@@ -1089,9 +1090,9 @@ const Loginpage = ({ initialType }) => {
                                 color: isMinLength ? "#16a34a" : "#dc2626"
                             }}>
                                 {isMinLength ? (
-                                    <><span>✓</span> Password meets minimum length (6+ characters)</>
+                                    <><span><SvgCheck size={14} /></span> Password meets minimum length (6+ characters)</>
                                 ) : (
-                                    <><span>✕</span> Password must be at least 6 characters</>
+                                    <><span><SvgClose size={14} /></span> Password must be at least 6 characters</>
                                 )}
                             </div>
                         )}
@@ -1170,9 +1171,9 @@ const Loginpage = ({ initialType }) => {
                                 color: isMatching ? "#16a34a" : "#dc2626"
                             }}>
                                 {isMatching ? (
-                                    <><span>✓</span> Passwords match</>
+                                    <><span><SvgCheck size={14} /></span> Passwords match</>
                                 ) : (
-                                    <><span>✕</span> Passwords do not match</>
+                                    <><span><SvgClose size={14} /></span> Passwords do not match</>
                                 )}
                             </div>
                         )}
@@ -1226,7 +1227,7 @@ const Loginpage = ({ initialType }) => {
 
                 {forcePasswordError && (
                     <div className="prompt-div" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: "8px", fontSize: "0.82rem", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span>⚠️ {forcePasswordError}</span>
+                        <span><SvgWarning size={14} />️ {forcePasswordError}</span>
                     </div>
                 )}
 
@@ -1290,11 +1291,11 @@ const Loginpage = ({ initialType }) => {
                             color: isMatching && isMinLength ? "#16a34a" : "#dc2626"
                         }}>
                             {isMatching && isMinLength ? (
-                                <><span>✓</span> Passwords match</>
+                                <><span><SvgCheck size={14} /></span> Passwords match</>
                             ) : !isMinLength ? (
-                                <><span>✕</span> Password must be at least 6 characters</>
+                                <><span><SvgClose size={14} /></span> Password must be at least 6 characters</>
                             ) : (
-                                <><span>✕</span> Passwords do not match</>
+                                <><span><SvgClose size={14} /></span> Passwords do not match</>
                             )}
                         </div>
                     )}
@@ -1355,7 +1356,7 @@ const Loginpage = ({ initialType }) => {
 
             {passwordResetMsg && (
                 <div className="success-message">
-                    ✅ {passwordResetMsg}
+                    <SvgCheckCircle size={14} /> {passwordResetMsg}
                 </div>
             )}
 

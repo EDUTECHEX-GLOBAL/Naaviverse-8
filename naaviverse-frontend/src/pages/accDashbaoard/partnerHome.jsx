@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import "./partnerHome.scss";
 import { useStore } from "../../components/store/store.ts";
+import { SvgArrowRight, SvgSparkles, SvgZap } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
 function getPartnerEmail() {
@@ -14,9 +15,9 @@ function getPartnerEmail() {
 }
 
 const NOTIF_CFG = {
-  purchase: { bg: "#dcfce7", color: "#15803d", icon: "🛒", label: "Purchase" },
-  approval: { bg: "#fef3c7", color: "#b45309", icon: "✅", label: "Approval" },
-  path: { bg: "#ccfbf1", color: "#0f766e", icon: "📈", label: "Path" },
+  purchase: { bg: "#dcfce7", color: "#15803d", icon: "[cart]", label: "Purchase" },
+  approval: { bg: "#fef3c7", color: "#b45309", icon: "[check]", label: "Approval" },
+  path: { bg: "#ccfbf1", color: "#0f766e", icon: "[trending]", label: "Path" },
   system: { bg: "#f1f5f9", color: "#475569", icon: "ℹ️", label: "System" },
 };
 
@@ -315,7 +316,7 @@ export default function PartnerHome({ setispopular }) {
           <div className="ph-table-wrap">
             {pendingActions.length === 0 ? (
               <div style={{ padding: "48px 16px", textAlign: "center", color: "#94a3b8" }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>✨</div>
+                <div style={{ fontSize: 32, marginBottom: 8 }}><SvgSparkles size={14} /></div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: "#475569", marginBottom: 4 }}>No pending actions</div>
                 <div style={{ fontSize: 13, color: "#94a3b8" }}>All items are currently up to date.</div>
               </div>
@@ -468,7 +469,7 @@ export default function PartnerHome({ setispopular }) {
             Back to Paths
           </button>
           <div className="ph-detail-hero">
-            <div className="ph-detail-avatar">📈</div>
+            <div className="ph-detail-avatar">[trending]</div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
                 <h2 style={{ fontFamily: "var(--ph-display)", fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>{p.nameOfPath}</h2>
@@ -522,7 +523,7 @@ export default function PartnerHome({ setispopular }) {
                         <td style={{ fontSize: 12, color: "#64748b" }}>{u.completedSteps}/{u.totalSteps}</td>
                         <td>
                           <span className={`ph-status-pill ${u.status === "completed" ? "ph-status-active" : u.status === "in-progress" ? "ph-status-pending" : "ph-status-inactive"}`}>
-                            {u.status === "completed" ? "● Done" : u.status === "in-progress" ? "⏳ Active" : "○ Not Started"}
+                            {u.status === "completed" ? "● Done" : u.status === "in-progress" ? "[hourglass] Active" : "○ Not Started"}
                           </span>
                         </td>
                       </tr>
@@ -860,7 +861,7 @@ export default function PartnerHome({ setispopular }) {
         <div className={`ph-toggle-note ${isGuideCollapsed ? "ph-toggle-note--collapsed" : "ph-toggle-note--expanded"}`}>
           <div className="ph-tn-bar">
             <div className="ph-tn-bar-left" onClick={() => setIsGuideCollapsed(p => !p)}>
-              <span className="ph-tn-icon">✨</span>
+              <span className="ph-tn-icon">[sparkles]</span>
               <span className="ph-tn-title">How to create a path in 3 simple steps</span>
             </div>
             <div className="ph-tn-bar-right">
@@ -941,7 +942,7 @@ export default function PartnerHome({ setispopular }) {
                 >
                   Create a path →
                 </button>
-                <span className="ph-tn-minimal-tip">💡 Start with a name and outcome. You can fine-tune modules anytime later.</span>
+                <span className="ph-tn-minimal-tip">[idea] Start with a name and outcome. You can fine-tune modules anytime later.</span>
               </div>
             </div>
           )}
@@ -961,7 +962,7 @@ export default function PartnerHome({ setispopular }) {
               }}
               title="Show guide to create a path"
             >
-              <span>✨ How to create a path</span>
+              <span><SvgSparkles size={14} /> How to create a path</span>
             </button>
           )}
           <span className="ph-export-link" onClick={fetchStats} style={{ cursor: "pointer" }}>{statsLoading ? "Loading…" : "↻ Refresh"}</span>
@@ -1051,7 +1052,7 @@ export default function PartnerHome({ setispopular }) {
         </div>
         <div className="ph-banner-right">
           <button className="ph-banner-btn" onClick={() => window.open("/partner/exclusive-dashboard", "_blank")}>
-            Access Payments Dashboard ➔
+            Access Payments Dashboard <SvgArrowRight size={14} />
           </button>
         </div>
       </div>
@@ -1093,7 +1094,7 @@ export default function PartnerHome({ setispopular }) {
             </div>
           ) : displayedActivity.length === 0 ? (
             <div style={{ padding: "36px 16px", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>
-              <div style={{ fontSize: 26, marginBottom: 8 }}>⚡</div>
+              <div style={{ fontSize: 26, marginBottom: 8 }}><SvgZap size={14} /></div>
               <div style={{ fontWeight: 600, color: "#475569", marginBottom: 4 }}>No live activity yet</div>
               <div style={{ fontSize: 12, color: "#94a3b8", maxWidth: 300, margin: "0 auto" }}>
                 {activityTab === "All"

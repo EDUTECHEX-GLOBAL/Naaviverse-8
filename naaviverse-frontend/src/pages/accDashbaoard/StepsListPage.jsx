@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import "./StepsListPage.scss";
+import { SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const StepsListPage = () => {
@@ -224,7 +225,7 @@ const handleDeleteStep = async (stepId, e) => {
                 <span>{servicesForStep.length}</span>
               </h3>
               <button className="close-button" onClick={closeModal}>
-                ✕
+                <SvgClose size={14} />
               </button>
             </div>
 

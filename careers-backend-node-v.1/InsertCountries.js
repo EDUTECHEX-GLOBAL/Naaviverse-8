@@ -24,10 +24,10 @@ mongoose.connection.once('open', async () => {
       });
     }
 
-    console.log("✅ Countries seeded as { name: { common, official } } format!");
+    console.log("[OK] Countries seeded as { name: { common, official } } format!");
     process.exit(0);
   } catch (err) {
-    console.error("❌ Seeding error:", err);
+    console.error("[ERROR] Seeding error:", err);
     process.exit(1);
   }
 });

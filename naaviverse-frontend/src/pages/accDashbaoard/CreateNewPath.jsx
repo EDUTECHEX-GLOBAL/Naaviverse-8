@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './CreateNewPath.scss';
 import { useEffect, useRef } from 'react';
+import { SvgArrowUp } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -419,7 +420,7 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
               <label>What program will they be studying? <span className="required">*</span></label>
               <div className="autocomplete-wrapper">
                 <input type="text"
-                  placeholder={selectedUniversity ? "Search program..." : "⬆ Select a university first"}
+                  placeholder={selectedUniversity ? "Search program..." : "<SvgArrowUp size={14} /> Select a university first"}
                   value={pathSteps?.program || ''}
                   disabled={!selectedUniversity}
                   style={{ opacity: selectedUniversity ? 1 : 0.5, cursor: selectedUniversity ? 'text' : 'not-allowed' }}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "./accDashboard.scss";
+import { SvgClose } from "../../utils/SvgIcons";
 
 const EditServiceForm = ({ service, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -106,14 +107,14 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
       );
 
       if (data?.status) {
-        toast.success("✅ Service updated successfully");
+        toast.success("[check] Service updated successfully");
         onSave(data.data);
       } else {
-        toast.error("❌ Update failed");
+        toast.error("[error] Update failed");
       }
     } catch (err) {
       console.error("Update error:", err);
-      toast.error("❌ Update failed - Server error");
+      toast.error("[error] Update failed - Server error");
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
     <div className="drawer-content">
       <form onSubmit={(e) => { e.preventDefault(); if (!loading) handleSave(); }} className="edit-form-container">
         <h3>
-          {/* <span className="edit-icon">✏️</span> */}
+          {/* <span className="edit-icon">[edit]️</span> */}
           Edit Service
         </h3>
 
@@ -201,7 +202,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
                 className="form-select"
               >
                 <option value="active">🟢 Active</option>
-                <option value="inactive">🔴 Inactive</option>
+                <option value="inactive">[red-dot] Inactive</option>
               </select>
             </div>
           </div>
@@ -403,7 +404,7 @@ const EditServiceForm = ({ service, onSave, onCancel }) => {
             className="cancel-btn"
             type="button"
           >
-            ✕ Cancel
+            <SvgClose size={14} /> Cancel
           </button>
           <button 
             onClick={handleSave} 

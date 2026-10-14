@@ -1,5 +1,5 @@
 // =========================================
-//  📧 BREVO (SENDINBLUE) EMAIL CONTROLLER
+//  [EMAIL] BREVO (SENDINBLUE) EMAIL CONTROLLER
 // =========================================
 
 require("dotenv").config();
@@ -21,16 +21,16 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const BREVO_USER = process.env.BREVO_USER || "b31b04001@smtp-brevo.com";
 
 if (!BREVO_API_KEY) {
-  console.error("⚠️ BREVO_API_KEY missing in environment variables (.env)");
+  console.error("[WARN]️ BREVO_API_KEY missing in environment variables (.env)");
 }
 
 if (!process.env.EMAIL_SERVICE_USER) {
-  console.error("⚠️ EMAIL_SERVICE_USER missing in environment variables (.env)");
+  console.error("[WARN]️ EMAIL_SERVICE_USER missing in environment variables (.env)");
 }
 
 console.log(
-  "📧 Brevo Email Config:",
-  process.env.BREVO_API_KEY ? "Key Loaded ✅" : "Key Missing ❌",
+  "[EMAIL] Brevo Email Config:",
+  process.env.BREVO_API_KEY ? "Key Loaded [OK]" : "Key Missing [ERROR]",
   `| Login: ${BREVO_USER}`
 );
 
@@ -104,7 +104,7 @@ const sendNotificationMail = async (email, subject, message, attachments = []) =
   const transporters = getTransporters();
 
   if (transporters.length === 0) {
-    console.error("❌ No email service configuration found in .env (need BREVO_API_KEY, SENDGRID_API_KEY, or EMAIL_SERVICE_USER/PASS)");
+    console.error("[ERROR] No email service configuration found in .env (need BREVO_API_KEY, SENDGRID_API_KEY, or EMAIL_SERVICE_USER/PASS)");
     return false;
   }
 
@@ -133,14 +133,14 @@ const sendNotificationMail = async (email, subject, message, attachments = []) =
   for (const { name, transporter } of transporters) {
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log(`✅ Email sent via ${name} to ${email}: ${info.messageId}`);
+      console.log(`[OK] Email sent via ${name} to ${email}: ${info.messageId}`);
       return true;
     } catch (error) {
-      console.warn(`⚠️ ${name} failed: ${error.message} — trying next...`);
+      console.warn(`[WARN]️ ${name} failed: ${error.message} — trying next...`);
     }
   }
 
-  console.error("❌ All email services failed. Could not deliver email to:", email);
+  console.error("[ERROR] All email services failed. Could not deliver email to:", email);
   return false;
 };
 
@@ -232,7 +232,7 @@ const signUp = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ SignUp Error:", error);
+    console.error("[ERROR] SignUp Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -276,7 +276,7 @@ const verifyOTP = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Verify OTP Error:", err);
+    console.error("[ERROR] Verify OTP Error:", err);
 
     return res.status(500).json({
       success: false,

@@ -3,7 +3,7 @@ const router = express.Router();
 const Universities = require("../models/UniversitiesModel");
 const axios = require("axios");
 
-// 🔥 Regenerate full university program using Perplexity
+// [HOT] Regenerate full university program using Perplexity
 router.post("/regenerate-all", async (req, res) => {
   try {
     const { id } = req.body;
@@ -23,7 +23,7 @@ router.post("/regenerate-all", async (req, res) => {
       });
     }
 
-    console.log("🔥 Regenerating program for:", uni.name);
+    console.log("[HOT] Regenerating program for:", uni.name);
 
     const aiRes = await axios.post(
       "https://api.perplexity.ai/chat/completions",
@@ -82,7 +82,7 @@ Return ONLY JSON:
       data: uni.generatedProgram,
     });
   } catch (error) {
-    console.error("❌ Error regenerating:", error);
+    console.error("[ERROR] Error regenerating:", error);
     return res.status(500).json({
       success: false,
       error: error.message,

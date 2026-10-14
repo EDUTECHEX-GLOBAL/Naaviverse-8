@@ -16,7 +16,7 @@ const ProgramSchema = new mongoose.Schema({
   performance: { type: String, required: true },
   financialSituation: { type: String, required: true },
   personality: { type: String, required: true },
-  country: { type: String, required: true }, // ✅ NEW FIELD
+  country: { type: String, required: true }, // [OK] NEW FIELD
   steps: [StepSchema], // Store steps as subdocuments with IDs
 });
 

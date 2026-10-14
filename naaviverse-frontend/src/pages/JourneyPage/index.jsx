@@ -201,7 +201,7 @@ useEffect(() => {
       setCompletedStepIds(new Set(rawCompleted.map((id) => String(id))));
 
     } catch (error) {
-      console.error("❌ Error fetching journey data:", error);
+      console.error("[error] Error fetching journey data:", error);
       setJourneyPageData(null);
     } finally {
       setLoading(false);

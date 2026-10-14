@@ -914,7 +914,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     }
 
     if (categoryConsistency.status === "strong_mismatch" && !allowCrossCategory && !promptText) {
-      setError(`⚠️ Category Mismatch: You selected "${categoryConsistency.selectedCategory.label}", but your inputs appear to belong to "${categoryConsistency.detectedCategory.label}". Please switch categories or check "Allow intentional cross-category path" to continue.`);
+      setError(`Category Mismatch: You selected "${categoryConsistency.selectedCategory.label}", but your inputs appear to belong to "${categoryConsistency.detectedCategory.label}". Please switch categories or check "Allow intentional cross-category path" to continue.`);
       if (currentTextareaRef.current) {
         currentTextareaRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -1440,7 +1440,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
             {Array.isArray(activePath?.duration_calculation) && activePath.duration_calculation.length > 0 && (
               <div className="db-duration-breakdown-bar" style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", padding: "8px 16px", background: "rgba(16, 185, 129, 0.05)", borderRadius: "8px", border: "1px solid rgba(16, 185, 129, 0.15)", marginBottom: "16px", fontSize: "12px", color: "#374151" }}>
                 <span style={{ fontWeight: 600, color: "#059669", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  <span>✓</span> Verified Path Timeline:
+                  <IconCheck size={14} color="#059669" /> Verified Path Timeline:
                 </span>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", alignItems: "center" }}>
                   {activePath.duration_calculation.map((stg, sIdx) => (

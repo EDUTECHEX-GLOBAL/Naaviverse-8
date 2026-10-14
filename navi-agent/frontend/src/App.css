@@ -61,10 +61,15 @@
 /* ── Reset ───────────────────────────────────────────────── */
 *,
 *::before,
-*::after {
+*::after,
+input,
+button,
+select,
+textarea {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: var(--font-body);
 }
 
 html {

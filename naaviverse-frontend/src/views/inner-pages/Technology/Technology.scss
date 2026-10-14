@@ -379,7 +379,7 @@ $border-light: rgba(0, 0, 0, 0.06);
 }
 
 .tech-core-num-light {
-  font-family: monospace;
+  font-family: 'Poppins', sans-serif;
   font-size: 11px;
   color: $green;
   font-weight: 700;
@@ -642,7 +642,7 @@ $border-light: rgba(0, 0, 0, 0.06);
   }
 }
 
-// 📱 Moto Edge 50 Pro & Flagship Mobile Tier (390px - 430px)
+// [phone] Moto Edge 50 Pro & Flagship Mobile Tier (390px - 430px)
 @media (min-width: 390px) and (max-width: 430px) {
   .tech-container {
     padding: 0 18px;

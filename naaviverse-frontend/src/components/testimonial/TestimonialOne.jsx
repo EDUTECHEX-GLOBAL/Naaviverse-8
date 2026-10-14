@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { SvgStarFilled } from "../../utils/SvgIcons";
 
 const TestimonialContent = [
     {
@@ -38,7 +39,7 @@ const settings1 = {
     ]
 };
 
-// ⭐ star renderer
+// [star] star renderer
 const renderStars = (rating) => {
     const full = Math.floor(rating);
     const half = rating % 1 !== 0;
@@ -65,7 +66,7 @@ const TestimonialOne = () => {
                     <div key={i} className="item">
                         <div className="feedback-block-one margin-2">
 
-                            {/* ⭐ Stars */}
+                            {/* <SvgStarFilled size={14} /> Stars */}
                             <ul className="style-none d-flex rating mb-15">
                                 {renderStars(val.rating)}
                             </ul>

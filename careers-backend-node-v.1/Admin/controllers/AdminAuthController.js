@@ -83,7 +83,7 @@ const loginSuperAdmin = async (req, res) => {
 
     const admin = await AdminUser.findOne({
       email: email.trim().toLowerCase(),
-      role: "super-admin"   // 🔥 only super admins allowed
+      role: "super-admin"   // [HOT] only super admins allowed
     });
 
     if (!admin) {

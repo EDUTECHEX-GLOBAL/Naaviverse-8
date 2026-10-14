@@ -224,14 +224,14 @@ const programNames = [
 mongoose
   .connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
-    console.log('✅ Connected to MongoDB');
+    console.log('[OK] Connected to MongoDB');
     await ProgramName.deleteMany({});
-    console.log('🗑️  Old program names cleared');
+    console.log('[DEL]️  Old program names cleared');
     await ProgramName.insertMany(programNames);
-    console.log('✅ 215 program names inserted successfully');
+    console.log('[OK] 215 program names inserted successfully');
     mongoose.connection.close();
   })
   .catch((err) => {
-    console.error('❌ Error:', err);
+    console.error('[ERROR] Error:', err);
     mongoose.connection.close();
   });

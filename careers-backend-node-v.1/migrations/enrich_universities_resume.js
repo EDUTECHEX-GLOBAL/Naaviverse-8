@@ -79,7 +79,7 @@ async function generateBatch(universitiesBatch) {
     return JSON.parse(content);
 
   } catch (error) {
-    console.error("❌ Perplexity Batch Error:", error.message);
+    console.error("[ERROR] Perplexity Batch Error:", error.message);
     return null;
   }
 }
@@ -91,7 +91,7 @@ async function generateBatch(universitiesBatch) {
   await mongoose.connect(process.env.DATABASE_URI);
   console.log("Connected to MongoDB");
 
-  // 🔥 Only pick universities that DO NOT have generatedProgram
+  // [HOT] Only pick universities that DO NOT have generatedProgram
   const pending = await Universities.find(
     { generatedProgram: { $exists: false } }
   ).lean();
@@ -112,7 +112,7 @@ async function generateBatch(universitiesBatch) {
     const generated = await generateBatch(batch);
 
     if (!generated) {
-      console.log("⚠️ Retry in 5 seconds...");
+      console.log("[WARN]️ Retry in 5 seconds...");
       await WAIT(5000);
       i -= BATCH_SIZE;
       continue;
@@ -149,10 +149,10 @@ async function generateBatch(universitiesBatch) {
       );
     }
 
-    console.log("⏳ Waiting 5 seconds...");
+    console.log("[WAIT] Waiting 5 seconds...");
     await WAIT(5000);
   }
 
-  console.log("🎉 Resume update completed!");
+  console.log("[DONE] Resume update completed!");
   process.exit(0);
 })();

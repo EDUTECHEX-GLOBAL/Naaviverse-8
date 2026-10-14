@@ -13,6 +13,7 @@ import {
   GetWalletBalance,
   GetWalletTxns,
 } from "../../views/inner-pages/pages/services/wallet";
+import { SvgCheckCircle } from "../../utils/SvgIcons";
 
 const Wallet = () => {
   const { accsideNav, setaccsideNav } = useStore();
@@ -105,7 +106,7 @@ const Wallet = () => {
       navigate("/dashboard/users/profile", { replace: true });
       return;
     }
-    fetchBalanceThenTxns(); // ✅ chain the calls
+    fetchBalanceThenTxns(); // <SvgCheckCircle size={14} /> chain the calls
     const createdAt = userDetails?.createdAt;
     setIsNewUser(!createdAt || moment().diff(moment(createdAt), "hours") < 24);
   }, [email]);
@@ -120,14 +121,14 @@ const Wallet = () => {
         setBalance(fetchedBalance);
         setBalanceLoading(false);
 
-        // ✅ Now fetch txns with the real balance in hand
+        // [check] Now fetch txns with the real balance in hand
         return GetWalletTxns(email).then((txnRes) => {
           if (txnRes.data.status) {
             const fetchedTxns = txnRes.data.txns;
             setTxns(fetchedTxns);
             const expiry = computeExpiresAt(fetchedTxns);
             if (expiry) setCreditExpiresAt(expiry);
-            computeCreditBreakdown(fetchedTxns, fetchedBalance); // ✅ real balance
+            computeCreditBreakdown(fetchedTxns, fetchedBalance); // <SvgCheckCircle size={14} /> real balance
           }
           setTxnsLoading(false);
         });
@@ -148,7 +149,7 @@ const Wallet = () => {
           setTxns(fetchedTxns);
           const expiry = computeExpiresAt(fetchedTxns);
           if (expiry) setCreditExpiresAt(expiry);
-          // ✅ FIX: use `balance` from state (already fetched by fetchBalance)
+          // [check] FIX: use `balance` from state (already fetched by fetchBalance)
           //    not res.data.balance which is undefined from /txns endpoint
           computeCreditBreakdown(fetchedTxns, balance);
         }
@@ -173,8 +174,8 @@ const Wallet = () => {
     if (subscriptionCredits > 0 && bonusCredits === 0) return "Subscription credits never expire";
     if (!creditExpiresAt) return "Credits earned on signup & purchases";
     if (isCreditExpired) return "Welcome bonus expired · Subscription credits are permanent";
-    if (daysLeft <= 1) return `⚠ ${bonusCredits} welcome credits expire today`;
-    if (daysLeft <= 3) return `⚠ ${bonusCredits} welcome credits expire in ${daysLeft} days`;
+    if (daysLeft <= 1) return `${bonusCredits} welcome credits expire today`;
+    if (daysLeft <= 3) return `${bonusCredits} welcome credits expire in ${daysLeft} days`;
     return `Welcome bonus: ${bonusCredits} credits · Expires ${moment(creditExpiresAt).format("MMM D, YYYY")}`;
   };
 
@@ -283,8 +284,12 @@ Your 50 welcome credits expired on{" "}
 
                     {/* ── Expiry warning ONLY when bonus is close to expiring ── */}
                     {!isCreditExpired && daysLeft > 0 && daysLeft <= 4 && bonusCredits > 0 && (
-                      <div className="wallet-balance-sub wallet-balance-sub--warning">
-                        ⚠ Your {bonusCredits} welcome credits expire in {daysLeft} day{daysLeft !== 1 ? "s" : ""} — use them first!
+                      <div className="wallet-balance-sub wallet-balance-sub--warning" style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Your {bonusCredits} welcome credits expire in {daysLeft} day{daysLeft !== 1 ? "s" : ""} — use them first!
                       </div>
                     )}
 
@@ -388,9 +393,18 @@ const WalletTxnRow = ({ txn, bonusExpiresAt }) => {
           background: isBonus ? "#e8eeff" : isCredit ? "#eaf3de" : "#faeeda",
           color: isBonus ? "#185FA5" : isCredit ? "#3B6D11" : "#854F0B",
           opacity: isExpired ? 0.45 : 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {isBonus ? "★" : isCredit ? "↑" : "↓"}
+        {isBonus ? (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        ) : isCredit ? (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        ) : (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        )}
       </div>
 
       <div className="wallet-tx-info">

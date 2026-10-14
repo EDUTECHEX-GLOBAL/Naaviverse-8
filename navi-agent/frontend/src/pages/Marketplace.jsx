@@ -6,6 +6,9 @@ import {
   IconStar,
   IconUser,
   IconUsers,
+  IconSparkles,
+  IconRefresh,
+  IconEye,
 } from "./Icons";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -204,9 +207,9 @@ function formatCardItem(item, sourceIndex, view, category) {
 function getHistoryPillLabel(hi, total) {
   if (total <= 1) return "Current";
   if (total === 2) {
-    return hi === 0 ? "Previous Best" : "Current Best ✨";
+    return hi === 0 ? "Previous Best" : "Current Best";
   }
-  if (hi === total - 1) return "Current Best ✨";
+  if (hi === total - 1) return "Current Best";
   if (hi === total - 2) return "Previous Best";
   if (hi === 0) return "Original";
   return `Option ${hi + 1}`;
@@ -422,7 +425,9 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
       {/* Recommended Section */}
       {recommendedItems.length > 0 && (
         <div className="mp-section" style={{ marginBottom: 28 }}>
-          <div className="mp-section-title">✨ Recommended for this Step</div>
+          <div className="mp-section-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <IconSparkles size={16} color="var(--primary, #3b82f6)" /> Recommended for this Step
+          </div>
           <div className="mp-recommended-grid">
             {recommendedItems.map((item, i) => {
               const itemKey = `${activeView}_${currentCategory}_${item.sourceIndex}`;
@@ -436,12 +441,16 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
               const isFree = price?.toLowerCase().includes("free") || price?.toLowerCase().includes("free");
               return (
                 <div key={i} className="mp-card card card-clickable mp-card--recommended">
-                  <div className="mp-recommended-badge">✨ AI Recommended</div>
+                  <div className="mp-recommended-badge" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <IconSparkles size={12} /> AI Recommended
+                  </div>
 
                   {/* ── History comparison pills ── */}
                   {hasHistory && (
                     <div className="mp-history-bar">
-                      <div className="mp-history-label">🔄 {history.length} Options Generated</div>
+                      <div className="mp-history-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <IconRefresh size={12} /> {history.length} Options Generated
+                      </div>
                       <div className="mp-history-pills">
                         {history.map((h, hi) => {
                           const isSelected = (typeof activeVersion === "number" ? activeVersion : history.length - 1) === hi;
@@ -503,8 +512,8 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                   </div>
 
                   {isViewingPrevious && (
-                    <div className="mp-viewing-previous-badge">
-                      👁 Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
+                    <div className="mp-viewing-previous-badge" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                      <IconEye size={13} /> Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
                     </div>
                   )}
 
@@ -556,7 +565,9 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                   {/* ── History comparison pills ── */}
                   {hasHistory && (
                     <div className="mp-history-bar">
-                      <div className="mp-history-label">🔄 {history.length} Options Generated</div>
+                      <div className="mp-history-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <IconRefresh size={12} /> {history.length} Options Generated
+                      </div>
                       <div className="mp-history-pills">
                         {history.map((h, hi) => {
                           const isSelected = (typeof activeVersion === "number" ? activeVersion : history.length - 1) === hi;
@@ -603,8 +614,8 @@ export default function Marketplace({ step, view, userInput, profile, onStepPatc
                   </div>
 
                   {isViewingPrevious && (
-                    <div className="mp-viewing-previous-badge">
-                      👁 Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
+                    <div className="mp-viewing-previous-badge" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                      <IconEye size={13} /> Comparing with: <strong>{getHistoryPillLabel(activeVersion, history.length)}</strong>
                     </div>
                   )}
 

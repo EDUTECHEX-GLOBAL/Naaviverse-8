@@ -108,11 +108,11 @@ exports.createOrder = async (req, res) => {
     payment.razorpayOrderId = order.id;
     await payment.save();
 
-    console.log(`✅ Order created: ${order.id} | ${planTier}/${tier}/${billingMethod} | ₹${amount}`);
+    console.log(`[OK] Order created: ${order.id} | ${planTier}/${tier}/${billingMethod} | ₹${amount}`);
     return res.json({ success: true, order });
 
   } catch (err) {
-    console.error("❌ Create Order Error:", err.message);
+    console.error("[ERROR] Create Order Error:", err.message);
     return res.status(500).json({ success: false, error: err.message });
   }
 };
@@ -180,8 +180,8 @@ exports.verifyPayment = async (req, res) => {
           productName:   payment.productName || "Naavi Platform",
           billingMethod: payment.billingMethod,
           profileId:     payment.profileId || null,
-          tier:          resolvedTier,      // ← "micro" or "nano" ✅
-          planTier:      resolvedPlanTier,  // ← "standard"|"pro"|"proplus" ✅
+          tier:          resolvedTier,      // ← "micro" or "nano" [OK]
+          planTier:      resolvedPlanTier,  // ← "standard"|"pro"|"proplus" [OK]
           startDate:     new Date(),
           endDate,
           status:        "active",
@@ -190,7 +190,7 @@ exports.verifyPayment = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    console.log(`✅ Subscription active: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
+    console.log(`[OK] Subscription active: ${payment.userEmail} — ${resolvedPlanTier}/${resolvedTier}`);
 
     return res.json({
       success: true,
@@ -198,7 +198,7 @@ exports.verifyPayment = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Verify Error:", err);
+    console.error("[ERROR] Verify Error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 };

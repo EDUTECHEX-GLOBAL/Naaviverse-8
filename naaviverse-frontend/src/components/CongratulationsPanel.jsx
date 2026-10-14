@@ -1,4 +1,5 @@
 import React from "react";
+import { SvgParty } from "../utils/SvgIcons";
 
 const CongratulationsPanel = ({ selectedName }) => {
   return (
@@ -19,7 +20,7 @@ const CongratulationsPanel = ({ selectedName }) => {
         width: "100%",
       }}>
         <h2 style={{ color: "#1b3a8f", marginBottom: "12px" }}>
-          🎉 Congratulations!
+          <SvgParty size={14} /> Congratulations!
         </h2>
         <p style={{ color: "#555", marginBottom: "8px" }}>You Have Selected:</p>
 

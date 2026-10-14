@@ -23,8 +23,8 @@ export function getOtpEmailContent({ type, otpCode, recipientName, userType, exp
     : `Enter the code below to complete your sign-in to the ${platformContext}. Don't share this code with anyone — our team will never ask for it.`;
 
   const subject = isForgot
-    ? `Naaviverse Password Reset OTP 🔐`
-    : `Naaviverse Registration Confirmation OTP 🔐`;
+    ? `Naaviverse Password Reset OTP [lock]`
+    : `Naaviverse Registration Confirmation OTP [lock]`;
 
   // Spaced digits for OTP with compact spacing
   const formattedOtp = String(otpCode).split("").join("&nbsp;");
@@ -36,7 +36,7 @@ export function getOtpEmailContent({ type, otpCode, recipientName, userType, exp
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #F8F9FB; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #F8F9FB; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8F9FB; padding: 24px 12px;">
     <tr>
       <td align="center">
@@ -62,7 +62,7 @@ export function getOtpEmailContent({ type, otpCode, recipientName, userType, exp
               </div>
 
               <!-- MAIN HEADING -->
-              <h1 style="margin: 0 0 12px 0; color: #0A192F; font-family: Georgia, 'Times New Roman', serif; font-size: 23px; font-weight: 400; line-height: 1.25;">
+              <h1 style="margin: 0 0 12px 0; color: #0A192F; font-family: 'Poppins', sans-serif; font-size: 23px; font-weight: 600; line-height: 1.25;">
                 ${mainTitle}
               </h1>
 
@@ -76,7 +76,7 @@ export function getOtpEmailContent({ type, otpCode, recipientName, userType, exp
                 <div style="color: #8C8275; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">
                   YOUR ONE-TIME CODE
                 </div>
-                <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 32px; font-weight: 700; color: #0A192F; letter-spacing: 4px; margin: 0 0 6px 0; line-height: 1;">
+                <div style="font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 700; color: #0A192F; letter-spacing: 4px; margin: 0 0 6px 0; line-height: 1;">
                   ${formattedOtp}
                 </div>
                 <div style="color: #718096; font-size: 11px; font-weight: 500;">
@@ -134,7 +134,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
   const accessLevelText = isPartner ? "Partner" : "User";
   const targetLoginUrl = loginUrl || (isPartner ? "https://naavinetwork.ai/login?type=partner" : "https://naavinetwork.ai/login");
 
-  const subject = `Account Approved — Welcome to Naaviverse! 🎉`;
+  const subject = `Account Approved — Welcome to Naaviverse! [party]`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -143,7 +143,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${subject}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #F8F9FB; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+<body style="margin: 0; padding: 0; background-color: #F8F9FB; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #F8F9FB; padding: 24px 12px;">
     <tr>
       <td align="center">
@@ -165,11 +165,11 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
 
               <!-- STATUS PILL BADGE -->
               <div style="display: inline-block; background-color: #E6F7F5; border-radius: 20px; padding: 5px 14px; margin-bottom: 14px;">
-                <span style="color: #0D6E63; font-size: 12.5px; font-weight: 600;">✓ Account approved</span>
+                <span style="color: #0D6E63; font-size: 12.5px; font-weight: 600;">[check] Account approved</span>
               </div>
 
               <!-- MAIN HEADING -->
-              <h1 style="margin: 0 0 12px 0; color: #0A192F; font-family: Georgia, 'Times New Roman', serif; font-size: 23px; font-weight: 400; line-height: 1.25;">
+              <h1 style="margin: 0 0 12px 0; color: #0A192F; font-family: 'Poppins', sans-serif; font-size: 23px; font-weight: 600; line-height: 1.25;">
                 You're cleared to set sail
               </h1>
 
@@ -186,7 +186,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
                       <div style="color: #8C8275; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;">
                         STATUS
                       </div>
-                      <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 700; color: #0A192F;">
+                      <div style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #0A192F;">
                         Approved
                       </div>
                     </td>
@@ -194,7 +194,7 @@ export function getApprovalEmailContent({ role = "partner", email, recipientName
                       <div style="color: #8C8275; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px;">
                         ACCESS LEVEL
                       </div>
-                      <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 16px; font-weight: 700; color: #0A192F;">
+                      <div style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #0A192F;">
                         ${accessLevelText}
                       </div>
                     </td>

@@ -408,13 +408,13 @@ const programs = [
 mongoose
   .connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
-    console.log('✅ Connected to MongoDB');
+    console.log('[OK] Connected to MongoDB');
     await Program.deleteMany({});
-    console.log('🗑️ Old programs cleared');
+    console.log('[DEL]️ Old programs cleared');
     await Program.insertMany(programs);
-    console.log('✅ Data successfully inserted');
+    console.log('[OK] Data successfully inserted');
     mongoose.connection.close();
   })
   .catch((err) => {
-    console.error('❌ Error connecting to MongoDB or inserting data:', err);
+    console.error('[ERROR] Error connecting to MongoDB or inserting data:', err);
   });

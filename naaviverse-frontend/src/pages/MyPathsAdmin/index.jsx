@@ -10,6 +10,7 @@ import CurrentStep from "../CurrentStep/index.jsx";
 import { useStore } from "../../components/store/store.ts";
 import { useNavigate, useLocation } from "react-router-dom";
 import pathIcon from '../../assets/images/assets/naavi-icon2.webp';
+import { SvgCheck, SvgFire } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) => {
@@ -961,7 +962,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                       </div>
                     </div>
 
-                    {/* 🔥 3 VIEW CARDS */}
+                    {/* <SvgFire size={14} /> 3 VIEW CARDS */}
                     <div className="step-views">
 
                       {/* MACRO */}
@@ -1168,7 +1169,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               ))
             ) : (
               <div className="paths-empty-state">
-                <div className="empty-icon">🔍</div>
+                <div className="empty-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
                 <h3>No paths found</h3>
                 <p>
                   {searchName || searchEmail || sourceTypeFilter !== "all"
@@ -1631,7 +1636,11 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     attachedServices.map(item => (
                       <div className="pp-market-item" key={item._id}>
                         <div className="pp-market-item-info">
-                          <div className="pp-market-emoji">📦</div>
+                          <div className="pp-market-emoji">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                          </div>
                           <div>
                             <strong>{item.name}</strong>
                             <span>{item.role}</span>
@@ -1670,13 +1679,19 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                     availableItems.map(item => (
                       <div className="pp-market-item" key={item._id}>
                         <div className="pp-market-item-info">
-                          <div className="pp-market-emoji">📦</div>
+                          <div className="pp-market-emoji">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                          </div>
                           <div>
                             <strong>{item.name}</strong>
                             <span>{item.role}</span>
                             {item.step_id && (
-                              <span style={{ fontSize: "11px", color: "#f59e0b", display: "block" }}>
-                                ⚠ Already linked to another step
+                              <span style={{ fontSize: "11px", color: "#f59e0b", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg> Already linked to another step
                               </span>
                             )}
                           </div>
@@ -2128,7 +2143,7 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                               }}
                               className="vcr-address-btn"
                             >
-                              ✓ Mark as Addressed
+                              <SvgCheck size={14} /> Mark as Addressed
                             </button>
                           )}
                         </div>
@@ -2175,8 +2190,10 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                                 </div>
                               )}
                               <div className="vcr-request-meta">
-                                <span className="vcr-reply-count">
-                                  💬 {replyCount} {replyCount === 1 ? "reply" : "replies"}
+                                <span className="vcr-reply-count" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                  </svg> {replyCount} {replyCount === 1 ? "reply" : "replies"}
                                 </span>
                                 {partnerReplied && (
                                   <span className="vcr-partner-replied">Partner replied</span>
@@ -2302,8 +2319,20 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
           <div className="creator-details-modal">
             <div className="creator-modal-header">
               <div className="creator-modal-title-box">
-                <div className={`creator-modal-badge ${isAgentGenerated(creatorModalPath) ? "agent" : "manual"}`}>
-                  {isAgentGenerated(creatorModalPath) ? "⚡ AI Generated Path" : "👤 Partner Manual Path"}
+                <div className={`creator-modal-badge ${isAgentGenerated(creatorModalPath) ? "agent" : "manual"}`} style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                  {isAgentGenerated(creatorModalPath) ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                      </svg> AI Generated Path
+                    </>
+                  ) : (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                      </svg> Partner Manual Path
+                    </>
+                  )}
                 </div>
                 <h3 className="creator-modal-heading">Creator & Partner Details</h3>
                 <p className="creator-modal-sub">Path: {creatorModalPath.nameOfPath}</p>

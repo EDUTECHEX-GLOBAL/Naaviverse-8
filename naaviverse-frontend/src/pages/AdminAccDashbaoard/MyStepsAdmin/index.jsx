@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
 import stepIcon from '../../../assets/images/assets/naavi-icon3.webp';
+import { SvgWarning } from "../../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const parseDuration = (raw) => {
@@ -456,7 +457,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
             ))
           ) : filtered?.length === 0 ? (
             <div className="admin-steps-empty">
-              <div className="admin-steps-empty-icon">📌</div>
+              <div className="admin-steps-empty-icon">[pin]</div>
               <div className="admin-steps-empty-title">No Steps Found</div>
               <div className="admin-steps-empty-sub">
                 {pathId ? "No steps found for this path." : "Try adjusting your search or switch tabs."}
@@ -798,7 +799,7 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                     attachedServices.map(item => (
                       <div className="admin-pp-market-item" key={item._id}>
                         <div className="admin-pp-market-item-info">
-                          <div className="admin-pp-market-emoji">📦</div>
+                          <div className="admin-pp-market-emoji">[package]</div>
                           <div>
                             <strong>{item.name}</strong>
                             <span>{item.role}</span>
@@ -836,13 +837,13 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
                     availableItems.map(item => (
                       <div className="admin-pp-market-item" key={item._id}>
                         <div className="admin-pp-market-item-info">
-                          <div className="admin-pp-market-emoji">📦</div>
+                          <div className="admin-pp-market-emoji">[package]</div>
                           <div>
                             <strong>{item.name}</strong>
                             <span>{item.role}</span>    {/* ← span is already separate, issue is CSS */}
                             {item.step_id && (
                               <span style={{ fontSize: "11px", color: "#f59e0b", display: "block" }}>
-                                ⚠ Already linked to another step
+                                <SvgWarning size={14} /> Already linked to another step
                               </span>
                             )}
                           </div>

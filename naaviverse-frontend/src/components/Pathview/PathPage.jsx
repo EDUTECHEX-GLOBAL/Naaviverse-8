@@ -4,6 +4,7 @@ import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 import "./pathview.scss";
 import { motion } from "framer-motion";
+import { SvgClock } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -140,7 +141,7 @@ const PathPage = () => {
                       display: "inline-block",
                       padding: "4px 10px",
                     }}>
-                      ⏱ {duration}
+                      <SvgClock size={14} /> {duration}
                     </div>
                   )}
                 </motion.div>

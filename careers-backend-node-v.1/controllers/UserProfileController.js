@@ -38,7 +38,7 @@ const addUserProfile = async (req, res) => {
                 user.profileComplete = true;
                 profileUpdated = true;
 
-                // ✅ Award welcome bonus when profile is first completed
+                // [OK] Award welcome bonus when profile is first completed
                 try {
                     const alreadyGiven = await VaultTransaction.findOne({
                         email: user.email,
@@ -98,7 +98,7 @@ const addUserProfile = async (req, res) => {
             await newUser.save();
             console.log('New user created:', newUser);
 
-            // ✅ Award welcome bonus to brand new users
+            // [OK] Award welcome bonus to brand new users
             try {
                 const alreadyGiven = await VaultTransaction.findOne({
                     email: newUser.email,
@@ -166,7 +166,7 @@ const updateUserProfile = async (req, res) => {
 
         if (!user) return res.json({ status: false, message: "User not found" });
 
-        // ✅ Check for username conflict BEFORE saving
+        // [OK] Check for username conflict BEFORE saving
         if (req.body.username && req.body.username !== user.username) {
             const newUsernameLower = req.body.username.trim().toLowerCase();
             const conflict = await userModel.findOne({
@@ -178,7 +178,7 @@ const updateUserProfile = async (req, res) => {
             }
         }
 
-        // ✅ Check for name validity if provided
+        // [OK] Check for name validity if provided
         if (req.body.name !== undefined) {
             const nameVal = validatePersonName(req.body.name, "Full name");
             if (!nameVal.isValid) {
@@ -187,7 +187,7 @@ const updateUserProfile = async (req, res) => {
             req.body.name = nameVal.cleanName;
         }
 
-        // ✅ Assign fields directly so Mongoose tracks changes
+        // [OK] Assign fields directly so Mongoose tracks changes
         allowedFields.forEach(field => {
             if (req.body[field] !== undefined) {
                 user[field] = req.body[field];
@@ -203,9 +203,9 @@ const updateUserProfile = async (req, res) => {
             if ((user.user_level || 0) < 2) user.user_level = 2;
         }
 
-        await user.save(); // ✅ Triggers pre("save") → usernameLower synced
+        await user.save(); // [OK] Triggers pre("save") → usernameLower synced
 
-        // ✅ Sync approval record if present so Admin dashboard stays updated
+        // [OK] Sync approval record if present so Admin dashboard stays updated
         try {
             const ApprovalModel = require('../models/ApprovalsModel');
             if (user.email) {

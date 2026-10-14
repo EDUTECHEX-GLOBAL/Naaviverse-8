@@ -5,6 +5,7 @@ import Newsletter from "../../components/footernew/Newsletter";
 import SocialWidget from "../../components/footernew/SocialWidget";
 import logos from "../../assets/images/logo/naavi_final_logo2.png";
 import "./toggler.scss"; // Add this import
+import { SvgPhone } from "../../utils/SvgIcons";
 
 export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -38,7 +39,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
           </Link>
 
           {isMobile ? (
-            /* 📱 MOBILE RESPONSIVE NAV MENU */
+            /* [phone] MOBILE RESPONSIVE NAV MENU */
             <div className="mobile-nav">
               <ul className="mobile-nav-list">
                 <li className="mobile-nav-item">
@@ -324,7 +325,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                 </button>
               </div>
 
-              {/* 📱 MOBILE SUBSCRIBE & CONTACT SECTION */}
+              {/* <SvgPhone size={14} /> MOBILE SUBSCRIBE & CONTACT SECTION */}
               <div id="mobile-subscribe-section" className="mt-4 pt-3 border-top">
                 <div className="side-panel-box">
                   <ContactInfoWidget title="Contact Us" withIcon />
@@ -344,7 +345,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
               </div>
             </div>
           ) : (
-            /* 🖥️ DESKTOP CONTACT WIDGET DRAWERS */
+            /* ️ DESKTOP CONTACT WIDGET DRAWERS */
             <>
               <div className="side-panel-box">
                 <h2 className="side-panel-heading">

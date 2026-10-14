@@ -1366,11 +1366,11 @@ const locations = [
 mongoose
   .connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
-    console.log('✅ Connected to MongoDB');
+    console.log('[OK] Connected to MongoDB');
     await Location.deleteMany({});
-    console.log('🗑️  Old location data cleared');
+    console.log('[DEL]️  Old location data cleared');
     await Location.insertMany(locations);
-    console.log('✅ 1357 state-city records inserted across 245 countries');
+    console.log('[OK] 1357 state-city records inserted across 245 countries');
     mongoose.connection.close();
   })
-  .catch((err) => {{ console.error('❌ Error:', err); mongoose.connection.close(); }});
+  .catch((err) => {{ console.error('[ERROR] Error:', err); mongoose.connection.close(); }});

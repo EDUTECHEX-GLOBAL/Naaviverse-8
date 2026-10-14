@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { createContext, useEffect, useState } from "react";
+import { SvgStarFilled } from "./utils/SvgIcons";
 
 export const RegistrationContext = createContext();
 
@@ -34,7 +35,7 @@ const RegistrationContextProvider = (props) => {
           email: userEmail,
           
           password: userPassword,
-          partnerType: partnerType   // ⭐ SEND TO BACKEND
+          partnerType: partnerType   // <SvgStarFilled size={14} /> SEND TO BACKEND
         },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -80,7 +81,7 @@ const RegistrationContextProvider = (props) => {
   //   (Replace this with your own API if needed)
   // ------------------------------------------------
 useEffect(() => {
-  // 🔒 Disabled for now – backend API not available
+  // [lock] Disabled for now – backend API not available
   // TODO: Enable this when /api/apps/:appCode is implemented in backend
 
   setAppData(null);
@@ -112,8 +113,8 @@ useEffect(() => {
     userPassword,
     setUserPassword,
 
-    partnerType,          // ⭐ EXPOSED
-    setPartnerType,       // ⭐ EXPOSED
+    partnerType,          // <SvgStarFilled size={14} /> EXPOSED
+    setPartnerType,       // <SvgStarFilled size={14} /> EXPOSED
 
     pin,
     setPin,

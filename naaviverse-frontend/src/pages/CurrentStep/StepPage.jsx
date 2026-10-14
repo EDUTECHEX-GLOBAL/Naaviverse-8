@@ -26,6 +26,7 @@ import profile from "../../static/images/dashboard/profile.svg";
 import downarrow from "../../static/images/dashboard/downarrow.svg";
 
 import logActivity from "../../utils/activityLogger";
+import { SvgCheckCircle } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -468,7 +469,7 @@ const Carousel1 = ({
   setAcceptOffer,
   setBuy,
   userDetails,
-  stepName,   // ✅ passed from StepPage
+  stepName,   // <SvgCheckCircle size={14} /> passed from StepPage
 }) => {
   const [razorpayOptions, setRazorpayOptions] = useState(null);
 
@@ -593,7 +594,7 @@ const Carousel1 = ({
           onClick={(e) => {
             e.stopPropagation();
 
-            // ✅ Log nano view — user tapped Buy Now on a service card
+            // [check] Log nano view — user tapped Buy Now on a service card
             logActivity({
               type:     "step",
               title:    `Nano view: "${title}"`,

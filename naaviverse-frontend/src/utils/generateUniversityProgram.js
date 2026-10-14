@@ -94,7 +94,7 @@ If uncertain, return a generic fallback program.
 async function main() {
   try {
     await mongoose.connect(DATABASE_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('✅ Connected to MongoDB');
+    console.log('[check] Connected to MongoDB');
 
     // Select docs you want to update. Customize filter as needed:
     // e.g. { country: "United States" } or all docs.
@@ -133,7 +133,7 @@ async function main() {
       await wait(1000);
     }
 
-    console.log(`✅ Done. Generated/updated ${count} universities.`);
+    console.log(`[check] Done. Generated/updated ${count} universities.`);
 
     await mongoose.disconnect();
     process.exit(0);

@@ -93,7 +93,7 @@ const deleteStep = async (req, res) => {
 
     await stepModel.findByIdAndDelete(stepId);
 
-    // 🔥 unlink from path
+    // [HOT] unlink from path
     await pathModel.updateMany(
       { "the_ids.step_id": stepId },
       { $pull: { the_ids: { step_id: stepId } } }

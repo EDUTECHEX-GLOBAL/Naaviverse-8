@@ -1,6 +1,6 @@
 import axios from 'axios';
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
-// ADD THIS ⬇⬇⬇ REQUIRED FOR CURRENCY SELECTOR UI
+// ADD THIS [arrow-down][arrow-down][arrow-down] REQUIRED FOR CURRENCY SELECTOR UI
 export const getOfficialCurrencies = async () => {
   try {
     const response = await axios.get(

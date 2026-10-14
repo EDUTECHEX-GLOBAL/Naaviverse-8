@@ -25,7 +25,7 @@ const TopNavOne = () => {
         }
     }
 
-    // ✅ Correct way to handle scroll event
+    //  Correct way to handle scroll event
     useEffect(() => {
         window.addEventListener('scroll', toggleMenu);
         return () => {

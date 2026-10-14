@@ -3,7 +3,7 @@ const stepModel = require('../models/StepsModel');
 const userModel = require('../models/UsersModel');
 const mongoose = require('mongoose');
 
-// ✅ FIXED: import logEvent (for partners) instead of logActivityInternal (users only)
+// [OK] FIXED: import logEvent (for partners) instead of logActivityInternal (users only)
 const { logEvent } = require('./ActivityController');
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,7 +88,7 @@ const addPath = async (req, res) => {
 
     const saved = await pathModel.create(newPath);
 
-    // ✅ Log path created (draft) activity
+    // [OK] Log path created (draft) activity
     if (body.email) {
       const { displayName, partnerType } = await getPartnerInfo(body.email);
       logEvent({
@@ -132,7 +132,7 @@ const updatePath = async (req, res) => {
 
     const updatedPath = await pathModel.findByIdAndUpdate(pathId, { $set: updateData }, { new: true, runValidators: true });
 
-    // ✅ Log path updated activity
+    // [OK] Log path updated activity
     if (existingPath.email) {
       const { displayName, partnerType } = await getPartnerInfo(existingPath.email);
       logEvent({
@@ -203,7 +203,7 @@ const submitForApproval = async (req, res) => {
     path.status = "waitingforapproval";
     await path.save();
 
-    // ✅ FIXED: Log as PARTNER "approval" event (not user logActivityInternal)
+    // [OK] FIXED: Log as PARTNER "approval" event (not user logActivityInternal)
     if (path.email) {
       const { displayName, partnerType } = await getPartnerInfo(path.email);
       logEvent({
@@ -245,7 +245,7 @@ const deletePath = async (req, res) => {
 
     const updatedPath = await pathModel.findByIdAndUpdate(id, { status: newStatus }, { new: true });
 
-    // ✅ Log path deleted/deactivated
+    // [OK] Log path deleted/deactivated
     if (path.email) {
       const { displayName, partnerType } = await getPartnerInfo(path.email);
       logEvent({
@@ -281,7 +281,7 @@ const restorePath = async (req, res) => {
     );
     if (!restored) return res.status(404).json({ status: false, message: "Path not found or not deleted" });
 
-    // ✅ Log path restored
+    // [OK] Log path restored
     if (restored.email) {
       const { displayName, partnerType } = await getPartnerInfo(restored.email);
       logEvent({
@@ -314,7 +314,7 @@ const reactivatePath = async (req, res) => {
     path.status = "active";
     await path.save();
 
-    // ✅ Log path reactivated
+    // [OK] Log path reactivated
     if (path.email) {
       const { displayName, partnerType } = await getPartnerInfo(path.email);
       logEvent({
@@ -344,7 +344,7 @@ const reactivateInactivePath = async (req, res) => {
     path.status = "active";
     await path.save();
 
-    // ✅ Log reactivate
+    // [OK] Log reactivate
     if (path.email) {
       const { displayName, partnerType } = await getPartnerInfo(path.email);
       logEvent({
@@ -376,7 +376,7 @@ const uploadBulkPaths = async (req, res) => {
     const formatted = records.map(r => ({ ...r, email, status: "active" }));
     const inserted = await pathModel.insertMany(formatted);
 
-    // ✅ Log bulk upload
+    // [OK] Log bulk upload
     const { displayName, partnerType } = await getPartnerInfo(email);
     logEvent({
       role:        "partner",
@@ -429,7 +429,7 @@ const requestChanges = async (req, res) => {
     path.status = "changesrequested";
     await path.save();
 
-    // ✅ Log changes requested — partner needs to act on this
+    // [OK] Log changes requested — partner needs to act on this
     if (path.email) {
       const { displayName, partnerType } = await getPartnerInfo(path.email);
       logEvent({
@@ -524,7 +524,7 @@ const replyToChangeRequest = async (req, res) => {
       return res.status(404).json({ status: false, message: "Path or change request not found" });
     }
 
-    // ✅ Log partner reply as a "message" event
+    // [OK] Log partner reply as a "message" event
     if (from === "partner" && partnerEmail) {
       const { displayName, partnerType } = await getPartnerInfo(partnerEmail);
       logEvent({

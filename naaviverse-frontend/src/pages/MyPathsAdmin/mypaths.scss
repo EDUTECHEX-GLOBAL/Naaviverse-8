@@ -766,7 +766,7 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
 
       &.email-highlight {
         color: #2563eb;
-        font-family: monospace;
+        font-family: 'Poppins', sans-serif;
         font-size: 0.84rem;
       }
 
@@ -1373,7 +1373,7 @@ $grad-active: linear-gradient(135deg, #6366f1 0%, #8b5cf6 40%, #a78bfa 90%);
     code {
       font-size: 0.64rem;
       color: #94a3b8;
-      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-family: 'Poppins', sans-serif;
     }
   }
 }

@@ -18,7 +18,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
   try {
     console.log('Requesting presigned URL from backend...');
     
-    // ✅ Use the correct endpoint: /api/upload/get-presigned-url
+    // [check] Use the correct endpoint: /api/upload/get-presigned-url
     const response = await fetch(`${BASE_URL}/api/upload/get-presigned-url`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -33,7 +33,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Response error:', errorText);
-      throw new Error(`❌ Failed to get presigned URL: ${response.status}`);
+      throw new Error(`[error] Failed to get presigned URL: ${response.status}`);
     }
 
     const data = await response.json();
@@ -42,7 +42,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     const presignedUrl = data.presignedUrl;
 
     if (!presignedUrl) {
-      throw new Error('❌ Presigned URL not received from server');
+      throw new Error('[error] Presigned URL not received from server');
     }
 
     // Upload to S3
@@ -54,10 +54,10 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     });
 
     if (!uploadResponse.ok) {
-      throw new Error(`❌ Failed to upload file to S3`);
+      throw new Error(`[error] Failed to upload file to S3`);
     }
 
-    console.log('✅ File uploaded successfully');
+    console.log('[check] File uploaded successfully');
     
     // Get the final URL
     const fileUrl = data.fileUrl || `https://thenaaviversebucket.s3.amazonaws.com/${fileName}`;
@@ -67,7 +67,7 @@ export const uploadImageFunc = async (e, setImage, setLoading) => {
     return fileUrl;
     
   } catch (error) {
-    console.error('❌ Error uploading file:', error);
+    console.error('[error] Error uploading file:', error);
     
     // Fallback to base64 if S3 upload fails
     console.log('Trying base64 fallback...');

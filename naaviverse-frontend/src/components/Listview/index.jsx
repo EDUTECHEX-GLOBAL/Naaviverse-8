@@ -21,7 +21,7 @@ const Listview = () => {
         setLeadSourceData(result);
       })
       .catch((error) => {
-        console.error("❌ Error fetching university data:", error);
+        console.error("[error] Error fetching university data:", error);
       })
       .finally(() => setLoading(false));
   }, []);

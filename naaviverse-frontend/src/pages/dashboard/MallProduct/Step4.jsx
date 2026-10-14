@@ -14,7 +14,7 @@ const Step4 = ({ setAcceptOffer }) => {
   const [errorMsg, setErrorMsg] = useState("");
 
   // -------------------------------------------------
-  // 1️⃣ GET PROFILE ID FROM YOUR BACKEND
+  // 1️ GET PROFILE ID FROM YOUR BACKEND
   // -------------------------------------------------
   useEffect(() => {
     const email = userDetails?.user?.email || userDetails?.email;
@@ -39,7 +39,7 @@ const Step4 = ({ setAcceptOffer }) => {
   }, []);
 
   // -------------------------------------------------
-  // 2️⃣ START PAYMENT
+  // 2️ START PAYMENT
   // -------------------------------------------------
   const startPayment = async () => {
     try {
@@ -59,7 +59,7 @@ const Step4 = ({ setAcceptOffer }) => {
         partnerId: index?.partnerId || null,
       };
 
-      console.log("📌 ORDER PAYLOAD:", body);
+      console.log("[pin] ORDER PAYLOAD:", body);
 
       // Create order
       const createOrder = await axios.post(
@@ -67,7 +67,7 @@ const Step4 = ({ setAcceptOffer }) => {
         body
       );
 
-      console.log("📌 ORDER RESPONSE:", createOrder.data);
+      console.log("[pin] ORDER RESPONSE:", createOrder.data);
 
       if (!createOrder.data.success) {
         setLoading(false);
@@ -85,7 +85,7 @@ const Step4 = ({ setAcceptOffer }) => {
         order_id: order.id,
 
         handler: async function (response) {
-          console.log("📌 PAYMENT CALLBACK:", response);
+          console.log("[pin] PAYMENT CALLBACK:", response);
 
           const verify = await axios.post(
             `${BASE_URL}/api/payment/verify`,
@@ -146,7 +146,7 @@ const Step4 = ({ setAcceptOffer }) => {
   // -------------------------------------------------
   useEffect(() => {
     if (profileId && index) {
-      console.log("🚀 Starting Payment Now…");
+      console.log("[rocket] Starting Payment Now…");
       startPayment();
     }
   }, [profileId, index]);

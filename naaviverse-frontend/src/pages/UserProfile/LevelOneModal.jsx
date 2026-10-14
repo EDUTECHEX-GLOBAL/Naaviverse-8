@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Country, State, City } from "country-state-city";
 import { validatePersonName } from "../../utils/emailValidator";
+import { SvgCheck, SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -299,7 +300,7 @@ const CustomSelect = ({
                   className="up-custom-select-search-clear"
                   onClick={() => setSearch("")}
                 >
-                  ✕
+                  <SvgClose size={14} />
                 </button>
               )}
             </div>
@@ -1207,14 +1208,14 @@ const LevelOneModal = ({
 
             {/* ── Availability feedback ────────────────────────────────────── */}
             {userNameAvailable === true && (
-              <div className="up-username-ok">✓ Username available</div>
+              <div className="up-username-ok">[check] Username available</div>
             )}
             {userNameAvailable === false && (
-              <div className="up-username-err">✗ Username already taken</div>
+              <div className="up-username-err">[close] Username already taken</div>
             )}
             {userNameAvailable === null && isUsernameUnchanged && formData.username && (
               <div className="up-username-ok" style={{ opacity: 0.6 }}>
-                ✓ Current username
+                <SvgCheck size={14} /> Current username
               </div>
             )}
             {userNameAvailable === null && !isUsernameUnchanged && formData.username && (

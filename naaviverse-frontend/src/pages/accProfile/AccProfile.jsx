@@ -65,6 +65,7 @@ import trash from "../accDashbaoard/trash.svg";
 import { Country, State } from "country-state-city";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import { getCountryPhoneRules } from "../UserProfile/LevelOneModal";
+import { SvgCheck, SvgCheckCircle, SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -529,7 +530,7 @@ const AccProfile = () => {
         name: "India",
         code: "+91",
         isoCode: "IN",
-        flag: "🇮🇳",
+        flag: "",
       }
     );
   }, [dialCodeOptions, selectedPhoneIso]);
@@ -779,7 +780,7 @@ const AccProfile = () => {
         const liveStatus = approvalRes.data?.data?.status;
         // Grab any rejection reason the admin may have left
         const reason = approvalRes.data?.data?.reason || approvalRes.data?.data?.rejectionReason || "";
-        console.log("🔍 liveStatus:", liveStatus, "| reason:", reason);
+        console.log("[search] liveStatus:", liveStatus, "| reason:", reason);
 
         if (liveStatus === "approved") {
           updateLocalStorage("approved");
@@ -2124,7 +2125,7 @@ const AccProfile = () => {
               {pstep === 1 ? (
                 <div>
                   <div>
-                    {/* ✅ UPDATED: Service */}
+                    {/* <SvgCheckCircle size={14} /> UPDATED: Service */}
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -2138,7 +2139,7 @@ const AccProfile = () => {
                       Service
                     </div>
 
-                    {/* ✅ UPDATED: Path */}
+                    {/* <SvgCheckCircle size={14} /> UPDATED: Path */}
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -2152,7 +2153,7 @@ const AccProfile = () => {
                       Path
                     </div>
 
-                    {/* ✅ UPDATED: Bulk Service */}
+                    {/* <SvgCheckCircle size={14} /> UPDATED: Bulk Service */}
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -2163,7 +2164,7 @@ const AccProfile = () => {
                       Bulk Service
                     </div>
 
-                    {/* ✅ UPDATED: Bulk Path */}
+                    {/* <SvgCheckCircle size={14} /> UPDATED: Bulk Path */}
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -2174,7 +2175,7 @@ const AccProfile = () => {
                       Bulk Path
                     </div>
 
-                    {/* ✅ UPDATED: Bulk Step */}
+                    {/* <SvgCheckCircle size={14} /> UPDATED: Bulk Step */}
                     <div
                       className="acc-step-box"
                       onClick={() => {
@@ -2487,7 +2488,7 @@ const AccProfile = () => {
                                   }}
                                 >
                                   <span>{type}</span>
-                                  {isSelected && <span style={{ fontWeight: "700" }}>✓</span>}
+                                  {isSelected && <span style={{ fontWeight: "700" }}><SvgCheck size={14} /></span>}
                                 </div>
                               );
                             })}
@@ -2638,7 +2639,7 @@ const AccProfile = () => {
                                   onClick={() => setCountrySearch("")}
                                   style={{ cursor: "pointer", fontSize: "12px", color: "#94a3b8" }}
                                 >
-                                  ✕
+                                  <SvgClose size={14} />
                                 </span>
                               )}
                             </div>
@@ -2690,7 +2691,7 @@ const AccProfile = () => {
                                       }}
                                     >
                                       <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</span>
-                                      {isSelected && <span style={{ marginLeft: "6px" }}>✓</span>}
+                                      {isSelected && <span style={{ marginLeft: "6px" }}><SvgCheck size={14} /></span>}
                                     </div>
                                   );
                                 })
@@ -2868,7 +2869,7 @@ const AccProfile = () => {
                                   onClick={() => setPhoneCodeSearch("")}
                                   style={{ cursor: "pointer", fontSize: "12px", color: "#94a3b8" }}
                                 >
-                                  ✕
+                                  <SvgClose size={14} />
                                 </span>
                               )}
                             </div>
@@ -2935,7 +2936,7 @@ const AccProfile = () => {
                                       />
                                       <span style={{ fontWeight: "600", minWidth: "42px" }}>{opt.code}</span>
                                       <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{opt.name}</span>
-                                      {isSelected && <span>✓</span>}
+                                      {isSelected && <span><SvgCheck size={14} /></span>}
                                     </div>
                                   );
                                 })

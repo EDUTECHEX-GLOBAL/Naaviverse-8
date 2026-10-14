@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
+import { SvgCheck, SvgClose } from "../../utils/SvgIcons";
 
 export default function AdminMarketplaceRecommendationModal({
   isOpen,
@@ -199,7 +200,7 @@ export default function AdminMarketplaceRecommendationModal({
             </p>
           </div>
           <button className="amr-close-btn" onClick={onClose} type="button">
-            ✕
+            <SvgClose size={14} />
           </button>
         </div>
 
@@ -254,7 +255,7 @@ export default function AdminMarketplaceRecommendationModal({
                       className="amr-clear-search"
                       onClick={() => setSearch("")}
                     >
-                      ✕
+                      <SvgClose size={14} />
                     </button>
                   )}
                 </div>
@@ -360,7 +361,11 @@ export default function AdminMarketplaceRecommendationModal({
           {activeTab === "custom" && (
             <div className="amr-custom-form-pane">
               <div className="amr-custom-intro">
-                <span className="amr-sparkle">✨</span>
+                <span className="amr-sparkle" style={{ display: "flex", alignItems: "center" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
+                    <path d="M12 3l1.912 4.888L18.8 9.8l-4.888 1.912L12 16.6l-1.912-4.888L5.2 9.8l4.888-1.912L12 3z"/>
+                  </svg>
+                </span>
                 <div className="amr-intro-text">
                   <span className="amr-intro-title">Create Custom Marketplace Service</span>
                   <span className="amr-intro-desc">Define a customized service or mentorship offer for this student.</span>
@@ -505,7 +510,7 @@ export default function AdminMarketplaceRecommendationModal({
                 className="admb-close"
                 onClick={() => setDetailsService(null)}
               >
-                ✕
+                <SvgClose size={14} />
               </button>
             </div>
 
@@ -521,11 +526,17 @@ export default function AdminMarketplaceRecommendationModal({
                 </div>
                 <div className="admb-grid-item">
                   <span className="lbl">Delivery Mode</span>
-                  <span className="val">📍 {detailsService.mode || "Online"}</span>
+                  <span className="val" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {detailsService.mode || "Online"}
+                  </span>
                 </div>
                 <div className="admb-grid-item">
                   <span className="lbl">Duration</span>
-                  <span className="val">⏱ {detailsService.duration || "Self-Paced"}</span>
+                  <span className="val" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    {detailsService.duration || "Self-Paced"}
+                  </span>
                 </div>
               </div>
 
@@ -562,7 +573,7 @@ export default function AdminMarketplaceRecommendationModal({
                       setDetailsService(null);
                     }}
                   >
-                    ✓ Select This Service
+                    <SvgCheck size={14} /> Select This Service
                   </button>
                 </div>
               </div>

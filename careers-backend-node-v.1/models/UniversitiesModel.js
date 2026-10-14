@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const StepSchema = new Schema({
   name: String,
   description: String
-}, { _id: true });  // ✅ allow step-level _id
+}, { _id: true });  // [OK] allow step-level _id
 
 const UniversitySchema = new Schema({
   name: String,

@@ -116,9 +116,9 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
 
           if (verifyRes.data?.success) {
             // ── Backend handles everything ────────────────────────
-            // ✅ Subscription upsert  → done in paymentRoutes.js
-            // ✅ Wallet credit        → done in paymentRoutes.js
-            // ✅ Invoice email        → done in paymentRoutes.js
+            // [check] Subscription upsert  → done in paymentRoutes.js
+            // [check] Wallet credit        → done in paymentRoutes.js
+            // [check] Invoice email        → done in paymentRoutes.js
             onSuccess({ tier, billing, actualTier, basePlanTier });
           } else {
             onError(
@@ -142,7 +142,7 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
 
     const rzp = new window.Razorpay(options);
     rzp.on("payment.failed", async (response) => {
-      console.warn("⚠️ Razorpay payment failed:", response?.error);
+      console.warn("[warning]️ Razorpay payment failed:", response?.error);
       const err = response?.error || {};
       const failureReason = err.description || err.reason || "Payment was declined or failed";
 
@@ -166,7 +166,7 @@ export const useRazorpayPayment = ({ userEmail, userDetails, onSuccess, onError 
         });
         window.dispatchEvent(new CustomEvent("naavi:payment-updated", { detail: { status: "failed" } }));
       } catch (postErr) {
-        console.error("❌ Failed to report payment failure to backend:", postErr);
+        console.error("[error] Failed to report payment failure to backend:", postErr);
       }
 
       onError(`Payment failed: ${failureReason}. Please try again.`);

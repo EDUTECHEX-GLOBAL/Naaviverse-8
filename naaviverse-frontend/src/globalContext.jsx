@@ -1,5 +1,5 @@
 // ===============================================
-//  🌍 Naaviverse Global Context (CLEAN VERSION)
+//  [globe] Naaviverse Global Context (CLEAN VERSION)
 //  Provides: Auth, UI, Vault, Categories, Currencies, Menu List
 // ===============================================
 

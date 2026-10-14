@@ -6,6 +6,7 @@ import {
   IconNavigation,
   IconAlert,
   IconSearch,
+  IconZap,
 } from "./Icons";
 import "./Feedbacks.scss";
 
@@ -466,7 +467,9 @@ export default function Feedbacks() {
               <div className="fb-form-card card">
                 <div className="fb-form-header">
                   <div className="fb-form-header-title">
-                    <h3 className="fb-form-title">⚡ Curation Caster</h3>
+                    <h3 className="fb-form-title" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <IconZap size={16} /> Curation Caster
+                    </h3>
                     <span className="fb-form-badge">AI Directive</span>
                   </div>
                   <button

@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  🤖 AgentPathsController.js
+ *  [BOT] AgentPathsController.js
  *  Fetches published paths from the Naaviverse AI Agent
  *  (HuggingFace FastAPI) and transforms/saves them to the
  *  local naavi-mock database so they work seamlessly in the

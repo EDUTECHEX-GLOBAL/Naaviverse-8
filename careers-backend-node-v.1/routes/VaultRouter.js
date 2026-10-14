@@ -142,7 +142,7 @@ router.post("/deduct", async (req, res) => {
       return res.status(400).json({ status: false, message: "email and amount are required" });
 
     const txns    = await VaultTransaction.find({ email });
-    const balance = computeBalance(txns); // ✅ uses same shared logic
+    const balance = computeBalance(txns); // [OK] uses same shared logic
 
     if (balance < amount)
       return res.status(400).json({ status: false, message: "Insufficient credits" });

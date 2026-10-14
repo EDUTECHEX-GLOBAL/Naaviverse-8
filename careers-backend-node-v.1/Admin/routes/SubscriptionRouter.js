@@ -44,7 +44,7 @@ router.get('/count', async (req, res) => {
   try {
     const count = await Subscription.countDocuments();
 
-    res.set('Cache-Control', 'no-store');   // 🔥 ADD THIS
+    res.set('Cache-Control', 'no-store');   // [HOT] ADD THIS
     res.status(200).json({ count });
 
   } catch (err) {

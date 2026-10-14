@@ -35,7 +35,7 @@ body {
   font-family: "Font Awesome 5 Free", "FontAwesome" !important;
 }
 
-/* 🔥 IMAGE + ICON + CONTENT FIX (VERY IMPORTANT) */
+/* [fire] IMAGE + ICON + CONTENT FIX (VERY IMPORTANT) */
 img,
 svg {
   opacity: 1 !important;
@@ -43,14 +43,14 @@ svg {
   mix-blend-mode: normal !important;
 }
 
-/* 🔥 AOS ANIMATION FIX: Prevent headings and sections from staying invisible (opacity: 0) */
+/* [fire] AOS ANIMATION FIX: Prevent headings and sections from staying invisible (opacity: 0) */
 [data-aos] {
   opacity: 1 !important;
   transform: none !important;
   visibility: visible !important;
 }
 
-/* 🔥 GLOBAL INNER PAGES HEADING FIX */
+/* [fire] GLOBAL INNER PAGES HEADING FIX */
 h1,
 h2,
 h3,

@@ -82,7 +82,7 @@ async function generateBatch(input) {
     return JSON.parse(content);
 
   } catch (err) {
-    console.log("❌ Perplexity Batch Error:", err.message);
+    console.log("[ERROR] Perplexity Batch Error:", err.message);
     return null;
   }
 }
@@ -111,7 +111,7 @@ async function generateBatch(input) {
     const result = await generateBatch(batch);
 
     if (!result) {
-      console.log("⚠️ Retry in 5 seconds...");
+      console.log("[WARN]️ Retry in 5 seconds...");
       await WAIT(5000);
       i -= BATCH_SIZE; // retry same batch
       continue;
@@ -148,10 +148,10 @@ async function generateBatch(input) {
       );
     }
 
-    console.log("⏳ Waiting 5 seconds...");
+    console.log("[WAIT] Waiting 5 seconds...");
     await WAIT(5000);
   }
 
-  console.log("🎉 FINISHED!");
+  console.log("[DONE] FINISHED!");
   process.exit(0);
 })();

@@ -22,7 +22,7 @@ const {
 } = require("../middlewares/verifySignUp");
 const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
-// ✅ Unified activity — replaces the old partneractivity.controller import
+// [OK] Unified activity — replaces the old partneractivity.controller import
 const { logEvent } = require("./ActivityController");
 const { validateEmail, validatePersonName } = require("../utils/emailValidator");
 
@@ -176,7 +176,7 @@ const login = async (req, res) => {
 
     const token = jwt.sign({ id: partner._id }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" });
 
-    // ✅ Fire-and-forget activity log — never blocks the login response
+    // [OK] Fire-and-forget activity log — never blocks the login response
     await logEvent({
       role:        "partner",
       email:       partner.email,
@@ -572,7 +572,7 @@ const updatePartnerProfile = async (req, res) => {
         status:       targetStatus,
       });
 
-      // ✅ Log approval-submitted event
+      // [OK] Log approval-submitted event
       await logEvent({
         role:        "partner",
         email:       partner.email,
@@ -772,7 +772,7 @@ const createInternalPartner = async (req, res) => {
 
     // Send Welcome Email with Login Credentials
     const mailBody = `
-      <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
+      <div style="font-family: 'Poppins', Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
         <h2 style="color: #2563eb; margin-top: 0;">Welcome to Naaviverse Partner Network!</h2>
         <p>Dear <strong>${contactPerson}</strong>,</p>
         <p>An internal partner account has been created for <strong>${partnerName}</strong> (${organizationName || "Naaviverse Internal"}).</p>
@@ -1039,7 +1039,7 @@ const resetInternalPartnerPassword = async (req, res) => {
 
     // Send Password Reset Email
     const resetMailBody = `
-      <div style="font-family: Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
+      <div style="font-family: 'Poppins', Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 28px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b;">
         <h2 style="color: #2563eb; margin-top: 0;">Password Reset — Naaviverse Partner Account</h2>
         <p>Dear <strong>${partner.firstName || partner.username || "Partner"}</strong>,</p>
         <p>Your password for internal partner account <strong>${partner.username || partner.businessName}</strong> has been reset by the Super Admin.</p>

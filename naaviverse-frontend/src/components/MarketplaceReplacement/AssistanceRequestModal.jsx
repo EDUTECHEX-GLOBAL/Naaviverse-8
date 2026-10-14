@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./FindBetterMatchModal.scss";
+import { SvgClose } from "../../utils/SvgIcons";
 
 export default function AssistanceRequestModal({
   isOpen,
@@ -72,7 +73,7 @@ export default function AssistanceRequestModal({
             onClick={onClose}
             aria-label="Close"
           >
-            ✕
+            <SvgClose size={14} />
           </button>
         </div>
 

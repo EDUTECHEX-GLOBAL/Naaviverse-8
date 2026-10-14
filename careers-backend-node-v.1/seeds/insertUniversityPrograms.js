@@ -1613,11 +1613,11 @@ const universityPrograms = [
 mongoose
   .connect(DATABASE_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
-    console.log('✅ Connected to MongoDB');
+    console.log('[OK] Connected to MongoDB');
     await UniversityProgram.deleteMany({});
-    console.log('🗑️  Old data cleared');
+    console.log('[DEL]️  Old data cleared');
     await UniversityProgram.insertMany(universityPrograms);
-    console.log('✅ 1604 university-program pairs inserted');
+    console.log('[OK] 1604 university-program pairs inserted');
     mongoose.connection.close();
   })
-  .catch((err) => { console.error('❌ Error:', err); mongoose.connection.close(); });
+  .catch((err) => { console.error('[ERROR] Error:', err); mongoose.connection.close(); });

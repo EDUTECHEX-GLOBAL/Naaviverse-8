@@ -12,6 +12,7 @@ import LevelTwoModal from "./LevelTwoModal";
 import LevelThreeModal from "./LevelThreeModal";
 import lg1 from "../login/favicon3.png";
 import "./UserProfile.css";
+import { SvgCheckCircle } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -307,7 +308,7 @@ const UserProfile = () => {
   return (
     <div className="dashboard-main">
       <div className="dashboard-body">
-        {/* ✅ isProfileIncomplete=false — approval status controls sidebar locking */}
+        {/* <SvgCheckCircle size={14} /> isProfileIncomplete=false — approval status controls sidebar locking */}
         <Dashsidebar
           approvalStatus={approvalStatus}
           isProfileIncomplete={false}
@@ -316,7 +317,7 @@ const UserProfile = () => {
           <UserTopHeader />
           <div className="up-profile-container" style={{ height: "calc(100% - 76px)", overflowY: "auto" }}>
 
-            {/* ✅ NEW: Review banner at top when pending/rejected — no more fullscreen overlay */}
+            {/* <SvgCheckCircle size={14} /> NEW: Review banner at top when pending/rejected — no more fullscreen overlay */}
             {isReadOnly && <ReviewBanner />}
 
             <div className="up-page-header">
@@ -339,7 +340,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">✓ Completed</span>
+                    <span className="up-status-chip up-chip--done">[check] Completed</span>
                     <span className={`up-chevron ${openBox === 1 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -373,7 +374,7 @@ const UserProfile = () => {
                           <InfoItem label="City"        value={profileData.city} />
                           <InfoItem label="Postal Code" value={profileData.postalCode} />
                         </div>
-                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {/* <SvgCheckCircle size={14} /> Hide Edit button when read-only (pending/rejected) */}
                         {!isReadOnly && (
                           <button className="up-edit-btn"
                             onClick={() => setEditingLevel(1)}>
@@ -397,7 +398,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">✓ Completed</span>
+                    <span className="up-status-chip up-chip--done">[check] Completed</span>
                     <span className={`up-chevron ${openBox === 2 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -419,7 +420,7 @@ const UserProfile = () => {
                           <InfoItem label="Financial Situation" value={profileData.financialSituation} />
                           <InfoItem label="LinkedIn"            value={profileData.linkedin} fullWidth />
                         </div>
-                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {/* <SvgCheckCircle size={14} /> Hide Edit button when read-only (pending/rejected) */}
                         {!isReadOnly && (
                           <button className="up-edit-btn up-edit-btn--2"
                             onClick={() => setEditingLevel(2)}>
@@ -443,7 +444,7 @@ const UserProfile = () => {
                     </div>
                   </div>
                   <div className="up-card-header-right">
-                    <span className="up-status-chip up-chip--done">✓ Completed</span>
+                    <span className="up-status-chip up-chip--done">[check] Completed</span>
                     <span className={`up-chevron ${openBox === 3 ? "up-chevron--up" : ""}`}>›</span>
                   </div>
                 </div>
@@ -460,7 +461,7 @@ const UserProfile = () => {
                           <InfoItem label="Personality Type"
                             value={profileData.personality} fullWidth />
                         </div>
-                        {/* ✅ Hide Edit button when read-only (pending/rejected) */}
+                        {/* <SvgCheckCircle size={14} /> Hide Edit button when read-only (pending/rejected) */}
                         {!isReadOnly && (
                           <button className="up-edit-btn up-edit-btn--3"
                             onClick={() => setEditingLevel(3)}>
@@ -543,7 +544,7 @@ const ProfileCreationFlow = ({ userDetails, existingProfileId, existingData, onC
                 style={{ cursor: step > s ? "pointer" : "default" }}
                 title={step > s ? `Go back to ${STEP_LABELS[s - 1]}` : undefined}
               >
-                <span className="up-step-num">{step > s ? "✓" : s}</span>
+                <span className="up-step-num">{step > s ? "[check]" : s}</span>
                 <span className="up-step-label">{STEP_LABELS[s - 1]}</span>
               </div>
               {s < 3 && (

@@ -211,17 +211,17 @@
 .books-stack {
   position: absolute;
   right: 20px;
-  top: 130px; // 👉 Move books higher (from 150px to 130px)
+  top: 130px; //  Move books higher (from 150px to 130px)
   width: 110px;
   z-index: 2;
-  animation: floatBooks 3s ease-in-out infinite; // 👉 Add floating animation
+  animation: floatBooks 3s ease-in-out infinite; //  Add floating animation
 }
 
 /* Paper fixed on books */
 .paper-fixed-on-books {
   position: absolute;
-  right: 35px; // 👉 Position on top of books
-  top: 100px; // 👉 Position above books
+  right: 35px; //  Position on top of books
+  top: 100px; //  Position above books
   width: 50px;
   z-index: 3;
   transform: rotate(-5deg);

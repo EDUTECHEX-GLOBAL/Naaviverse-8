@@ -1310,7 +1310,7 @@ export default function SuperAdminCustomPathBuilder({
               disabled={loading}
               onClick={handleSaveAndPublish}
             >
-              <FiSend /> {loading ? "Publishing Pathway..." : isEditMode ? "Update & Republish Pathway" : "✨ Publish Custom Pathway"}
+              <FiSend /> {loading ? "Publishing Pathway..." : isEditMode ? "Update & Republish Pathway" : "[sparkles] Publish Custom Pathway"}
             </button>
           )}
         </div>

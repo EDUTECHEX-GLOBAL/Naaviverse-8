@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "./UserProfile.css";
+import { SvgCheck } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -329,7 +330,7 @@ const LevelThreeModal = ({
                   </span>
                 ) : (
                   <span className="up-done-badge">
-                    ✓ All answered
+                    <SvgCheck size={14} /> All answered
                   </span>
                 )}
               </div>
@@ -480,7 +481,7 @@ const LevelThreeModal = ({
             {loading
               ? "Saving…"
               : creation
-              ? "Complete Profile ✓"
+              ? "Complete Profile [check]"
               : "Save Changes"}
           </button>
         </div>

@@ -63,7 +63,7 @@ function escapeRegex(str) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ✅ FIX: computeStatus — replaces the Mongoose virtual for .lean() queries
+// [OK] FIX: computeStatus — replaces the Mongoose virtual for .lean() queries
 //
 //   active  → last event < 24 hours ago
 //   idle    → last event 24 hours → 5 days ago
@@ -80,7 +80,7 @@ function computeStatus(lastEventAt) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// ✅ FIX: computeJoinedDays — replaces the Mongoose virtual for .lean() queries
+// [OK] FIX: computeJoinedDays — replaces the Mongoose virtual for .lean() queries
 // Used for BOTH users and partners.
 // ─────────────────────────────────────────────────────────────────────────────
 function computeJoinedDays(joinedAt) {
@@ -180,16 +180,16 @@ const logEvent = async ({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/activity/users
-// ✅ FIXED: uses .lean() (no virtuals) + computeStatus/computeJoinedDays
+// [OK] FIXED: uses .lean() (no virtuals) + computeStatus/computeJoinedDays
 // ─────────────────────────────────────────────────────────────────────────────
 const getActivityUsers = async (req, res) => {
   try {
     const records = await Activity.find({ role: "user" })
-      .lean()                          // ✅ plain JS objects — fast
+      .lean()                          // [OK] plain JS objects — fast
       .sort({ lastEventAt: -1 })
       .limit(200);
 
-    // ✅ Sort using computeStatus (virtuals don't work on lean objects)
+    // [OK] Sort using computeStatus (virtuals don't work on lean objects)
     const ORDER = { active: 0, idle: 1, offline: 2 };
     records.sort((a, b) => {
       const sa = ORDER[computeStatus(a.lastEventAt)] ?? 2;
@@ -268,8 +268,8 @@ const getActivityUsers = async (req, res) => {
         name:        r.displayName || r.actorEmail,
         email:       r.actorEmail,
         initials:    r.initials || makeInitials(r.displayName || r.actorEmail),
-        status:      computeStatus(r.lastEventAt),      // ✅ FIXED
-        joinedDays:  computeJoinedDays(r.joinedAt),     // ✅ FIXED
+        status:      computeStatus(r.lastEventAt),      // [OK] FIXED
+        joinedDays:  computeJoinedDays(r.joinedAt),     // [OK] FIXED
         lastEventAt: r.lastEventAt,
         events,
         lastEvent,
@@ -285,16 +285,16 @@ const getActivityUsers = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/activity/partners
-// ✅ FIXED: uses .lean() (no virtuals) + computeStatus/computeJoinedDays
+// [OK] FIXED: uses .lean() (no virtuals) + computeStatus/computeJoinedDays
 // ─────────────────────────────────────────────────────────────────────────────
 const getActivityPartners = async (req, res) => {
   try {
     const records = await Activity.find({ role: "partner" })
-      .lean()                          // ✅ plain JS objects — fast
+      .lean()                          // [OK] plain JS objects — fast
       .sort({ lastEventAt: -1 })
       .limit(200);
 
-    // ✅ Sort using computeStatus (virtuals don't work on lean objects)
+    // [OK] Sort using computeStatus (virtuals don't work on lean objects)
     const ORDER = { active: 0, idle: 1, offline: 2 };
     records.sort((a, b) => {
       const sa = ORDER[computeStatus(a.lastEventAt)] ?? 2;
@@ -324,8 +324,8 @@ const getActivityPartners = async (req, res) => {
         email:       r.actorEmail,
         initials:    r.initials || makeInitials(r.displayName || r.actorEmail),
         type:        r.partnerType,
-        status:      computeStatus(r.lastEventAt),      // ✅ FIXED
-        joinedDays:  computeJoinedDays(r.joinedAt),     // ✅ FIXED
+        status:      computeStatus(r.lastEventAt),      // [OK] FIXED
+        joinedDays:  computeJoinedDays(r.joinedAt),     // [OK] FIXED
         lastEventAt: r.lastEventAt,
         events,
         lastEvent,

@@ -190,7 +190,7 @@ const ActivityPopup = ({ item, type, onClose }) => {
             <h3>Activity Timeline</h3>
             <p>{name}</p>
           </div>
-          <button className="apop-close" onClick={onClose}>✕</button>
+          <button className="apop-close" onClick={onClose}>[close]</button>
         </div>
 
         <div className="apop-body">
@@ -295,7 +295,7 @@ const AdminCRM = () => {
             placeholder={tab === "Users" ? "Search users…" : "Search partners…"}
           />
           {search && (
-            <button className="srch-x" onClick={() => setSearch("")}>✕</button>
+            <button className="srch-x" onClick={() => setSearch("")}>[close]</button>
           )}
         </div>
       </div>

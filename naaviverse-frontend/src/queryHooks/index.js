@@ -1,4 +1,4 @@
-// ❌ Deleted all GlobalXchange API calls
+// [error] Deleted all GlobalXchange API calls
 // This project now uses ONLY your backend APIs
 
 export const getAppByCode = async () => {

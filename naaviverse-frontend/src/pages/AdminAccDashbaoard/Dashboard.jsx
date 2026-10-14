@@ -7,6 +7,7 @@ import marketplaceReplacementService from "../../services/marketplaceReplacement
 import AssistanceRequestDetailsModal from "../../AdminDashboard/components/AssistanceRequestDetailsModal";
 import AssistanceDetailsPage from "../../AdminDashboard/components/AssistanceDetailsPage";
 import SuperAdminCustomPathBuilder from "../../AdminDashboard/components/SuperAdminCustomPathBuilder";
+import { SvgBuilding, SvgClock, SvgGraduation, SvgPin } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -120,7 +121,7 @@ function NotifItem({ notif, onRead, onView, full = false }) {
 }
 
 // REMOVE emoji fields entirely — they're used in activity timeline icons
-// Replace: emoji: "🔍" → use SVG in activity-tl-icon directly
+// Replace: emoji: "[search]" → use SVG in activity-tl-icon directly
 
 const TYPE_CONFIG = {
   login: {
@@ -937,7 +938,7 @@ export default function Dashboard() {
                               <div className="pr-item-title-row">
                                 <span className="pr-item-goal">{req.targetGoal}</span>
                                 {req.targetInstitution && (
-                                  <span className="pr-item-inst">🏛 {req.targetInstitution}</span>
+                                  <span className="pr-item-inst">[building] {req.targetInstitution}</span>
                                 )}
                               </div>
                               <div className="pr-item-sub">
@@ -1266,7 +1267,7 @@ export default function Dashboard() {
                       <div className="activity-tl-title">{ev.title}</div>
                       {ev.type === "step" && ev.pathName && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 2, margin: "4px 0" }}>
-                          <div style={{ fontSize: 12, color: "var(--violet-600)", fontWeight: 600 }}>📍 {ev.pathName}</div>
+                          <div style={{ fontSize: 12, color: "var(--violet-600)", fontWeight: 600 }}><SvgPin size={14} /> {ev.pathName}</div>
                           {ev.stepName && <div style={{ fontSize: 12, color: "var(--slate-500)" }}>Step: {ev.stepName}</div>}
                           {ev.microStep && <div style={{ fontSize: 12, color: "var(--slate-400)" }}>Micro: {ev.microStep}</div>}
                         </div>
@@ -1546,7 +1547,7 @@ export default function Dashboard() {
                         <td className="date-cell">{p.date}</td>
                         <td>
                           <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                            {p.status === "completed" ? "✓ Done" : "Pending"}
+                            {p.status === "completed" ? "[check] Done" : "Pending"}
 
                           </span>
                         </td>
@@ -1583,7 +1584,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{p.user}</h2>
                 <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                  {p.status === "completed" ? "✓ Completed" : "Pending"}
+                  {p.status === "completed" ? "[check] Completed" : "Pending"}
                 </span>
               </div>
               <div style={{ fontSize: 13, color: "var(--slate-400)" }}>{p.email}</div>
@@ -1611,7 +1612,7 @@ export default function Dashboard() {
             <DetailItem label="Total Steps" value={`${p.steps} steps`} />
             <DetailItem label="Micro Lessons" value={`${p.microLessons} lessons`} />
             <DetailItem label="Purchase Date" value={p.date} />
-            <DetailItem label="Status" value={p.status === "completed" ? "✓ Completed" : "⏳ Pending"} />
+            <DetailItem label="Status" value={p.status === "completed" ? "[check] Completed" : "[hourglass] Pending"} />
           </div>
           <div className="details-section-title">Buyer Details</div>
           <div className="details-grid">
@@ -1677,16 +1678,16 @@ export default function Dashboard() {
                 <h2>{req.targetGoal}</h2>
                 <span className={`status-pill ${req.status}`}>
                   {req.status === "created"
-                    ? "✓ Created & Ready"
+                    ? "[check] Created & Ready"
                     : req.status === "in_progress"
-                    ? "⚙ In Progress"
+                    ? "<SvgSettings size={14} /> In Progress"
                     : req.status === "rejected"
-                    ? "✗ Rejected"
-                    : "⏳ Pending Review"}
+                    ? "[close] Rejected"
+                    : "[hourglass] Pending Review"}
                 </span>
               </div>
               <span className="role-chip path-req">
-                🎓 Custom Pathway Request · {req.requestId || "REQ"}
+                <SvgGraduation size={14} /> Custom Pathway Request · {req.requestId || "REQ"}
               </span>
             </div>
           </div>
@@ -1746,7 +1747,7 @@ export default function Dashboard() {
                 <line x1="12" y1="5" x2="12" y2="19" />
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              {req.status === "created" ? "Edit / Reconfigure Path" : "✨ Create Custom Path & Steps"}
+              {req.status === "created" ? "Edit / Reconfigure Path" : "[sparkles] Create Custom Path & Steps"}
             </button>
 
             {req.status !== "in_progress" && req.status !== "created" && (
@@ -1796,7 +1797,7 @@ export default function Dashboard() {
               <div className="details-hero-top">
                 <h2>{selected.businessName}</h2>
                 <span className={`status-pill ${selected.status}`}>
-                  {selected.status === "approved" ? "✓ Verified" : selected.status === "rejected" ? "✗ Rejected" : selected.status === "deactivated" ? "🚫 Deactivated" : "⏳ Pending"}
+                  {selected.status === "approved" ? "[check] Verified" : selected.status === "rejected" ? "[close] Rejected" : selected.status === "deactivated" ? "[ban] Deactivated" : "[hourglass] Pending"}
                 </span>
               </div>
               <span className={`role-chip ${isPartner ? "partner" : "user"}`}>
@@ -1999,15 +2000,15 @@ export default function Dashboard() {
                 </button>
                 <PortalDropdown anchorRef={scopeDropdownRef} isOpen={showScopeDropdown} onClose={() => setShowScopeDropdown(false)}>
                   <button className={partnerScope === "all" ? "partner-active" : ""} onClick={() => { setPartnerScope("all"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">📋</span> All Partners
+                    <span className="menu-icon">[clipboard]</span> All Partners
                     <span className="menu-count partner-count">{partnerData.length}</span>
                   </button>
                   <button className={partnerScope === "internal" ? "scope-internal-active" : ""} onClick={() => { setPartnerScope("internal"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">🏢</span> Internal
+                    <span className="menu-icon">[building]</span> Internal
                     <span className="menu-count scope-internal-count">{internalCount}</span>
                   </button>
                   <button className={partnerScope === "external" ? "scope-external-active" : ""} onClick={() => { setPartnerScope("external"); setTab("all"); setShowScopeDropdown(false); }}>
-                    <span className="menu-icon">🌐</span> External
+                    <span className="menu-icon">[globe]</span> External
                     <span className="menu-count scope-external-count">{externalCount}</span>
                   </button>
                 </PortalDropdown>
@@ -2081,12 +2082,12 @@ export default function Dashboard() {
                           <td>
                             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--slate-800)" }}>{req.targetGoal}</div>
                             {req.targetInstitution && (
-                              <div style={{ fontSize: 11.5, color: "#6366f1", fontWeight: 600 }}>🏛 {req.targetInstitution}</div>
+                              <div style={{ fontSize: 11.5, color: "#6366f1", fontWeight: 600 }}><SvgBuilding size={14} /> {req.targetInstitution}</div>
                             )}
                           </td>
                           <td>
                             <div style={{ fontSize: 12, fontWeight: 600, color: "var(--slate-700)" }}>{req.sector}</div>
-                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}>⏱ {req.targetTimeline}</div>
+                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}><SvgClock size={14} /> {req.targetTimeline}</div>
                           </td>
                           <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "var(--slate-500)" }} title={req.mandatoryRequirements}>
                             {req.mandatoryRequirements || "—"}
@@ -2094,12 +2095,12 @@ export default function Dashboard() {
                           <td>
                             <span className={`status-pill ${req.status}`}>
                               {req.status === "created"
-                                ? "✓ Created"
+                                ? "[check] Created"
                                 : req.status === "in_progress"
-                                ? "⚙ In Progress"
+                                ? "<SvgSettings size={14} /> In Progress"
                                 : req.status === "rejected"
-                                ? "✗ Rejected"
-                                : "⏳ Pending"}
+                                ? "[close] Rejected"
+                                : "[hourglass] Pending"}
                             </span>
                           </td>
                           <td className="date-cell">
@@ -2161,7 +2162,7 @@ export default function Dashboard() {
                       {isPartnerView && (
                         <td>
                           <span className={`scope-badge ${item.partnerScope === "internal" ? "scope-internal" : "scope-external"}`}>
-                            {item.partnerScope === "internal" ? "🏢 Internal" : "🌐 External"}
+                            {item.partnerScope === "internal" ? "[building] Internal" : "[globe] External"}
                           </span>
                         </td>
                       )}

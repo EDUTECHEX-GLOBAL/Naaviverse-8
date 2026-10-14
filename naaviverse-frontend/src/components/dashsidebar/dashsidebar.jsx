@@ -252,7 +252,7 @@ const handleLogout = (e) => {
       {isProfileIncomplete && !isOnProfilePage && (
         <div className="user-profile-overlay">
           <div className="user-profile-overlay-card">
-            <div className="user-profile-overlay-icon">👤</div>
+            <div className="user-profile-overlay-icon"></div>
             <div className="user-profile-overlay-title">Complete Your Profile First</div>
             <div className="user-profile-overlay-divider" />
             <div className="user-profile-overlay-message">

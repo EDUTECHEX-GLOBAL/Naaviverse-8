@@ -1,6 +1,6 @@
 /**
  * ============================
- *   🌍 NAAVIVERSE BACKEND
+ *   [GLOBE] NAAVIVERSE BACKEND
  *   Express Application Setup
  * ============================
  */
@@ -105,7 +105,7 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ CORS blocked:", origin);
+      console.log("[ERROR] CORS blocked:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -126,8 +126,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ MongoDB Connection Error:", err));
+  .then(() => console.log("[OK] Connected to MongoDB"))
+  .catch((err) => console.error("[ERROR] MongoDB Connection Error:", err));
 
 /* ------------------- ROUTES ------------------- */
 
@@ -223,7 +223,7 @@ app.use(function (err, req, res, next) {
 const PORT = process.env.PORT || 4545;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`[LAUNCH] Server running on port ${PORT}`);
 });
 
 module.exports = app;

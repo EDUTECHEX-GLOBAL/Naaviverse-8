@@ -73,7 +73,7 @@ const ServiceSchema = new mongoose.Schema(
     iterations: { type: Array, default: [] },
     ServiceDetails: { type: Array, default: [] },
 
-    // ⭐ NEW FIELD — VIEW TYPE
+    // [STAR] NEW FIELD — VIEW TYPE
     view: {
       type: String,
       enum: ["macro", "micro", "nano"],
@@ -83,5 +83,5 @@ const ServiceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✔ Register model
+// [OK] Register model
 module.exports = mongoose.model("naavi_services", ServiceSchema);

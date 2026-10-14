@@ -834,7 +834,7 @@ export default function PartnerExclusiveDashboard() {
                                     </div>
                                   </td>
                                   <td className="px-fb-stars">
-                                    {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
+                                    {"[star]".repeat(fb.rating || 3)}{"[star-empty]".repeat(5 - (fb.rating || 3))}
                                   </td>
                                   <td>
                                     <span className={`px-badge badge-${fb.action === "helpful" ? "paid" : fb.action === "notRelevant" ? "failed" : "pending"}`}>
@@ -871,7 +871,7 @@ export default function PartnerExclusiveDashboard() {
                                   </div>
                                 </div>
                                 <div className="px-fb-rating">
-                                  {"★".repeat(fb.rating || 3)}{"☆".repeat(5 - (fb.rating || 3))}
+                                  {"[star]".repeat(fb.rating || 3)}{"[star-empty]".repeat(5 - (fb.rating || 3))}
                                 </div>
                               </div>
                               <p className="px-fb-body">{fb.comment}</p>
@@ -1043,7 +1043,7 @@ export default function PartnerExclusiveDashboard() {
                           onClick={handleTicketSubmit}
                           disabled={!ticketSubject.trim() || !ticketMessage.trim()}
                         >
-                          <Icon.Send /> {ticketSubmitted ? "Sent ✓" : "Send to super admin"}
+                          <Icon.Send /> {ticketSubmitted ? "Sent [check]" : "Send to super admin"}
                         </button>
                       </div>
                     </div>

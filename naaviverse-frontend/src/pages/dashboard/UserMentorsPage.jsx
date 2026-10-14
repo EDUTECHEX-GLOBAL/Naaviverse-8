@@ -46,7 +46,7 @@ export default function UserMentorsPage() {
                 </div>
               </div>
               <div className="uh-mentor-full-right">
-                <div className="uh-mentor-rating">★ {m.rating}</div>
+                <div className="uh-mentor-rating">[star] {m.rating}</div>
                 <span className="uh-mentor-sessions">{m.sessions} session{m.sessions > 1 ? "s" : ""}</span>
                 <span className={`uh-session-tag st-${m.status}`}>
                   {m.status === "upcoming" ? "Upcoming" : "Completed"}

@@ -2,7 +2,7 @@ const router = require("express").Router();
 const Universities = require("../models/UniversitiesModel");
 
 /*************************************************************
- * 1️⃣ GET ALL UNIVERSITIES WITH PAGINATION
+ * 1️ GET ALL UNIVERSITIES WITH PAGINATION
  *************************************************************/
 router.get("/", async (req, res) => {
   try {
@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
 });
 
 /*************************************************************
- * 2️⃣ GET A SINGLE UNIVERSITY'S STEPS
+ * 2️ GET A SINGLE UNIVERSITY'S STEPS
  *************************************************************/
 router.get("/:id/steps", async (req, res) => {
   try {

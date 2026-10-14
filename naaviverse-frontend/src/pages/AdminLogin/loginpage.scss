@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 /* ===== SUPER ADMIN TOKENS — light, premium ===== */
 $ground: #faf8f3; // warm off-white page background
@@ -16,9 +16,9 @@ $text-secondary: #5b6178;
 $text-muted: #9b9fae;
 $error: #d9484f;
 $success: #1f9d64;
-$font-display: "Fraunces", serif;
-$font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-$font-mono: "Space Mono", monospace;
+$font-display: 'Poppins', sans-serif;
+$font-body: 'Poppins', sans-serif;
+$font-mono: 'Poppins', sans-serif;
 
 @keyframes fadeInUp {
   from {

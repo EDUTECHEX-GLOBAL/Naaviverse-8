@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Program = require('../models/ProgramModel');
-const University = require('../models/UniversitiesModel'); // ✅ correct import
+const University = require('../models/UniversitiesModel'); // [OK] correct import
 
 /**
  * ============================
@@ -49,7 +49,7 @@ router.get('/programs', async (req, res) => {
           school: { $regex: name.split(' ')[0], $options: 'i' },
         }));
       } else {
-        console.log(`⚠️ No universities found for ${country}, skipping school filter.`);
+        console.log(`[WARN]️ No universities found for ${country}, skipping school filter.`);
       }
     }
 
@@ -60,7 +60,7 @@ router.get('/programs', async (req, res) => {
 
     // Fallback: if no programs found for country, fetch all programs instead
     if (programs.length === 0 && country) {
-      console.log(`⚠️ No programs found for ${country}, returning all programs.`);
+      console.log(`[WARN]️ No programs found for ${country}, returning all programs.`);
       programs = await Program.find({});
     }
 

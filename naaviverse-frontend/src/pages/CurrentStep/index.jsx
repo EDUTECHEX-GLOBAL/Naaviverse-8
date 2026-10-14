@@ -8,6 +8,7 @@ import CoinComponent from "../dashboard/MallProduct/CoinComponent.jsx";
 import { useRazorpayPayment } from "../../app/useRazorpayPayment";
 import { useNavigate } from "react-router-dom";
 import logo from "../../logos/naavi_final_logo2.png";
+import { SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -138,7 +139,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
       {/* ── Submitted badge ── */}
       {!open && hasResult && (
         <div className="feedback-result" onClick={(e) => { e.stopPropagation(); setOpen(true); }}>
-          <span className="feedback-result__badge">✓ {resultLabel}</span>
+          <span className="feedback-result__badge">[check] {resultLabel}</span>
           <span className="feedback-result__edit">Change</span>
         </div>
       )}
@@ -152,7 +153,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
               type="button"
               className="feedback-expanded__close"
               onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-            >✕</button>
+            ><SvgClose size={14} /></button>
           </div>
           <div className="feedback-strip__actions">
             {FEEDBACK_ACTIONS.map(({ key, label }) => (
@@ -718,7 +719,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
     const email = userDetails?.email || userDetails?.user?.email;
 
-    console.log("🔍 completeStep called with:", { email, pathId, step_id: stepid });
+    console.log("[search] completeStep called with:", { email, pathId, step_id: stepid });
 
     try {
       const res = await axios.put(`${BASE_URL}/api/userpaths/completeStep`, {
@@ -727,10 +728,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         step_id: stepid,
       });
 
-      console.log("✅ completeStep response:", res.data);
+      console.log("[check] completeStep response:", res.data);
 
       if (res.data?.status) {
-        // ✅ FIX 1 — Use CustomEvent instead of StorageEvent.
+        // [check] FIX 1 — Use CustomEvent instead of StorageEvent.
         // StorageEvent only fires in OTHER tabs, not the same tab.
         // CustomEvent fires immediately and reliably in the same tab.
         // ADD a small delay so the DB write commits before Home re-fetches
@@ -741,11 +742,11 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         setPopupContent("success");
         setPopupDetails("yes");
       } else {
-        console.error("❌ completeStep failed:", res.data?.message);
+        console.error("[error] completeStep failed:", res.data?.message);
         alert("Progress save failed: " + res.data?.message);
       }
     } catch (err) {
-      console.error("❌ completeStep error:", err);
+      console.error("[error] completeStep error:", err);
       alert("Network error saving progress");
     }
   };
@@ -766,10 +767,10 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         setPopupContent("success");
         setPopupDetails("no");
       } else {
-        console.error("❌ failStep failed:", res.data?.message);
+        console.error("[error] failStep failed:", res.data?.message);
       }
     } catch (err) {
-      console.error("❌ failStep error:", err);
+      console.error("[error] failStep error:", err);
     }
   };
 
@@ -803,7 +804,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         <div className="step-bar">
           <div className="sp active"><span className="sp-n">1</span>Current Step</div>
           <span className="sp-arr">›</span>
-          <div className="sp active"><span className="sp-n">✓</span>Subscription</div>
+          <div className="sp active"><span className="sp-n">[check]</span>Subscription</div>
           <span className="sp-arr">›</span>
           <div className="sp"><span className="sp-n">3</span>Marketplace</div>
           <span className="sp-arr">›</span>
@@ -1181,8 +1182,8 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
           <div className="comp-bar">
             <div className="cb-left"><span className="cb-q">Did You Complete This Step?</span></div>
             <div className="cb-btns">
-              <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>✕ Failed</button>
-              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>✓ Yes, Completed</button>
+              <button className="btn-fail" onClick={() => { setPopup(true); setPopupDetails("no"); }}>[close] Failed</button>
+              <button className="btn-yes" onClick={() => { setPopup(true); setPopupDetails("yes"); }}>[check] Yes, Completed</button>
             </div>
           </div>
         )}

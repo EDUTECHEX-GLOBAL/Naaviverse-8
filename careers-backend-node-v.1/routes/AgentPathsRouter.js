@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  🤖 AgentPathsRouter.js
+ *  [BOT] AgentPathsRouter.js
  *  Routes for fetching AI-generated paths from HuggingFace
  * ============================================================
  */

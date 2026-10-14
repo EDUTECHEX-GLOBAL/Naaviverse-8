@@ -10,7 +10,7 @@ export const Loginservice = async (object, loginType) => {
         ? `${BASE_URL}/api/auth/login`
         : `${BASE_URL}/api/partner/login`;
 
-    console.log("🔥 Using endpoint:", endpoint);
+    console.log("[fire] Using endpoint:", endpoint);
     console.log("Payload Sent to API:", object);
 
     const response = await axios.post(endpoint, object, {
@@ -27,7 +27,7 @@ export const Loginservice = async (object, loginType) => {
 export const GoogleLoginservice = async ({ email, name, picture, role }) => {
   try {
     const endpoint = `${BASE_URL}/api/auth/google-login`;
-    console.log("🔥 Using Google login endpoint:", endpoint);
+    console.log("[fire] Using Google login endpoint:", endpoint);
 
     const response = await axios.post(
       endpoint,

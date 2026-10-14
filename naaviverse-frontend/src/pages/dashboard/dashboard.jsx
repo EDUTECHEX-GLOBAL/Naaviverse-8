@@ -37,6 +37,7 @@ import UserMarketplace from "../UserMarketplace.jsx";
 import UserPurchasesPage from "./UserPurchasesPage.jsx";
 import UserMentorsPage from "./UserMentorsPage.jsx";
 import UserTopHeader from "../../components/UserTopHeader/UserTopHeader";
+import { SvgArrowLeft, SvgCheckCircle } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -119,14 +120,14 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Access control states
+  // [check] Access control states
   const [approvalStatus, setApprovalStatus] = useState(getCachedApproval);
   const [isProfileIncomplete, setIsProfileIncomplete] = useState(null); 
   const [checkingAccess, setCheckingAccess] = useState(true);
 
   const userDetails = JSON.parse(localStorage.getItem("user"));
 
-  // ✅ Function to check user access (profile completion + approval)
+  // [check] Function to check user access (profile completion + approval)
   const checkUserAccess = async () => {
     try {
       const raw = localStorage.getItem("user");
@@ -194,7 +195,7 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Derive correct page from URL SYNCHRONOUSLY on every render
+  // [check] Derive correct page from URL SYNCHRONOUSLY on every render
   const activePage = (() => {
     const currentPath = location.pathname;
     const matchedKey = Object.keys(URL_TO_SIDENAV)
@@ -238,7 +239,7 @@ const Dashboard = () => {
           const results = await Promise.all(productKeys.map(fetchProductData));
           setProductDataArray(results.filter(Boolean));
         } catch (error) {
-          console.error("❌ Error fetching product data:", error);
+          console.error("[error] Error fetching product data:", error);
         }
       }
     };
@@ -246,12 +247,12 @@ const Dashboard = () => {
   }, [productKeys]);
 
   // ── Auth + follow + access check ────────────────────────────────────────
-  // ✅ REPLACED: Added checkUserAccess() call
+  // [check] REPLACED: Added checkUserAccess() call
   useEffect(() => {
     const userDetails = JSON.parse(localStorage.getItem("user"));
     if (!userDetails) navigate("/login");
     handleFollowList();
-    checkUserAccess(); // 👈 ADDED: Check profile and approval status
+    checkUserAccess(); // <SvgArrowLeft size={14} /> ADDED: Check profile and approval status
   }, []);
 
   const handleFollowList = () => {
@@ -271,7 +272,7 @@ const Dashboard = () => {
       const user = JSON.parse(localStorage.getItem("user"));
       const res = await FollowBrand({ email: user?.user?.email, brandEmail: brand?.email || "" });
       if (res?.data?.status) { setsubmit(true); setFollow(brand); }
-    } catch (err) { console.error("❌ Error in handleFollowBrand:", err); }
+    } catch (err) { console.error("[error] Error in handleFollowBrand:", err); }
   };
 
   const handleUnFollowBrand = async (brand) => {
@@ -279,7 +280,7 @@ const Dashboard = () => {
       const user = JSON.parse(localStorage.getItem("user"));
       const res = await UnfollowBrand({ email: user?.user?.email, brandEmail: brand?.email || "" });
       if (res?.data?.status) { setsubmit(true); setFollow(brand); }
-    } catch (err) { console.error("❌ Error in handleUnFollowBrand:", err); }
+    } catch (err) { console.error("[error] Error in handleUnFollowBrand:", err); }
   };
 
   // ── Forex ────────────────────────────────────────────────────────────────
@@ -366,7 +367,7 @@ const Dashboard = () => {
       <div className="dashboard-main">
         <div className="dashboard-body">
           <div onClick={() => setShowDrop(false)} style={{ display: "flex", height: "100%", flexShrink: 0 }}>
-            {/* ✅ FIXED: Pass props to Dashsidebar */}
+            {/* <SvgCheckCircle size={14} /> FIXED: Pass props to Dashsidebar */}
             <Dashsidebar
   approvalStatus={approvalStatus}
   isProfileIncomplete={isProfileIncomplete === true} // only true when CONFIRMED incomplete, not during loading

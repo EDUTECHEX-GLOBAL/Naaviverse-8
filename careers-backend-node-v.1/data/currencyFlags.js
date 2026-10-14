@@ -42,7 +42,7 @@ export const currencyFlags = {
   EGP: "EG",
   ERN: "ER",
   ETB: "ET",
-  EUR: "EU",      // ⚠ EU flag does NOT exist → we will show fallback
+  EUR: "EU",      // [WARN] EU flag does NOT exist → we will show fallback
   FJD: "FJ",
   FKP: "FK",
   GBP: "GB",
@@ -151,11 +151,11 @@ export const currencyFlags = {
   VND: "VN",
   VUV: "VU",
   WST: "WS",
-  XAF: null,     // ⚠ NO FLAG
-  XCD: null,     // ⚠ NO FLAG
-  XDR: null,     // ⚠ NO FLAG
-  XOF: null,     // ⚠ NO FLAG
-  XPF: null,     // ⚠ NO FLAG
+  XAF: null,     // [WARN] NO FLAG
+  XCD: null,     // [WARN] NO FLAG
+  XDR: null,     // [WARN] NO FLAG
+  XOF: null,     // [WARN] NO FLAG
+  XPF: null,     // [WARN] NO FLAG
   YER: "YE",
   ZAR: "ZA",
   ZMW: "ZM",

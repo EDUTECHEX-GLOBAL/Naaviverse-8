@@ -104,7 +104,7 @@ const InternalPartners = () => {
         name: "India",
         code: "+91",
         isoCode: "IN",
-        flag: "🇮🇳",
+        flag: "",
       }
     );
   }, [dialCodeOptions, selectedPhoneIso]);
@@ -607,7 +607,7 @@ const InternalPartners = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          {search && <button className="clear-btn" onClick={() => setSearch("")}>✕</button>}
+          {search && <button className="clear-btn" onClick={() => setSearch("")}>[close]</button>}
         </div>
 
         <div className="ip-segment-pills">
@@ -812,7 +812,7 @@ const InternalPartners = () => {
                 <h3>{isEditing ? "Edit Internal Partner" : "Create Internal Partner"}</h3>
                 <p className="m-sub">Directly provision internal partner credentials & assignment</p>
               </div>
-              <button className="m-close" onClick={() => setIsFormModalOpen(false)}>✕</button>
+              <button className="m-close" onClick={() => setIsFormModalOpen(false)}>[close]</button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="m-form">
@@ -1132,7 +1132,7 @@ const InternalPartners = () => {
                 <h3>Reset Password</h3>
                 <p className="m-sub">Issue new temporary access credentials</p>
               </div>
-              <button className="m-close" onClick={() => setIsResetModalOpen(false)}>✕</button>
+              <button className="m-close" onClick={() => setIsResetModalOpen(false)}>[close]</button>
             </div>
 
             <form onSubmit={(e) => { e.preventDefault(); handleConfirmPasswordReset(); }}>
@@ -1186,7 +1186,7 @@ const InternalPartners = () => {
                   <span className="d-sub">{selectedPartner.organizationName}</span>
                 </div>
               </div>
-              <button className="m-close" onClick={() => setIsDetailDrawerOpen(false)}>✕</button>
+              <button className="m-close" onClick={() => setIsDetailDrawerOpen(false)}>[close]</button>
             </div>
 
             <div className="d-nav">

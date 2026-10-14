@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../components/Pathview/journey.scss";
 import EditPathForm from "./MyPaths/paths";
+import { SvgClose, SvgMessageCircle } from "../utils/SvgIcons";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -39,7 +40,7 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
-// ✅ Filter out unpopulated DB refs (objects missing a name)
+// [check] Filter out unpopulated DB refs (objects missing a name)
 const normalizeMarketplace = (arr) => {
   if (!Array.isArray(arr)) return [];
   return arr.filter(
@@ -631,7 +632,7 @@ const DraftPathView = () => {
           <button onClick={() => setError(null)} style={{
             marginLeft: "1rem", background: "none",
             border: "none", cursor: "pointer", color: "inherit", fontWeight: 600
-          }}>✕</button>
+          }}><SvgClose size={14} /></button>
         </div>
       )}
 
@@ -709,7 +710,7 @@ const DraftPathView = () => {
 
               {pathData?.changeRequests?.length > 0 && (
                 <button className="btn-outline" onClick={openReviewPanel}>
-                  💬 View Admin Feedback (
+                  <SvgMessageCircle size={14} /> View Admin Feedback (
                   {(pathData.changeRequests.filter(cr => cr.status === "pending")).length} pending
                   )
                 </button>
@@ -1146,7 +1147,7 @@ const DraftPathView = () => {
                           background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
                           color: cr.status === "addressed" ? "#065f46" : "#92400e",
                         }}>
-                          {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                          {cr.status === "addressed" ? "[check] Addressed" : "Pending"}
                         </span>
                       </div>
 
@@ -1403,7 +1404,7 @@ const DraftPathView = () => {
                             )}
                             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
                               <span style={{ fontSize: "0.65rem", color: "#64748b" }}>
-                                💬 {replyCount} {replyCount === 1 ? "reply" : "replies"}
+                                <SvgMessageCircle size={14} /> {replyCount} {replyCount === 1 ? "reply" : "replies"}
                               </span>
                               {pendingReply && (
                                 <span style={{
@@ -1431,7 +1432,7 @@ const DraftPathView = () => {
                               background: cr.status === "addressed" ? "#d1fae5" : "#fef3c7",
                               color: cr.status === "addressed" ? "#065f46" : "#92400e",
                             }}>
-                              {cr.status === "addressed" ? "✓ Addressed" : "Pending"}
+                              {cr.status === "addressed" ? "[check] Addressed" : "Pending"}
                             </span>
                             <svg width="14" height="14" viewBox="0 0 24 24"
                               fill="none" stroke="#94a3b8" strokeWidth="2">

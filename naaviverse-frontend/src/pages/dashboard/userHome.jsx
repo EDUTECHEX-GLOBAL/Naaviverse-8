@@ -5,6 +5,7 @@ import axios from "axios";
 import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
 import pathIcon from "../../assets/images/assets/naavi-icon2.webp";
 import stepIcon from "../../assets/images/assets/naavi-icon3.webp";
+import { SvgShoppingBag } from "../../utils/SvgIcons";
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const getUserFromStorage = () => {
@@ -248,7 +249,7 @@ export default function UserHome({ initialView = "home" }) {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  // ✅ Correct placement - This useEffect scrolls when activeTab changes
+  // [check] Correct placement - This useEffect scrolls when activeTab changes
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -262,7 +263,7 @@ export default function UserHome({ initialView = "home" }) {
     }
   }, [activeTab]);
 
-  // ✅ Listen for CustomEvent fired by CurrentStep on step completion
+  // [check] Listen for CustomEvent fired by CurrentStep on step completion
   useEffect(() => {
     const handleStepCompleted = () => setRefreshKey(k => k + 1);
     window.addEventListener("naavi:step-completed", handleStepCompleted);
@@ -464,7 +465,7 @@ export default function UserHome({ initialView = "home" }) {
                 }),
                 rawDate: new Date(t.createdAt || Date.now()).getTime(),
                 status: isFailed ? "Failed" : isFree ? "Free" : "Paid",
-                icon: isFree ? "🧭" : "🛍️",
+                icon: isFree ? "[compass]" : "[bag]️",
               };
             });
 
@@ -493,7 +494,7 @@ export default function UserHome({ initialView = "home" }) {
               }),
               rawDate: new Date(up.createdAt || Date.now()).getTime(),
               status: "Free",
-              icon: "🧭",
+              icon: "[compass]",
             };
           });
 
@@ -506,7 +507,7 @@ export default function UserHome({ initialView = "home" }) {
           setPurchases(allPurchases);
         }
       } catch (err) {
-        console.error("❌ Transactions fetch error:", err);
+        console.error("[error] Transactions fetch error:", err);
       } finally {
         setPurchasesLoading(false);
         setSubsLoading(false);
@@ -665,7 +666,7 @@ export default function UserHome({ initialView = "home" }) {
           const allPaths = pathsRes.data?.data || [];
           setExplorePaths(allPaths.map(p => ({
             id: p._id,
-            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "🌍",
+            icon: p.country ? p.country.slice(0, 2).toUpperCase() : "[globe]",
             name: p.nameOfPath || p.name,
             desc: p.description || "",
             steps: p.total_steps || p.the_ids?.length || 0,
@@ -886,7 +887,7 @@ export default function UserHome({ initialView = "home" }) {
           <div className="uh-loading">Loading purchases…</div>
         ) : purchases.length === 0 ? (
           <div className="uh-no-purchases" style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🛍️</div>
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}><SvgShoppingBag size={14} />️</div>
             <strong>No purchases found</strong>
             <p style={{ margin: "4px 0 0", fontSize: "0.85rem" }}>Paid marketplace items will show up here once purchased.</p>
           </div>
@@ -977,7 +978,7 @@ export default function UserHome({ initialView = "home" }) {
     if (!myPath) return (
       <div className="uh-panel">
         <div className="uh-no-path">
-          <div className="uh-no-path-icon">🗺️</div>
+          <div className="uh-no-path-icon">[map]️</div>
           <div className="uh-no-path-title">No Path Selected Yet</div>
           <p className="uh-no-path-sub">Choose a learning path to start your Naavi journey.</p>
           <button className="uh-no-path-btn" onClick={() => navigate("/dashboard/users/paths")}>

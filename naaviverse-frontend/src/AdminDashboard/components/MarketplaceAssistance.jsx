@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AssistanceRequestDetailsModal from "./AssistanceRequestDetailsModal";
+import { SvgClose } from "../../utils/SvgIcons";
 
 // Fallback services catalog for admin recommendations if API empty
 const CATALOG_FALLBACK = [
@@ -250,7 +251,7 @@ export default function MarketplaceAssistance() {
           />
           {search && (
             <button className="map-search-clear" onClick={() => setSearch("")} title="Clear search">
-              ✕
+              <SvgClose size={14} />
             </button>
           )}
         </div>

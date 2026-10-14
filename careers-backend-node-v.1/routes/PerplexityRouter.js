@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 
 /**
  * =====================================================
- *   🔥 AI PROGRAM GENERATION USING PERPLEXITY
+ *   [HOT] AI PROGRAM GENERATION USING PERPLEXITY
  * =====================================================
  */
 router.post("/generate", async (req, res) => {
@@ -20,10 +20,10 @@ router.post("/generate", async (req, res) => {
       });
     }
 
-    console.log(`🔥 Generating AI Program for: ${name}`);
+    console.log(`[HOT] Generating AI Program for: ${name}`);
 
     // ---------------------------
-    // 1️⃣ CALL PERPLEXITY API
+    // 1️ CALL PERPLEXITY API
     // ---------------------------
     const aiRes = await axios.post(
       "https://api.perplexity.ai/chat/completions",
@@ -64,7 +64,7 @@ Return ONLY JSON:
     );
 
     // ---------------------------
-    // 2️⃣ Extract AI response
+    // 2️ Extract AI response
     // ---------------------------
     let raw = aiRes?.data?.choices?.[0]?.message?.content;
 
@@ -76,7 +76,7 @@ Return ONLY JSON:
     }
 
     // ---------------------------
-    // 3️⃣ CLEAN THE JSON
+    // 3️ CLEAN THE JSON
     // ---------------------------
     raw = raw
       .replace(/```json/g, "")
@@ -89,7 +89,7 @@ Return ONLY JSON:
     try {
       generatedJson = JSON.parse(raw);
     } catch (err) {
-      console.log("❌ AI returned invalid JSON:", raw);
+      console.log("[ERROR] AI returned invalid JSON:", raw);
 
       return res.status(500).json({
         status: false,
@@ -99,7 +99,7 @@ Return ONLY JSON:
     }
 
     // -------------------------------------------------------
-    // 4️⃣ ADD UNIQUE ID TO EACH STEP (IMPORTANT FIX)
+    // 4️ ADD UNIQUE ID TO EACH STEP (IMPORTANT FIX)
     // -------------------------------------------------------
     if (Array.isArray(generatedJson.steps)) {
       generatedJson.steps = generatedJson.steps.map((step) => ({
@@ -110,7 +110,7 @@ Return ONLY JSON:
     // -------------------------------------------------------
 
     // ---------------------------
-    // 5️⃣ UPDATE MONGODB
+    // 5️ UPDATE MONGODB
     // ---------------------------
     const updated = await Universities.findByIdAndUpdate(
       id,
@@ -131,14 +131,14 @@ Return ONLY JSON:
       });
     }
 
-    console.log("✅ AI program saved for:", updated.name);
+    console.log("[OK] AI program saved for:", updated.name);
 
     return res.json({
       status: true,
       generatedProgram: updated.generatedProgram,
     });
   } catch (err) {
-    console.log("❌ Perplexity API Error:", err.response?.data || err.message);
+    console.log("[ERROR] Perplexity API Error:", err.response?.data || err.message);
 
     return res.status(500).json({
       status: false,

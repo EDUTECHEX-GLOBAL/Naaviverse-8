@@ -92,14 +92,14 @@
 }
 
 .side-panel-box {
-  margin-bottom: 20px;  // 👈 reduced from 30px
+  margin-bottom: 20px;  // [arrow-left] reduced from 30px
 }
 
 .side-panel-heading {
-  font-size: 1.1rem;     // 👈 matches newsletter-subtitle
+  font-size: 1.1rem;     // [arrow-left] matches newsletter-subtitle
   font-weight: 600;
   line-height: 1.6;
-  margin-bottom: 15px;  // 👈 reduced from 70px
+  margin-bottom: 15px;  // [arrow-left] reduced from 70px
   color: #222;
 }
 
@@ -218,12 +218,12 @@
   .contact-widget {
     padding-left: 0 !important;
     margin-left: 0 !important;
-    list-style: none !important;  // 👈 removes dot
+    list-style: none !important;  // [arrow-left] removes dot
 
     li {
-      font-size: 1.1rem;          // 👈 matches subtitle
+      font-size: 1.1rem;          // [arrow-left] matches subtitle
       color: #000;
-      list-style: none !important; // 👈 removes dot
+      list-style: none !important; // [arrow-left] removes dot
       padding-left: 0;
     }
   }

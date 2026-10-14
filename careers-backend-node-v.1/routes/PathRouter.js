@@ -49,7 +49,7 @@ router.patch("/reply/:pathId/:changeRequestId", PathController.replyToChangeRequ
 
 router.patch("/address/:pathId/:changeRequestId", PathController.markChangeRequestAddressed);
 
-// ⭐ VIEW PATH BY MONGO ID (IMPORTANT for frontend View Page)
+// [STAR] VIEW PATH BY MONGO ID (IMPORTANT for frontend View Page)
 router.get("/viewpath/:path_id", PathController.getPathById);
 
 // BULK UPLOAD PATHS

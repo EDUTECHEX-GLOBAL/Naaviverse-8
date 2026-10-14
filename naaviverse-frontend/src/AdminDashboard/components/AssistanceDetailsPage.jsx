@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AdminMarketplaceRecommendationModal from "./AdminMarketplaceRecommendationModal";
+import { SvgClose } from "../../utils/SvgIcons";
 
 const REASON_LABELS = {
   too_expensive: "Too expensive",
@@ -325,7 +326,7 @@ export default function AssistanceDetailsPage({
               <div className="adp-reasons-wrap">
                 {reasonsList.map((r, i) => (
                   <span key={i} className="adp-reason-chip">
-                    ✕ {REASON_LABELS[r] || r.replace(/_/g, " ")}
+                    <SvgClose size={14} /> {REASON_LABELS[r] || r.replace(/_/g, " ")}
                   </span>
                 ))}
               </div>
@@ -390,7 +391,7 @@ export default function AssistanceDetailsPage({
                         {/* If a marketplace service was recommended in this message */}
                         {m.recommendedService && (
                           <div className="adp-rec-card-attached">
-                            <div className="rec-badge">★ Recommended Alternative</div>
+                            <div className="rec-badge">[star] Recommended Alternative</div>
                             <div className="rec-title">{m.recommendedService.name}</div>
                             <div className="rec-desc">{m.recommendedService.goal || m.recommendedService.description}</div>
                             <div className="rec-footer">

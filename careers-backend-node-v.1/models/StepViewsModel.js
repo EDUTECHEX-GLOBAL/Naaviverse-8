@@ -21,7 +21,7 @@ const StepViewsSchema = new mongoose.Schema({
   },
 
   nanoView: {
-    description: { type: String, default: "" }, // 🔥 FIX
+    description: { type: String, default: "" }, // [HOT] FIX
   },
 
   createdAt: { type: Date, default: Date.now },

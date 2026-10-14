@@ -23,10 +23,10 @@ mongoose.connection.once('open', async () => {
       await City.create({ name });
     }
 
-    console.log("✅ City names imported!");
+    console.log("[OK] City names imported!");
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error during city import:", err);
+    console.error("[ERROR] Error during city import:", err);
     process.exit(1);
   }
 });

@@ -28,7 +28,7 @@
 
 
 // const AboutUsTwo = () => {
-//       const location = useLocation();   // ✅ inside component
+//       const location = useLocation();   // [check] inside component
 //     const [open, setOpen] = useState(false);
 
 //     useEffect(() => {

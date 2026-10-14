@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import './partnercrm.scss';
+import { SvgClose } from "../../utils/SvgIcons";
 
 // ─── AVATAR COLOR PALETTE ───────────────────────────────────
 const AVATAR_COLORS = [
@@ -541,7 +542,7 @@ const CRMPage = ({
                   className="pcrm-detail__close"
                   onClick={() => setSelectedClient(null)}
                 >
-                  ✕
+                  <SvgClose size={14} />
                 </button>
               </div>
 

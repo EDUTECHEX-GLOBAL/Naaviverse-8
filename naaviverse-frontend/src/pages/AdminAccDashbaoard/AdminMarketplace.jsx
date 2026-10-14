@@ -444,7 +444,7 @@ const AdminMarketplace = () => {
                     </td>
                     <td data-label="Rating">
                       <span className="adm-rating-badge">
-                        <span className="adm-rating-stars">★★★★★</span>
+                        <span className="adm-rating-stars">[star][star][star][star][star]</span>
                         <span>{getMarketplaceStarRating(item)}</span>
                       </span>
                     </td>
@@ -535,7 +535,7 @@ const AdminMarketplace = () => {
                   <div className="adm-chip">
                     <span className="adm-chip__label">Rating</span>
                     <span className="adm-rating-badge adm-rating-badge--modal">
-                      <span className="adm-rating-stars">★★★★★</span>
+                      <span className="adm-rating-stars">[star][star][star][star][star]</span>
                       <span>{getMarketplaceStarRating(selectedItem)}</span>
                     </span>
                   </div>

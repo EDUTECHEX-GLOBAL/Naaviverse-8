@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 /**
- * 🔹 GET ALL COINS (LOCAL STATIC DATA)
+ * - GET ALL COINS (LOCAL STATIC DATA)
  */
 router.get("/coins", (req, res) => {
   res.json({
@@ -17,7 +17,7 @@ router.get("/coins", (req, res) => {
 });
 
 /**
- * 🔹 GET REGISTERED APPS (LOCAL)
+ * - GET REGISTERED APPS (LOCAL)
  */
 router.get("/applications", (req, res) => {
   res.json({
@@ -30,7 +30,7 @@ router.get("/applications", (req, res) => {
 });
 
 /**
- * 🔹 GET USER DETAILS (LOCAL)
+ * - GET USER DETAILS (LOCAL)
  */
 router.get("/user-details", (req, res) => {
   const email = req.query.email;
@@ -47,7 +47,7 @@ router.get("/user-details", (req, res) => {
 });
 
 /**
- * 🔹 GET BANKERS (LOCAL)
+ * - GET BANKERS (LOCAL)
  */
 router.get("/bankers", (req, res) => {
   res.json({
@@ -60,7 +60,7 @@ router.get("/bankers", (req, res) => {
 });
 
 /**
- * 🔹 FOREX CONVERSION (LOCAL)
+ * - FOREX CONVERSION (LOCAL)
  */
 router.get("/convert", (req, res) => {
   const { buy, from } = req.query;
@@ -75,7 +75,7 @@ router.get("/convert", (req, res) => {
 });
 
 /**
- * 🔹 CMC Prices (LOCAL)
+ * - CMC Prices (LOCAL)
  */
 router.get("/cmc", (req, res) => {
   const coin = req.query.convert;
@@ -89,7 +89,7 @@ router.get("/cmc", (req, res) => {
 });
 
 /**
- * 🔹 BOND EARNINGS (LOCAL)
+ * - BOND EARNINGS (LOCAL)
  */
 router.get("/bond-earnings", (req, res) => {
   const { email, coin } = req.query;
@@ -106,7 +106,7 @@ router.get("/bond-earnings", (req, res) => {
 });
 
 /**
- * 🔹 MONEY MARKET DATA (LOCAL)
+ * - MONEY MARKET DATA (LOCAL)
  */
 router.get("/money-market", (req, res) => {
   const { email, app_code, coin } = req.query;
