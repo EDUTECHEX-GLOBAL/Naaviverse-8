@@ -378,6 +378,7 @@ const MarketplaceCard = ({
   whyRecommended = [],
   onFindBetterMatch,
   onRequestAssistance,
+  isEscalated = false,
 }) => {
   const free = isFreeItem(service);
   const isExternal = service?.checkoutType === "external";
@@ -495,18 +496,19 @@ const MarketplaceCard = ({
           </div>
         </div>
 
-        {/* Secondary Action: Find a Better Match or Super Admin Assistance */}
+        {/* Secondary Action: Find a Better Match or Maximum Limit Reached */}
         <div className="mkt-card__better-match-row" onClick={(e) => e.stopPropagation()}>
-          {replacementCount >= 3 ? (
+          {replacementCount >= 3 || isEscalated ? (
             <button
               type="button"
               className="btn-escalate-admin"
               onClick={() => onRequestAssistance && onRequestAssistance(service)}
+              title="Maximum number of better match used. Click to request assistance."
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 4, flexShrink: 0 }}>
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
-              <span>Still not right? Request Admin Assistance</span>
+              <span>Maximum number of better match used</span>
             </button>
           ) : (
             <button
@@ -789,6 +791,8 @@ const MarketplaceGrid = ({
   whyRecommended = [],
   onFindBetterMatch,
   onRequestAssistance,
+  escalatedIds = [],
+  activeReplacementId = null,
 }) => {
   if (!services || services.length === 0) {
     return (
@@ -813,7 +817,16 @@ const MarketplaceGrid = ({
     <div className="mkt-grid">
       {services.map((service, index) => {
         const isPurchased = purchasedIds.includes(service._id);
+        const serviceId = String(service._id || service.id || "");
         const isFirstRelevance = index === 0 && sortMode === "relevance";
+
+        // Only the item that was actually replaced displays the replacement badge & count
+        const isThisReplacementItem = activeReplacementId
+          ? serviceId === String(activeReplacementId)
+          : (isFirstRelevance && replacementCount > 0);
+
+        const cardReplacementCount = isThisReplacementItem ? replacementCount : 0;
+        const isEscalated = escalatedIds.includes(serviceId);
 
         return (
           <div key={service._id || index} className="mkt-grid-item-fade">
@@ -824,10 +837,11 @@ const MarketplaceGrid = ({
               onToggleCart={onToggleCart}
               onCardView={onCardView}
               isPurchased={isPurchased}
-              replacementCount={isFirstRelevance ? replacementCount : (replacementCount >= 3 ? 3 : 0)}
-              whyRecommended={isFirstRelevance ? whyRecommended : []}
+              replacementCount={cardReplacementCount}
+              whyRecommended={isThisReplacementItem ? whyRecommended : []}
               onFindBetterMatch={onFindBetterMatch}
               onRequestAssistance={onRequestAssistance}
+              isEscalated={isEscalated}
             />
           </div>
         );
@@ -1558,6 +1572,7 @@ const UserMarketplace = ({ onStepChange }) => {
   const [chatDrawerOpen, setChatDrawerOpen] = useState(false);
   const [selectedServiceForMatch, setSelectedServiceForMatch] = useState(null);
   const [assistanceTickets, setAssistanceTickets] = useState([]);
+  const [escalatedServiceIds, setEscalatedServiceIds] = useState(() => new Set());
 
   useEffect(() => {
     const st = marketplaceReplacementService.getReplacementState(stepId, userEmail);
@@ -1566,6 +1581,7 @@ const UserMarketplace = ({ onStepChange }) => {
       ...st,
       count: actualCount,
     });
+    setEscalatedServiceIds(new Set());
     marketplaceReplacementService.getUserAssistanceRequests(userEmail).then((res) => {
       setAssistanceTickets(res || []);
     });
@@ -1954,6 +1970,10 @@ const UserMarketplace = ({ onStepChange }) => {
   const handleFindBetterMatch = (service) => {
     setSelectedServiceForMatch(service);
     if (replacementState.count >= 3) {
+      if (service?._id || service?.id) {
+        const sId = String(service._id || service.id);
+        setEscalatedServiceIds((prev) => new Set([...prev, sId]));
+      }
       setAssistanceModalOpen(true);
     } else {
       setBetterMatchModalOpen(true);
@@ -1961,7 +1981,12 @@ const UserMarketplace = ({ onStepChange }) => {
   };
 
   const handleRequestAssistance = (service) => {
-    setSelectedServiceForMatch(service || filtered[0]);
+    const targetService = service || filtered[0];
+    setSelectedServiceForMatch(targetService);
+    if (targetService?._id || targetService?.id) {
+      const sId = String(targetService._id || targetService.id);
+      setEscalatedServiceIds((prev) => new Set([...prev, sId]));
+    }
     setAssistanceModalOpen(true);
   };
 
@@ -2181,12 +2206,6 @@ const UserMarketplace = ({ onStepChange }) => {
                       </p>
                     </div>
                   </div>
-                  <button
-                    className="btn-request-admin"
-                    onClick={() => setAssistanceModalOpen(true)}
-                  >
-                    Request Super Admin Assistance →
-                  </button>
                 </div>
               )}
 
@@ -2221,6 +2240,12 @@ const UserMarketplace = ({ onStepChange }) => {
                     whyRecommended={replacementState.whyRecommended}
                     onFindBetterMatch={handleFindBetterMatch}
                     onRequestAssistance={handleRequestAssistance}
+                    escalatedIds={Array.from(escalatedServiceIds)}
+                    activeReplacementId={
+                      replacementState.activeReplacementItem
+                        ? (replacementState.activeReplacementItem._id || replacementState.activeReplacementItem.id)
+                        : (replacementState.count > 0 && filtered[0] ? (filtered[0]._id || filtered[0].id) : null)
+                    }
                   />
                 )}
               </div>

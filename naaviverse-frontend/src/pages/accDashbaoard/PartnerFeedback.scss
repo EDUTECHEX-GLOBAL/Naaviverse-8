@@ -755,7 +755,7 @@ $text-muted: #94a3b8;
     font-size: 0.58rem !important;
   }
 
-  // Controls bar: horizontal swipe pills & full-width search
+  // Controls bar: 2x2 grid pills & full-width search
   .pf-controls-bar {
     display: flex !important;
     flex-direction: column !important;
@@ -764,14 +764,14 @@ $text-muted: #94a3b8;
     margin-bottom: 12px !important;
   }
 
+  // 2x2 grid for filter pills on mobile
   .pf-filter-pills {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
-    padding-bottom: 4px !important;
+    width: 100% !important;
+    overflow-x: visible !important;
+    padding-bottom: 0 !important;
 
     &::-webkit-scrollbar {
       display: none !important;
@@ -779,10 +779,20 @@ $text-muted: #94a3b8;
   }
 
   .pf-pill {
-    flex-shrink: 0 !important;
+    width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
     white-space: nowrap !important;
-    padding: 5px 11px !important;
-    font-size: 0.68rem !important;
+    padding: 6px 10px !important;
+    font-size: 0.7rem !important;
+    border-radius: 7px !important;
+    box-sizing: border-box !important;
+
+    svg {
+      flex-shrink: 0 !important;
+    }
   }
 
   .pf-search-wrap {

@@ -554,30 +554,47 @@ $radius: 10px;
     background-color: #e9f2fa !important;
   }
 
-  // Four sections horizontal scroll on mobile
+  // Category tabs: 2x2 grid layout on mobile (2 on top, 2 below)
   .mp-cat-tabs {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    gap: 8px !important;
-    padding: 2px 2px 6px 2px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    padding: 0 !important;
     margin-bottom: 14px !important;
-
-    &::-webkit-scrollbar {
-      display: none !important;
-    }
+    overflow-x: visible !important;
+    width: 100% !important;
   }
 
   .mp-cat-tab {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-    padding: 8px 14px 8px 10px !important;
-    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 10px 12px 10px 10px !important;
+    gap: 9px !important;
+    border-radius: 10px !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+
+    &__icon {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 8px !important;
+      flex-shrink: 0 !important;
+
+      svg {
+        width: 15px !important;
+        height: 15px !important;
+      }
+    }
 
     &__label {
       font-size: 0.78rem !important;
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
     }
   }
 
@@ -609,6 +626,32 @@ $radius: 10px;
   }
 
   .mp-modal {
-    max-width: 96%;
+    max-width: min(440px, 94%) !important;
+    width: 100% !important;
+
+    &__head {
+      padding: 14px 46px 12px 14px !important;
+      position: relative !important;
+    }
+
+    &__head-text {
+      min-width: 0 !important;
+      flex: 1 !important;
+    }
+
+    &__name {
+      font-size: 0.88rem !important;
+      line-height: 1.35 !important;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+    }
+
+    &__x {
+      top: 10px !important;
+      right: 10px !important;
+      width: 26px !important;
+      height: 26px !important;
+      z-index: 5 !important;
+    }
   }
 }

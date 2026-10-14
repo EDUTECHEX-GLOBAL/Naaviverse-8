@@ -1666,9 +1666,22 @@
           }
         }
 
+        .amr-input {
+          height: 33px !important;
+          line-height: normal !important;
+          box-sizing: border-box !important;
+        }
+
         .amr-field-split {
           display: flex;
           gap: 6px;
+          align-items: center;
+
+          .amr-select,
+          .amr-input {
+            height: 33px !important;
+            box-sizing: border-box !important;
+          }
         }
       }
     }
@@ -1712,7 +1725,8 @@
     border-top: 1px solid #f1f5f9;
 
     .btn-cancel {
-      padding: 7px 14px;
+      padding: 7px 18px;
+      min-width: 80px;
       background: #f1f5f9;
       border: 1px solid #e2e8f0;
       border-radius: 7px;
@@ -1721,6 +1735,8 @@
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
 
       &:hover {
         background: #e2e8f0;
@@ -1729,19 +1745,22 @@
     }
 
     .btn-send-rec {
-      padding: 8px 18px;
+      padding: 7px 18px;
+      min-width: 80px;
       background: #0f766e;
       color: #ffffff;
-      border: none;
+      border: 1px solid #0f766e;
       border-radius: 7px;
       font-family: 'Poppins', sans-serif !important;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      text-align: center;
       transition: all 0.15s ease;
 
       &:hover:not(:disabled) {
         background: #0d5f58;
+        border-color: #0d5f58;
         transform: translateY(-1px);
       }
 

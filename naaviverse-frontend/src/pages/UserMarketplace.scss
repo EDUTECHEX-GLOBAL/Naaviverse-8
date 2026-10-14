@@ -393,7 +393,7 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   }
 }
 
-// Cart button (Dark Green)
+// Cart button
 .cart-top-btn {
   position: relative;
   display: inline-flex;
@@ -401,9 +401,9 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   gap: 6px;
   height: 40px;
   padding: 0 16px;
-  background: #0b5550;
-  color: #ffffff;
-  border: none;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #bfdbfe;
   border-radius: $radius-sm;
   font-family: 'Poppins', sans-serif !important;
   font-size: 13px;
@@ -414,9 +414,10 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   transition: all 0.15s ease;
 
   &:hover {
-    background: #0f766e;
+    background: #dbeafe;
+    border-color: #93c5fd;
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(15, 118, 110, 0.25);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.15);
   }
 }
 
@@ -479,8 +480,8 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   }
 
   &.active {
-    border-color: #0b5550;
-    background: #0b5550;
+    border-color: #2563eb;
+    background: #2563eb;
     color: #ffffff;
 
     .category-pill-count {
@@ -620,13 +621,13 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
 
   &:hover {
     background: #f1f5f9;
-    color: #0b5550;
+    color: #2563eb;
   }
 
   &.sel {
     font-weight: 700;
-    color: #0b5550;
-    background: #e6f7f6;
+    color: #2563eb;
+    background: #eff6ff;
   }
 }
 
@@ -754,9 +755,9 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 20px;
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 
 .svc-stars {
@@ -867,11 +868,11 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   margin-top: 2px;
 }
 
-// Dark Green + Add button (Compact & Premium)
+// + Add button (Compact & Premium)
 .svc-add {
   height: 28px;
   padding: 0 12px;
-  background: #0b5550; // Dark Green!
+  background: #2563eb;
   color: #ffffff;
   border: none;
   border-radius: 7px;
@@ -884,17 +885,17 @@ $shadow-lg:  0 10px 25px rgba(22, 25, 43, 0.08);
   justify-content: center;
   white-space: nowrap;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(11, 85, 80, 0.2);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
 
   &:hover {
-    background: #0f766e;
+    background: #1d4ed8;
     transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(15, 118, 110, 0.3);
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3);
   }
 
   &.added {
-    background: #16a34a;
-    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
+    background: #3b82f6;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
   }
 }
 

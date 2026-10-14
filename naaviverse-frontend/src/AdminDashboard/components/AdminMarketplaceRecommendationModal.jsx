@@ -300,13 +300,6 @@ export default function AdminMarketplaceRecommendationModal({
                         ? "No pre-existing marketplace services linked to this step."
                         : `No services matching "${search || categoryFilter}".`}
                     </p>
-                    <button
-                      type="button"
-                      className="btn-create-missing-custom"
-                      onClick={() => handleSwitchToCustomWithName(search.trim())}
-                    >
-                      + Create "{search.trim() || "New Replacement"}" as Custom Service →
-                    </button>
                   </div>
                 ) : (
                   filtered.map((s) => {
@@ -492,13 +485,7 @@ export default function AdminMarketplaceRecommendationModal({
               className="btn-send-rec"
               disabled={!isFormValid || submitting}
             >
-              {submitting
-                ? "Sending Recommendation..."
-                : activeTab === "custom"
-                ? `Send "${customName.trim() || "Custom Service"}" to Student →`
-                : selectedService
-                ? `Send "${selectedService.name}" →`
-                : "Select a Marketplace Service to Send"}
+              {submitting ? "Sending..." : "Send"}
             </button>
           </div>
         </form>

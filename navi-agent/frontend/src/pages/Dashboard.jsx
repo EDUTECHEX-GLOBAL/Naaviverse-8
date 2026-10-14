@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import './Dashboard.scss';
 import {
-  IconArrowRight, IconBrain, IconNavigation, IconRoute, IconCheck,
+  IconArrowRight, IconBrain, IconNavigation, IconRoute, IconCheck, IconEye,
 } from "./Icons";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -572,10 +572,14 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     if (regeneratingStepId !== null) return;
     setRegeneratingStepId(step.id);
     setStepRegenError("");
+
+    let descTimeout;
     try {
-      // 1) Patch main step description first
+      // 1) Patch main step description first with generous timeout for LLM generation
       const descCtrl = new AbortController();
-      const descTimeout = setTimeout(() => descCtrl.abort(), 25000);
+      descTimeout = setTimeout(() => {
+        descCtrl.abort(new DOMException("Step regeneration timed out", "AbortError"));
+      }, 90000);
 
       const res = await fetch(`${API}/api/path/patch-step`, {
         method: "POST",
@@ -593,9 +597,11 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
           sub_segment: activeSubSegment,
         }),
       });
-      clearTimeout(descTimeout);
 
-      if (!res.ok) throw new Error("Failed to regenerate step description");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.detail || "Failed to regenerate step description");
+      }
       const result = await res.json();
       let updatedStep = { ...step };
 
@@ -610,9 +616,12 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
       // 2) Patch views (macro_view, micro_view, nano_view) in background
       const viewFields = ["macro_view", "micro_view", "nano_view"];
       const viewPromises = viewFields.map(async (field) => {
+        let viewTimeout;
         try {
           const viewCtrl = new AbortController();
-          const viewTimeout = setTimeout(() => viewCtrl.abort(), 18000);
+          viewTimeout = setTimeout(() => {
+            viewCtrl.abort(new DOMException("View patch timed out", "AbortError"));
+          }, 90000);
 
           const viewRes = await fetch(`${API}/api/path/patch-step`, {
             method: "POST",
@@ -630,7 +639,6 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               sub_segment: activeSubSegment,
             }),
           });
-          clearTimeout(viewTimeout);
 
           if (viewRes.ok) {
             const viewResult = await viewRes.json();
@@ -638,6 +646,8 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
           }
         } catch (vErr) {
           console.warn(`[Step Patch] ${field} view patch skipped or timed out:`, vErr.message);
+        } finally {
+          if (viewTimeout) clearTimeout(viewTimeout);
         }
         return null;
       });
@@ -653,8 +663,15 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
 
     } catch (err) {
       console.error("[Regenerate Step Error]:", err);
-      setStepRegenError(`Step ${step.id}: ${err.message || "Regeneration failed"}`);
+      const isAbort =
+        err.name === "AbortError" ||
+        (err.message && err.message.toLowerCase().includes("abort"));
+      const errMsg = isAbort
+        ? "Generation timed out. The AI model took longer than expected. Please try again."
+        : (err.message || "Regeneration failed");
+      setStepRegenError(`Step ${step.id}: ${errMsg}`);
     } finally {
+      if (descTimeout) clearTimeout(descTimeout);
       setRegeneratingStepId(null);
     }
   };

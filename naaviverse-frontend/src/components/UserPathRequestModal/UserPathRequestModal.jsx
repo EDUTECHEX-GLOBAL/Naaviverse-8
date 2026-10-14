@@ -634,7 +634,9 @@ export default function UserPathRequestModal({
                   {/* 1. Target Goal / Path Title (Full Width) */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Target Goal / Path Title <span className="required-star">*</span>
+                      <span className="label-title">
+                        Target Goal / Path Title <span className="required-star">*</span>
+                      </span>
                       <span className="hint-text">(e.g. Stanford University - Computer Science)</span>
                     </label>
                     <input
@@ -649,7 +651,7 @@ export default function UserPathRequestModal({
                   {/* 2. Target Institution (Col 1) */}
                   <div className="upr-field">
                     <label>
-                      Target Institution / University
+                      <span className="label-title">Target Institution / University</span>
                       <span className="hint-text">(Optional)</span>
                     </label>
                     <input
@@ -663,7 +665,9 @@ export default function UserPathRequestModal({
                   {/* 3. Domain / Sector (Col 2 — dropdown only, no duplicate pills) */}
                   <div className="upr-field">
                     <label>
-                      Domain / Sector <span className="required-star">*</span>
+                      <span className="label-title">
+                        Domain / Sector <span className="required-star">*</span>
+                      </span>
                     </label>
                     <select value={sector} onChange={(e) => setSector(e.target.value)}>
                       {SECTORS.map((sec) => (
@@ -676,7 +680,9 @@ export default function UserPathRequestModal({
 
                   {/* 4. Education Stage (Col 1) */}
                   <div className="upr-field">
-                    <label>Current / Target Stage</label>
+                    <label>
+                      <span className="label-title">Current / Target Stage</span>
+                    </label>
                     <select
                       value={educationLevel}
                       onChange={(e) => setEducationLevel(e.target.value)}
@@ -691,7 +697,9 @@ export default function UserPathRequestModal({
 
                   {/* 5. Target Timeline (Col 2) */}
                   <div className="upr-field">
-                    <label>Expected Timeline / Duration</label>
+                    <label>
+                      <span className="label-title">Expected Timeline / Duration</span>
+                    </label>
                     <select
                       value={targetTimeline}
                       onChange={(e) => setTargetTimeline(e.target.value)}
@@ -707,7 +715,9 @@ export default function UserPathRequestModal({
                   {/* 6. Goal Details & Focus Areas (Full Width) */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Goal Details & Focus Areas <span className="required-star">*</span>
+                      <span className="label-title">
+                        Goal Details & Focus Areas <span className="required-star">*</span>
+                      </span>
                     </label>
                     <textarea
                       placeholder="Describe what you want to achieve (e.g., Focus on Artificial Intelligence & Systems, admission requirements, portfolio project guidance, and graduate school preparation)..."
@@ -721,7 +731,7 @@ export default function UserPathRequestModal({
                   {/* 7. Mandatory Prerequisites / Requirements (Full Width) */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Mandatory Prerequisites / Requirements
+                      <span className="label-title">Mandatory Prerequisites / Requirements</span>
                       <span className="hint-text">(e.g. SAT 1500+, AP Calculus, GPA 3.8, Portfolio)</span>
                     </label>
                     <input
