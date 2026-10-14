@@ -126,12 +126,13 @@ export const InputDivsCreatePartner = ({
   onKeyDown,
   onPaste,
   style,
+  containerStyle,
   ...rest
 }) => {
   return (
-    <div className={classNames.inputDivs} style={{marginTop:'0px', marginBottom:"0px", gap:'0px'}}>
-      <div className={classNames.heading}>{heading}</div>
-      <div className={classNames.inputHolder}>
+    <div className={classNames.inputDivs} style={{marginTop:'0px', marginBottom:"0px", gap:'0px', width: '100%', ...containerStyle}}>
+      {heading && <div className={classNames.heading}>{heading}</div>}
+      <div className={classNames.inputHolder} style={{ width: '100%' }}>
         <input
           type={type}
           maxLength={maxLength}
@@ -145,7 +146,22 @@ export const InputDivsCreatePartner = ({
           onPaste={onPaste}
           onBlur={onBlur}
           value={funcValue ? funcValue : ""}
-          style={{ borderRadius: "10px", ...style }}
+          style={{
+            height: "40px",
+            minHeight: "40px",
+            padding: "8px 12px",
+            border: "1.5px solid #e2e8f0",
+            borderRadius: "10px",
+            fontSize: "13.5px",
+            fontFamily: "'Poppins', sans-serif",
+            color: "#0f1f3d",
+            background: "#ffffff",
+            outline: "none",
+            boxSizing: "border-box",
+            width: "100%",
+            transition: "all 0.2s ease",
+            ...style
+          }}
           {...rest}
         />
       </div>
@@ -158,25 +174,39 @@ export const InputDivsTextAreaPartner = ({
   placeholderText,
   setFunc,
   funcValue,
+  style,
+  containerStyle,
+  ...rest
 }) => {
   return (
-    <div className={classNames.inputDivs} style={{marginTop:'0px', gap:'0px'}}>
-      <div className={classNames.heading}>{heading}</div>
-      <div className={classNames.inputHolder} style={{ minHeight: "10rem" }}>
+    <div className={classNames.inputDivs} style={{marginTop:'0px', marginBottom: "0px", gap:'0px', width: '100%', ...containerStyle}}>
+      {heading && <div className={classNames.heading}>{heading}</div>}
+      <div className={classNames.inputHolder} style={{ width: '100%' }}>
         <textarea
           className={classNames.textareaClass}
           style={{
-            minHeight: "10rem",
+            minHeight: "72px",
+            height: "72px",
             borderRadius: "10px",
-            width:'100%'
+            border: "1.5px solid #e2e8f0",
+            padding: "8px 12px",
+            fontSize: "13.5px",
+            fontFamily: "'Poppins', sans-serif",
+            color: "#0f1f3d",
+            background: "#ffffff",
+            outline: "none",
+            boxSizing: "border-box",
+            width: "100%",
+            resize: "vertical",
+            ...style
           }}
           placeholder={placeholderText}
           onChange={(event) => {
-            setFunc(event.target.value);
+            if (setFunc) setFunc(event.target.value);
           }}
-        >
-          {funcValue ? funcValue : ""}
-        </textarea>
+          value={funcValue ? funcValue : ""}
+          {...rest}
+        />
       </div>
     </div>
   );

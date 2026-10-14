@@ -59,7 +59,7 @@ export default function AssistanceRequestModal({
               className="nbm-badge"
               style={{ background: "#fef3c7", color: "#b45309", borderColor: "#fde68a" }}
             >
-              Maximum 3 Replacements Reached
+              Maximum number of better match used
             </span>
             <h3 className="nbm-title">Request Super Admin Assistance</h3>
             <p className="nbm-subtitle">

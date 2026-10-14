@@ -218,7 +218,7 @@ export default function AssistanceChatDrawer({
           <header className="afp-header">
             <div className="afp-header-left">
               <button className="afp-back-btn" onClick={onClose} title="Back to Marketplace">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="19" y1="12" x2="5" y2="12" />
                   <polyline points="12 19 5 12 12 5" />
                 </svg>
@@ -229,8 +229,11 @@ export default function AssistanceChatDrawer({
 
               <div className="afp-title-wrap">
                 <div className="afp-title-row">
-                  <h2 className="afp-title">Super Admin Assistance</h2>
-                  <span className="afp-badge-live">● Live Support</span>
+                  <h1 className="afp-title">Super Admin Assistance</h1>
+                  <span className="afp-badge-live">
+                    <span className="live-dot" />
+                    Live Support
+                  </span>
                 </div>
                 <p className="afp-sub">Direct Counselor Advisory & Curated Marketplace Recommendations</p>
               </div>
@@ -253,8 +256,11 @@ export default function AssistanceChatDrawer({
                   <span>Cart ({cartItems.length})</span>
                 </button>
               )}
-              <button className="afp-close-btn" onClick={onClose} title="Close Assistance View">
-                ✕
+              <button className="afp-close-btn" onClick={onClose} title="Close Assistance View" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
           </header>
@@ -438,15 +444,23 @@ export default function AssistanceChatDrawer({
                             color: statusColors[selectedRequest.status]?.color,
                           }}
                         >
-                          ● {statusColors[selectedRequest.status]?.label || selectedRequest.status}
+                          <span className="status-dot" style={{ background: statusColors[selectedRequest.status]?.color }} />
+                          {statusColors[selectedRequest.status]?.label || selectedRequest.status}
                         </span>
                       </div>
-                      <div className="aib-path">
-                        Path: <strong>{selectedRequest.pathName || "Learning Path"}</strong> &nbsp;·&nbsp;
-                        Ticket: <strong className="mono">{selectedRequest.ticketId || selectedRequest.id}</strong>
+                      <div className="aib-meta-row">
+                        <span className="aib-path-wrap">
+                          <span className="meta-lbl">Path:</span>
+                          <strong className="meta-val">{selectedRequest.pathName || "Learning Path"}</strong>
+                        </span>
+                        <span className="aib-ticket-badge">
+                          <span className="meta-lbl">Ticket:</span>
+                          <code className="mono">#{selectedRequest.ticketId || selectedRequest.id}</code>
+                        </span>
                       </div>
                       <div className="aib-req">
-                        <strong>Your Requirement:</strong> "{selectedRequest.userRequirement?.message || "Custom recommendation requested for this milestone."}"
+                        <span className="aib-req-label">Your Requirement:</span>
+                        <span className="aib-req-text">"{selectedRequest.userRequirement?.message || "Custom recommendation requested for this milestone."}"</span>
                       </div>
                     </div>
                   </div>
@@ -534,7 +548,11 @@ export default function AssistanceChatDrawer({
                                       <button
                                         type="button"
                                         className="arc-details-btn"
-                                        onClick={() => setDetailsService(svc)}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setDetailsService(svc);
+                                        }}
                                         title="View full program details"
                                       >
                                         <span>Details</span>
@@ -654,7 +672,11 @@ export default function AssistanceChatDrawer({
                     <button
                       type="button"
                       className="ads-details-btn"
-                      onClick={() => setDetailsService(latestRecommendedService)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setDetailsService(latestRecommendedService);
+                      }}
                     >
                       View Details
                     </button>
@@ -674,15 +696,29 @@ export default function AssistanceChatDrawer({
                 </div>
               ) : (
                 <div className="ads-support-box">
-                  <h4>Counselor Guarantee</h4>
-                  <ul>
-                    <li>100% curated for your learning path requirements.</li>
-                    <li>Verified instructors and accredited certifications.</li>
-                    <li>Direct communication channel with Super Admin.</li>
+                  <div className="asb-header">
+                    <span className="asb-icon">🛡️</span>
+                    <h4>Counselor Guarantee</h4>
+                  </div>
+                  <ul className="asb-list">
+                    <li>
+                      <span className="asb-check">✓</span>
+                      <span>100% curated for your learning path requirements.</span>
+                    </li>
+                    <li>
+                      <span className="asb-check">✓</span>
+                      <span>Verified instructors and accredited certifications.</span>
+                    </li>
+                    <li>
+                      <span className="asb-check">✓</span>
+                      <span>Direct communication channel with Super Admin.</span>
+                    </li>
                   </ul>
-                  <p className="ads-note">
-                    Once Super Admin recommends an option, its full overview and direct enrollment link will be available here.
-                  </p>
+                  <div className="ads-note-card">
+                    <p className="ads-note">
+                      Once Super Admin recommends an option, its full overview and direct enrollment link will be available here.
+                    </p>
+                  </div>
                 </div>
               )}
             </aside>

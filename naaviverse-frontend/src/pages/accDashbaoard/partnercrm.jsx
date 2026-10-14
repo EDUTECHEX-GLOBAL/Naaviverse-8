@@ -352,7 +352,7 @@ const CRMPage = ({
             </button>
             <button
               className={`pcrm-view-btn ${crmMenu === 'Clients' && viewMode === 'list' ? 'pcrm-view-btn--active' : ''}`}
-              onClick={() => { setcrmMenu('Clients'); setViewMode('list'); }}
+              onClick={() => { setcrmMenu('Clients'); setViewMode('list'); setSelectedClient(null); }}
             >
               List
             </button>
@@ -652,7 +652,7 @@ const CRMPage = ({
       ══════════════════════════════════════════════════ */}
       {crmMenu === 'Clients' && viewMode === 'list' && (
         <div className="pcrm-layout">
-          <div className={`pcrm-list-wrap ${selectedClient ? 'pcrm-list-wrap--with-panel' : ''}`}>
+          <div className="pcrm-list-wrap">
             <div className="pcrm-list-header">
               <span className="pcrm-list-header__avatar" />
               <span>CLIENT</span>
@@ -683,8 +683,7 @@ const CRMPage = ({
                 return (
                   <div
                     key={c._id || i}
-                    className={`pcrm-list-row ${isSelected(c) ? 'pcrm-list-row--selected' : ''}`}
-                    onClick={() => handleSelectClient(c)}
+                    className="pcrm-list-row"
                   >
                     <div
                       className="pcrm-list-row__avatar"
@@ -731,109 +730,6 @@ const CRMPage = ({
               </div>
             )}
           </div>
-
-          {/* Detail Panel (reused) */}
-          {selectedClient && (
-            <div className="pcrm-detail">
-              <div className="pcrm-detail__top">
-                <div
-                  className="pcrm-detail__avatar"
-                  style={{
-                    background: selectedClient.avatarColor.bg,
-                    color: selectedClient.avatarColor.text,
-                    borderColor: selectedClient.avatarColor.border,
-                  }}
-                >
-                  {selectedClient.avatar}
-                </div>
-                <div className="pcrm-detail__user">
-                  <h3 className="pcrm-detail__name">{selectedClient.name}</h3>
-                  <p className="pcrm-detail__email">{selectedClient.email}</p>
-                </div>
-                <button className="pcrm-detail__close" onClick={() => setSelectedClient(null)}>✕</button>
-              </div>
-
-              {selectedClient.selectedPaths?.length > 0 && (
-                <div className="pcrm-detail__section">
-                  <span className="pcrm-detail__label">PATH</span>
-                  {selectedClient.selectedPaths.map((p, idx) => (
-                    <div key={idx} className="pcrm-detail__path-block">
-                      <span className="pcrm-detail__path-name">{p.nameOfPath}</span>
-                      <div className="pcrm-detail__progress-bar">
-                        <div
-                          className="pcrm-detail__progress-fill"
-                          style={{
-                            width: `${Math.min(((p.completedStepsCount || 0) / (p.totalSteps || 1)) * 100, 100)}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="pcrm-detail__path-meta">
-                        {p.completedStepsCount || 0}/{p.totalSteps || 0} steps completed · {getStatusLabel(selectedClient)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="pcrm-detail__section">
-                <span className="pcrm-detail__label">CONTACT</span>
-                <div className="pcrm-detail__contact-row">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                  </svg>
-                  <span>{selectedClient.phone || '—'}</span>
-                </div>
-                <div className="pcrm-detail__contact-row">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="2" y1="12" x2="22" y2="12" />
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                  </svg>
-                  <span>{selectedClient.country || 'India'}</span>
-                </div>
-                <span className="pcrm-detail__joined">Joined {fmtDate(selectedClient.joinedAt)}</span>
-              </div>
-
-              <div className="pcrm-detail__section">
-                <span className="pcrm-detail__label">PURCHASES</span>
-                <div className="pcrm-detail__purchase-box">
-                  {(selectedClient.purchases || 0) > 0 ? (
-                    <span className="pcrm-detail__purchase-val pcrm-detail__purchase-val--has">
-                      {selectedClient.purchases} {selectedClient.purchases === 1 ? 'purchase' : 'purchases'} · ₹{(selectedClient.totalSpent || 0).toLocaleString('en-IN')}
-                    </span>
-                  ) : (
-                    <span className="pcrm-detail__purchase-val">No purchases yet</span>
-                  )}
-                </div>
-                {selectedClient.purchaseList?.length > 0 && (
-                  <div className="pcrm-detail__pur-list">
-                    {selectedClient.purchaseList.map((pur, idx) => {
-                      const st = getStatusBadge(pur.status);
-                      return (
-                        <div key={idx} className="pcrm-detail__pur-item">
-                          <div>
-                            <span className="pcrm-detail__pur-name">{pur.productName || pur.product}</span>
-                            <span className="pcrm-detail__pur-date">{fmtDate(pur.date || pur.createdAt)}</span>
-                          </div>
-                          <div className="pcrm-detail__pur-right">
-                            <span className="pcrm-detail__pur-amt">₹{Number(pur.amount || 0).toLocaleString('en-IN')}</span>
-                            <span className="pcrm-detail__pur-status" style={{ background: st.bg, color: st.color, borderColor: st.border }}>{st.label}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              <div className="pcrm-detail__actions">
-                <a className="pcrm-detail__btn pcrm-detail__btn--primary" href={`mailto:${selectedClient.email}`}>
-                  Message client
-                </a>
-                <button className="pcrm-detail__btn pcrm-detail__btn--outline">View path</button>
-              </div>
-            </div>
-          )}
         </div>
       )}
 

@@ -153,7 +153,27 @@
   color: var(--text, #1f2937);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.obs-dim-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.obs-spin {
+  animation: obsSpin 0.9s linear infinite;
+}
+
+@keyframes obsSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .obs-dim-score {

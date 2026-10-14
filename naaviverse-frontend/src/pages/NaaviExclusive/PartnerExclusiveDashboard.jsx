@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, Navigate, useParams } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -100,6 +100,83 @@ const ticketBadgeClass = (status) => {
   return "badge-open";
 };
 
+// ── Mobile-only Custom Dropdown (contained within card, reduced compact size) ──
+function MobileSelectDropdown({ value, onChange, options }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const currentOption = options.find((opt) => opt.value === value) || options[0];
+
+  return (
+    <div className={`px-custom-select ${isOpen ? "is-open" : ""}`} ref={dropdownRef}>
+      <button
+        type="button"
+        className="px-custom-select-trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="px-custom-select-label">{currentOption?.label}</span>
+        <svg
+          className={`px-custom-select-arrow ${isOpen ? "rotated" : ""}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="px-custom-select-menu" role="listbox">
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              className={`px-custom-select-item ${opt.value === value ? "selected" : ""}`}
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              role="option"
+              aria-selected={opt.value === value}
+            >
+              <span>{opt.label}</span>
+              {opt.value === value && (
+                <svg
+                  className="px-check-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PartnerExclusiveDashboard() {
   const navigate = useNavigate();
   const { tab } = useParams();
@@ -137,6 +214,11 @@ export default function PartnerExclusiveDashboard() {
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Paid', 'Pending', 'Failed'
   const [feedbackView, setFeedbackView] = useState("cards"); // 'cards' or 'table'
   const [currentPartner, setCurrentPartner] = useState(partner);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [tab]);
 
   // Support tab local state
   const [ticketSubject, setTicketSubject] = useState("");
@@ -295,10 +377,35 @@ export default function PartnerExclusiveDashboard() {
 
   return (
     <div className="px-db-root">
+      {/* Mobile Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="px-mobile-overlay"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="px-sidebar">
-        <div className="px-sidebar-brand" onClick={() => navigate("/dashboard/accountants")}>
-          <img src={naaviLogo} alt="naavi" className="px-brand-logo" />
+      <aside className={`px-sidebar ${mobileMenuOpen ? "open" : ""}`}>
+        <div className="px-sidebar-header">
+          <div className="px-sidebar-brand" onClick={() => { setMobileMenuOpen(false); navigate("/dashboard/accountants"); }}>
+            <img src={naaviLogo} alt="naavi" className="px-brand-logo" />
+          </div>
+          <button
+            className="px-sidebar-close-btn"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div className="px-sidebar-partner-chip">
+          <span className="px-chip-label">Partner ID:</span>
+          <span className="px-chip-id">{currentPartner?.partnerId || partner?.partnerId || "N/A"}</span>
         </div>
         <nav className="px-sidebar-nav">
           {sidebarMenu.map(menu => (
@@ -306,6 +413,7 @@ export default function PartnerExclusiveDashboard() {
               key={menu.key}
               className={`px-nav-item ${activeMenu === menu.key ? "active" : ""}`}
               onClick={() => {
+                setMobileMenuOpen(false);
                 const mapKeyToPath = {
                   Overview: "",
                   Transactions: "transactions",
@@ -324,7 +432,7 @@ export default function PartnerExclusiveDashboard() {
           ))}
         </nav>
         <div className="px-sidebar-footer">
-          <button className="px-logout-btn" onClick={handleLogout}>
+          <button className="px-logout-btn" onClick={() => { setMobileMenuOpen(false); handleLogout(); }}>
             <Icon.Logout /> <span>Logout</span>
           </button>
         </div>
@@ -334,8 +442,22 @@ export default function PartnerExclusiveDashboard() {
       <main className="px-main-container">
         {/* Top Header */}
         <header className="px-header">
-          <div className="px-header-title">
-            <h1>Naavi Exclusive Partner Dashboard</h1>
+          <div className="px-header-left">
+            <button
+              className="px-mobile-hamburger"
+              onClick={() => setMobileMenuOpen(prev => !prev)}
+              aria-label="Toggle navigation menu"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <div className="px-header-title">
+              <h1 className="px-desktop-title">Naavi Exclusive Partner Dashboard</h1>
+              <h1 className="px-mobile-title">Partner Exclusive Dashboard</h1>
+            </div>
           </div>
           <div className="px-header-right">
             <div className="px-partner-badge">
@@ -523,10 +645,11 @@ export default function PartnerExclusiveDashboard() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="px-filter-input"
                       />
+                      {/* Desktop native selects (untouched for desktop) */}
                       <select
                         value={filterType}
                         onChange={(e) => setFilterType(e.target.value)}
-                        className="px-filter-select"
+                        className="px-filter-select px-desktop-only"
                       >
                         <option value="all">All methods</option>
                         <option value="online">Online checkout</option>
@@ -535,13 +658,38 @@ export default function PartnerExclusiveDashboard() {
                       <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-filter-select"
+                        className="px-filter-select px-desktop-only"
                       >
                         <option value="all">All statuses</option>
                         <option value="Paid">Paid</option>
                         <option value="Pending">Pending</option>
                         <option value="Failed">Failed</option>
                       </select>
+
+                      {/* Mobile custom dropdowns (compact, strictly contained inside card) */}
+                      <div className="px-mobile-filter-select">
+                        <MobileSelectDropdown
+                          value={filterType}
+                          onChange={setFilterType}
+                          options={[
+                            { value: "all", label: "All methods" },
+                            { value: "online", label: "Online checkout" },
+                            { value: "direct", label: "Direct purchase" },
+                          ]}
+                        />
+                      </div>
+                      <div className="px-mobile-filter-select">
+                        <MobileSelectDropdown
+                          value={filterStatus}
+                          onChange={setFilterStatus}
+                          options={[
+                            { value: "all", label: "All statuses" },
+                            { value: "Paid", label: "Paid" },
+                            { value: "Pending", label: "Pending" },
+                            { value: "Failed", label: "Failed" },
+                          ]}
+                        />
+                      </div>
                       <button className="px-export-btn" onClick={handleExportExcel} disabled={!stats?.allTransactions?.length}>
                         <Icon.Download /> Export
                       </button>

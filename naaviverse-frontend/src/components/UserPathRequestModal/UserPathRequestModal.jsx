@@ -297,7 +297,9 @@ export default function UserPathRequestModal({
                   {/* Target Goal / Title */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Target Goal / Path Title <span className="required-star">*</span>
+                      <span className="label-title">
+                        Target Goal / Path Title <span className="required-star">*</span>
+                      </span>
                       <span className="hint-text">(e.g. Stanford University - Computer Science)</span>
                     </label>
                     <input
@@ -312,7 +314,7 @@ export default function UserPathRequestModal({
                   {/* Target Institution */}
                   <div className="upr-field">
                     <label>
-                      Target Institution / University
+                      <span className="label-title">Target Institution / University</span>
                       <span className="hint-text">(Optional)</span>
                     </label>
                     <input
@@ -326,7 +328,9 @@ export default function UserPathRequestModal({
                   {/* Sector / Industry */}
                   <div className="upr-field">
                     <label>
-                      Domain / Sector <span className="required-star">*</span>
+                      <span className="label-title">
+                        Domain / Sector <span className="required-star">*</span>
+                      </span>
                     </label>
                     <select value={sector} onChange={(e) => setSector(e.target.value)}>
                       {SECTORS.map((sec) => (
@@ -338,23 +342,27 @@ export default function UserPathRequestModal({
                   </div>
 
                   {/* Quick Sector Chips */}
-                  <div className="upr-col-full" style={{ marginTop: "-0.4rem" }}>
+                  <div className="upr-col-full">
                     <div className="upr-quick-sectors">
+                      <span className="quick-label">Suggestions:</span>
                       {SECTORS.slice(0, 5).map((sec) => (
-                        <span
+                        <button
                           key={sec}
+                          type="button"
                           className={`sector-pill ${sector === sec ? "selected" : ""}`}
                           onClick={() => handleSectorQuickClick(sec)}
                         >
                           {sec}
-                        </span>
+                        </button>
                       ))}
                     </div>
                   </div>
 
                   {/* Education Stage */}
                   <div className="upr-field">
-                    <label>Current / Target Stage</label>
+                    <label>
+                      <span className="label-title">Current / Target Stage</span>
+                    </label>
                     <select
                       value={educationLevel}
                       onChange={(e) => setEducationLevel(e.target.value)}
@@ -369,7 +377,9 @@ export default function UserPathRequestModal({
 
                   {/* Target Timeline */}
                   <div className="upr-field">
-                    <label>Expected Timeline / Duration</label>
+                    <label>
+                      <span className="label-title">Expected Timeline / Duration</span>
+                    </label>
                     <select
                       value={targetTimeline}
                       onChange={(e) => setTargetTimeline(e.target.value)}
@@ -385,7 +395,9 @@ export default function UserPathRequestModal({
                   {/* Goal Details & Focus Areas */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Goal Details & Focus Areas <span className="required-star">*</span>
+                      <span className="label-title">
+                        Goal Details & Focus Areas <span className="required-star">*</span>
+                      </span>
                     </label>
                     <textarea
                       placeholder="Describe what you want to achieve (e.g., Focus on Artificial Intelligence & Systems, admission requirements, portfolio project guidance, and graduate school preparation)..."
@@ -399,7 +411,7 @@ export default function UserPathRequestModal({
                   {/* Mandatory Requirements / Prerequisites */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Mandatory Prerequisites / Requirements
+                      <span className="label-title">Mandatory Prerequisites / Requirements</span>
                       <span className="hint-text">(e.g. SAT 1500+, AP Calculus, GPA 3.8, Portfolio)</span>
                     </label>
                     <input
@@ -412,7 +424,7 @@ export default function UserPathRequestModal({
 
                   {/* Requester Summary */}
                   <div className="upr-col-full upr-requester-note">
-                    <FiInfo style={{ color: "#4f46e5", flexShrink: 0, fontSize: 13 }} />
+                    <FiInfo style={{ color: "#4f46e5", flexShrink: 0, fontSize: 15 }} />
                     <span>
                       Submitting as <strong>{userName}</strong> (<code>{userEmail || "No Email"}</code>).
                       Super Admin will review and notify you when the pathway is live.

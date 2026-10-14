@@ -1,6 +1,20 @@
 import React, { useState, useMemo } from "react";
 import "./ObserverInspector.scss";
-import { IconCheck } from "../pages/Icons";
+import {
+  IconCheck,
+  IconEye,
+  IconRefresh,
+  IconDatabase,
+  IconBrain,
+  IconClock,
+  IconShoppingCart,
+  IconTarget,
+  IconCompass,
+  IconAlert,
+  IconX,
+  IconChevronDown,
+  IconChevronUp
+} from "../pages/Icons";
 
 export default function ObserverInspector({
   report,
@@ -16,7 +30,9 @@ export default function ObserverInspector({
       <div className="obs-inspector">
         <div className="obs-header">
           <div className="obs-title-group">
-            <span className="obs-badge-icon">👁️</span>
+            <span className="obs-badge-icon">
+              <IconEye size={18} />
+            </span>
             <div>
               <div className="obs-title">Naavi Observer Agent</div>
               <div className="obs-subtitle">Real-time quality & accuracy validation engine</div>
@@ -27,7 +43,17 @@ export default function ObserverInspector({
             onClick={onReAudit}
             disabled={auditLoading}
           >
-            {auditLoading ? "Auditing..." : "Run Observer Audit"}
+            {auditLoading ? (
+              <>
+                <IconRefresh size={14} className="obs-spin" />
+                <span>Auditing...</span>
+              </>
+            ) : (
+              <>
+                <IconRefresh size={14} />
+                <span>Run Observer Audit</span>
+              </>
+            )}
           </button>
         </div>
         <p style={{ fontSize: "13px", color: "var(--text2, #6b7280)", margin: "8px 0" }}>
@@ -96,12 +122,42 @@ export default function ObserverInspector({
   };
 
   const dimList = [
-    { key: "data_integrity", label: "📊 Data Integrity & Schema", val: dimensions.data_integrity ?? 100 },
-    { key: "text_semantics", label: "🧠 Prerequisite Sequence (DAG)", val: dimensions.text_semantics ?? 100 },
-    { key: "timeline_accuracy", label: "⏱️ Timeline Realism", val: dimensions.timeline_accuracy ?? 100 },
-    { key: "marketplace_accuracy", label: "🛒 Marketplace & Providers", val: dimensions.marketplace_accuracy ?? 100 },
-    { key: "personalization", label: "🎯 Student Personalization", val: dimensions.personalization ?? 100 },
-    { key: "category_scope", label: "🧭 Category Isolation", val: dimensions.category_scope ?? 100 }
+    {
+      key: "data_integrity",
+      label: "Data Integrity & Schema",
+      icon: <IconDatabase size={16} color="#4f46e5" />,
+      val: dimensions.data_integrity ?? 100
+    },
+    {
+      key: "text_semantics",
+      label: "Prerequisite Sequence (DAG)",
+      icon: <IconBrain size={16} color="#9333ea" />,
+      val: dimensions.text_semantics ?? 100
+    },
+    {
+      key: "timeline_accuracy",
+      label: "Timeline Realism",
+      icon: <IconClock size={16} color="#d97706" />,
+      val: dimensions.timeline_accuracy ?? 100
+    },
+    {
+      key: "marketplace_accuracy",
+      label: "Marketplace & Providers",
+      icon: <IconShoppingCart size={16} color="#059669" />,
+      val: dimensions.marketplace_accuracy ?? 100
+    },
+    {
+      key: "personalization",
+      label: "Student Personalization",
+      icon: <IconTarget size={16} color="#e11d48" />,
+      val: dimensions.personalization ?? 100
+    },
+    {
+      key: "category_scope",
+      label: "Category Isolation",
+      icon: <IconCompass size={16} color="#0284c7" />,
+      val: dimensions.category_scope ?? 100
+    }
   ];
 
   return (
@@ -109,7 +165,9 @@ export default function ObserverInspector({
       {/* ── TOP HEADER ── */}
       <div className="obs-header">
         <div className="obs-title-group">
-          <span className="obs-badge-icon">👁️</span>
+          <span className="obs-badge-icon">
+            <IconEye size={18} />
+          </span>
           <div>
             <div className="obs-title">
               Naavi Observer Agent
@@ -130,7 +188,17 @@ export default function ObserverInspector({
             onClick={onReAudit}
             disabled={auditLoading}
           >
-            {auditLoading ? "Auditing..." : "🔄 Re-Audit Path"}
+            {auditLoading ? (
+              <>
+                <IconRefresh size={14} className="obs-spin" />
+                <span>Auditing...</span>
+              </>
+            ) : (
+              <>
+                <IconRefresh size={14} />
+                <span>Re-Audit Path</span>
+              </>
+            )}
           </button>
         )}
       </div>
@@ -140,7 +208,10 @@ export default function ObserverInspector({
         {dimList.map(dim => (
           <div key={dim.key} className="obs-dim-card">
             <div className="obs-dim-top">
-              <span className="obs-dim-label">{dim.label}</span>
+              <span className="obs-dim-label">
+                <span className="obs-dim-icon">{dim.icon}</span>
+                <span>{dim.label}</span>
+              </span>
               <span className="obs-dim-score">{Math.round(dim.val)}%</span>
             </div>
             <div className="obs-dim-bar">
@@ -164,7 +235,7 @@ export default function ObserverInspector({
             </>
           ) : (
             <>
-              <span className="obs-icon-err">⚠️</span>
+              <span className="obs-icon-err"><IconAlert size={16} /></span>
               <span><strong>Marketplace Warning:</strong> Detected {hallucinations.length} unverified or dummy provider name(s).</span>
             </>
           )}
@@ -174,7 +245,7 @@ export default function ObserverInspector({
         <div className="obs-check-item">
           {issues.some(i => i.type === "sequence_inversion") ? (
             <>
-              <span className="obs-icon-err">❌</span>
+              <span className="obs-icon-err"><IconX size={16} /></span>
               <span><strong>Sequence DAG:</strong> Prerequisite sequence inversion detected — foundational material must precede advanced steps.</span>
             </>
           ) : (
@@ -230,8 +301,11 @@ export default function ObserverInspector({
               className="obs-toggle-advisories-btn"
               onClick={() => setShowAdvisories(prev => !prev)}
             >
-              <span>
-                {showAdvisories ? "▲ Hide Findings & Advisories" : "▼ Show Findings & Advisories"} ({hallucinations.length + issues.length + consolidatedWarnings.length})
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                {showAdvisories ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+                <span>
+                  {showAdvisories ? "Hide Findings & Advisories" : "Show Findings & Advisories"} ({hallucinations.length + issues.length + consolidatedWarnings.length})
+                </span>
               </span>
               <span className="obs-advisories-pill">
                 {showAdvisories ? "Collapse list" : "Click to view full list"}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import logo from "../../logos/naavi_final_logo2.png"; // ⚠️ adjust to actual relative path from this file to src/logos
 import signupHero from "./assets/images/signup_hero.png";
 import axios from 'axios';
@@ -151,6 +151,20 @@ const NewHomePage = () => {
 
   const isUser = signupRole === "Users";
   const isPartner = signupRole === "Accountants";
+
+  // ── Custom Dropdown for Partner Type (downward only, matches top box size) ──
+  const [partnerTypeOpen, setPartnerTypeOpen] = useState(false);
+  const partnerTypeRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (partnerTypeRef.current && !partnerTypeRef.current.contains(e.target)) {
+        setPartnerTypeOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Current active form based on selected tab
   const currentForm = isUser ? userState : partnerState;
@@ -592,19 +606,113 @@ const NewHomePage = () => {
             </div>
 
             {isPartner && (
-              <div className={`input1 selectWrap ${currentForm.partnerType ? "hasValue" : ""}`}>
+              <div
+                ref={partnerTypeRef}
+                className={`input1 selectWrap ${currentForm.partnerType ? "hasValue" : ""}`}
+                style={{
+                  position: "relative",
+                  cursor: currentForm.showOtp ? "not-allowed" : "pointer",
+                  userSelect: "none",
+                  borderColor: partnerTypeOpen ? "#2c7cb2" : undefined,
+                  boxShadow: partnerTypeOpen ? "0 0 0 3px rgba(44, 124, 178, 0.1)" : undefined,
+                }}
+                onClick={() => {
+                  if (!currentForm.showOtp) {
+                    setPartnerTypeOpen((prev) => !prev);
+                  }
+                }}
+              >
                 <BriefcaseIcon />
-                <select
-                  disabled={currentForm.showOtp}
-                  value={currentForm.partnerType}
-                  onChange={(e) => updateCurrentForm({ partnerType: e.target.value })}
+                <span
+                  style={{
+                    flex: 1,
+                    fontSize: "14px",
+                    fontFamily: "'Poppins', sans-serif",
+                    color: currentForm.partnerType ? "#1e293b" : "#94a3b8",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
                 >
-                  <option value="">Select Partner Type</option>
-                  <option value="Distributor">Distributor</option>
-                  <option value="Vendor">Vendor</option>
-                  <option value="Mentor">Mentor</option>
-                  <option value="Institution">Institution</option>
-                </select>
+                  {currentForm.partnerType || "Select Partner Type"}
+                </span>
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={partnerTypeOpen ? "#2c7cb2" : "#94a3b8"}
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: partnerTypeOpen ? "rotate(180deg)" : "rotate(0deg)",
+                    transition: "transform 0.2s ease",
+                    flexShrink: 0,
+                    marginLeft: "auto",
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+
+                {partnerTypeOpen && !currentForm.showOtp && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 4px)",
+                      left: 0,
+                      bottom: "auto",
+                      width: "100%",
+                      minWidth: "100%",
+                      maxWidth: "100%",
+                      boxSizing: "border-box",
+                      background: "#ffffff",
+                      border: "1.5px solid #2c7cb2",
+                      borderRadius: "10px",
+                      boxShadow: "0 8px 24px rgba(15, 31, 61, 0.14)",
+                      zIndex: 99999,
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      padding: "4px 0",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {["Distributor", "Vendor", "Mentor", "Institution"].map((type) => {
+                      const isSelected = currentForm.partnerType === type;
+                      return (
+                        <div
+                          key={type}
+                          onClick={() => {
+                            updateCurrentForm({ partnerType: type });
+                            setPartnerTypeOpen(false);
+                          }}
+                          style={{
+                            padding: "9px 14px",
+                            fontSize: "13.5px",
+                            fontFamily: "'Poppins', sans-serif",
+                            color: isSelected ? "#ffffff" : "#1e293b",
+                            background: isSelected ? "#2c7cb2" : "transparent",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            transition: "background 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          <span>{type}</span>
+                          {isSelected && <span style={{ fontWeight: "700" }}>✓</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

@@ -58,16 +58,12 @@
       flex-wrap: wrap;
 
       @media (max-width: 768px) {
-        gap: 6px;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 4px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px 10px !important;
+        width: 100% !important;
+        overflow-x: visible !important;
+        padding-bottom: 0 !important;
       }
 
       .filter-tab {
@@ -84,14 +80,19 @@
         white-space: nowrap;
 
         @media (max-width: 768px) {
-          flex-shrink: 0;
+          width: 100% !important;
+          box-sizing: border-box !important;
           font-size: 0.78rem !important;
-          padding: 0 14px !important;
-          height: 34px !important;
-          min-height: 34px !important;
-          display: inline-flex !important;
+          padding: 0 10px !important;
+          height: 36px !important;
+          min-height: 36px !important;
+          display: flex !important;
           align-items: center !important;
           justify-content: center !important;
+          text-align: center !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
         }
 
         &.active {

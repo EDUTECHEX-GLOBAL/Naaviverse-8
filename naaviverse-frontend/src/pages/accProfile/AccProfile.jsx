@@ -603,6 +603,74 @@ const AccProfile = () => {
     setPhone(merged.slice(0, max));
   };
 
+  // ── Custom Dropdowns for Country, Phone Code, and Business Type (top box size only, strictly downward) ──
+  const countryDropdownRef = useRef(null);
+  const phoneContainerRef = useRef(null);
+  const businessTypeDropdownRef = useRef(null);
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
+  const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
+  const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
+  const [phoneInputFocused, setPhoneInputFocused] = useState(false);
+  const [businessTypeDropdownOpen, setBusinessTypeDropdownOpen] = useState(false);
+
+  const BUSINESS_TYPES = [
+    "Distributor",
+    "Vendor",
+    "Mentor",
+    "Institution",
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(e.target)) {
+        setCountryDropdownOpen(false);
+        setCountrySearch("");
+      }
+      if (phoneContainerRef.current && !phoneContainerRef.current.contains(e.target)) {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+      }
+      if (businessTypeDropdownRef.current && !businessTypeDropdownRef.current.contains(e.target)) {
+        setBusinessTypeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const partnerCountryOptions = useMemo(() => {
+    if (countryApiValue?.length) {
+      return countryApiValue.map((c) => ({
+        code: c.cca2,
+        name: c?.name?.common || c.cca2,
+      })).sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return allCountries.map((c) => ({
+      code: c.isoCode,
+      name: c.name,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [allCountries, countryApiValue]);
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return partnerCountryOptions;
+    const q = countrySearch.toLowerCase();
+    return partnerCountryOptions.filter(
+      (c) => c.name.toLowerCase().includes(q) || (c.code && c.code.toLowerCase().includes(q))
+    );
+  }, [partnerCountryOptions, countrySearch]);
+
+  const filteredDialCodes = useMemo(() => {
+    if (!phoneCodeSearch.trim()) return dialCodeOptions;
+    const q = phoneCodeSearch.toLowerCase();
+    return dialCodeOptions.filter(
+      (opt) =>
+        opt.name.toLowerCase().includes(q) ||
+        opt.code.includes(q) ||
+        opt.isoCode.toLowerCase().includes(q)
+    );
+  }, [dialCodeOptions, phoneCodeSearch]);
+
   const isPhoneValid = Boolean(
     phone &&
     (currentPhoneCountry.lengths
@@ -2212,21 +2280,36 @@ const AccProfile = () => {
             }}
           />
 
-          <div className="popularS" style={{ padding: "1.8rem 2.2rem" }}>
+          <div className="popularS partner-create-modal">
             {createBrandProfileStep === 1 && (
               <>
-                <div className="head-txt" style={{ margin: 0, paddingBottom: "1rem" }}>
-                  <div>
-                    <div style={{ fontSize: "1.35rem", fontWeight: "700", color: "#1e293b" }}>Create Partner Profile</div>
-                    <div style={{ fontSize: "0.82rem", fontWeight: "400", color: "#64748b", marginTop: "2px" }}>
+                <div className="head-txt partner-modal-header" style={{ margin: 0, paddingBottom: "1rem" }}>
+                  <div className="partner-modal-header-text">
+                    <div className="partner-modal-title" style={{ fontSize: "1.35rem", fontWeight: "700", color: "#1e293b" }}>Create Partner Profile</div>
+                    <div className="partner-modal-subtitle" style={{ fontSize: "0.82rem", fontWeight: "400", color: "#64748b", marginTop: "2px" }}>
                       Fill in your business details to complete partner onboarding
                     </div>
                   </div>
                   <div
                     onClick={() => { setCreateBrandProfile(false); setUserName(""); setLastName(""); setFirstName(""); setProfilePicture(""); }}
                     className="close-div"
+                    aria-label="Close"
                   >
-                    <img src={close} alt="close" style={{ width: "14px", height: "14px" }} />
+                    <img src={close} alt="close" className="partner-close-img-desktop" style={{ width: "14px", height: "14px" }} />
+                    <svg
+                      className="partner-close-svg-mobile"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#334155"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                   </div>
                 </div>
 
@@ -2263,15 +2346,157 @@ const AccProfile = () => {
                       <BuildingIcon /> Business Details
                     </div>
 
-                    <InputDivsCreatePartner placeholderText="Business Name (e.g. Acme EdTech Inc.)" setFunc={setBusinessName} funcValue={businessName} />
-                    <InputDivsTextAreaPartner placeholderText="Short Business Description & Overview..." setFunc={setBusinessDesc} funcValue={businessDesc} />
+                    <InputDivsCreatePartner
+                      placeholderText="Business Name (e.g. Acme EdTech Inc.)"
+                      setFunc={setBusinessName}
+                      funcValue={businessName}
+                      containerStyle={{ marginBottom: "12px" }}
+                      style={{
+                        height: "48px",
+                        minHeight: "48px",
+                        padding: "10px 14px",
+                        fontSize: "14px",
+                      }}
+                    />
+                    <InputDivsTextAreaPartner
+                      placeholderText="Short Business Description & Overview..."
+                      setFunc={setBusinessDesc}
+                      funcValue={businessDesc}
+                      style={{
+                        height: "72px",
+                        minHeight: "72px",
+                        padding: "8px 12px",
+                        fontSize: "13.5px",
+                      }}
+                    />
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                    <div className="partner-modal-grid-row">
                       <InputDivsCreatePartner placeholderText="Website (e.g. https://example.com)" setFunc={setWebsite} funcValue={website} />
-                      <InputDivsCreatePartner placeholderText="Business Type (e.g. Vendor, Institution)" setFunc={setBusinessType} funcValue={businessType} />
+                      <div
+                        ref={businessTypeDropdownRef}
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        <div
+                          onClick={() => setBusinessTypeDropdownOpen((prev) => !prev)}
+                          style={{
+                            width: "100%",
+                            height: "40px",
+                            minHeight: "40px",
+                            border: businessTypeDropdownOpen ? "1.5px solid #2c7cb2" : "1.5px solid #e2e8f0",
+                            boxShadow: businessTypeDropdownOpen ? "0 0 0 3px rgba(44, 124, 178, 0.15)" : "none",
+                            borderRadius: "10px",
+                            background: "#ffffff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0 12px",
+                            cursor: "pointer",
+                            boxSizing: "border-box",
+                            userSelect: "none",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "13.5px",
+                              fontFamily: "'Poppins', sans-serif",
+                              color: businessType ? "#0f172a" : "#94a3b8",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {businessType || "Business Type (e.g. Vendor, Institution)"}
+                          </span>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke={businessTypeDropdownOpen ? "#2c7cb2" : "#64748b"}
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                              transform: businessTypeDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                              flexShrink: 0,
+                              marginLeft: "6px",
+                            }}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </div>
+
+                        {businessTypeDropdownOpen && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "calc(100% + 4px)",
+                              left: 0,
+                              bottom: "auto",
+                              width: "100%",
+                              minWidth: "100%",
+                              maxWidth: "100%",
+                              boxSizing: "border-box",
+                              background: "#ffffff",
+                              border: "1.5px solid #2c7cb2",
+                              borderRadius: "10px",
+                              boxShadow: "0 8px 24px rgba(15, 31, 61, 0.14)",
+                              zIndex: 99999,
+                              overflow: "hidden",
+                              display: "flex",
+                              flexDirection: "column",
+                              padding: "4px 0",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {BUSINESS_TYPES.map((type) => {
+                              const isSelected = businessType === type;
+                              return (
+                                <div
+                                  key={type}
+                                  onClick={() => {
+                                    setBusinessType(type);
+                                    setBusinessTypeDropdownOpen(false);
+                                  }}
+                                  style={{
+                                    padding: "9px 14px",
+                                    fontSize: "13.5px",
+                                    fontFamily: "'Poppins', sans-serif",
+                                    color: isSelected ? "#ffffff" : "#1e293b",
+                                    background: isSelected ? "#2c7cb2" : "transparent",
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    transition: "background 0.15s ease",
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    if (!isSelected) e.currentTarget.style.background = "transparent";
+                                  }}
+                                >
+                                  <span>{type}</span>
+                                  {isSelected && <span style={{ fontWeight: "700" }}>✓</span>}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className={styles.imgContainer} style={{ marginTop: "14px", background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: "12px", padding: "16px", display: "flex", alignItems: "center", gap: "16px" }}>
+                    <div className={`${styles.imgContainer} partner-logo-container`} style={{ marginTop: "14px", background: "#f8fafc", border: "1.5px dashed #cbd5e1", borderRadius: "12px", padding: "16px", display: "flex", alignItems: "center", gap: "16px" }}>
                       <ImageUploadDivProfilePic setFunc={setBusinessLogo} funcValue={businessLogo} />
                       <div>
                         <div style={{ fontSize: "0.88rem", fontWeight: "600", color: "#1e293b" }}>Company Logo *</div>
@@ -2288,23 +2513,191 @@ const AccProfile = () => {
 
                     <InputDivsCreatePartner placeholderText="Street Address..." setFunc={setStreet} funcValue={street} />
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                    <div className="partner-modal-grid-row">
                       <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
                       <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                    <div className="partner-modal-grid-row">
                       <InputDivsCreatePartner placeholderText="State / Province..." setFunc={setBusinessState} funcValue={businessState} />
-                      <div className={styles.inputDivs} style={{ border: '1.5px solid #e2e8f0', borderRadius: '10px', fontSize: "14px", fontWeight: "500", paddingLeft: '0px', marginTop: '0px', background: '#fff' }}>
-                        <select name="country" id="country" value={businessCountry} style={{ border: "none", padding: '0.75rem 1rem', width: '100%', fontSize: "14px", outline: "none", background: "transparent", color: businessCountry ? "#1e293b" : "#94a3b8" }} onChange={(e) => setBusinessCountry(e.target.value)}>
-                          <option value="">Select Country *</option>
-                          {(countryApiValue?.length
-                            ? countryApiValue
-                            : Country.getAllCountries().map(c => ({ cca2: c.isoCode, name: { common: c.name } }))
-                          )?.map((item) => (
-                            <option key={item.cca2} value={item?.name?.common}>{item?.name?.common}</option>
-                          ))}
-                        </select>
+                      <div
+                        ref={countryDropdownRef}
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          boxSizing: "border-box",
+                        }}
+                      >
+                        <div
+                          onClick={() => setCountryDropdownOpen((prev) => !prev)}
+                          style={{
+                            width: "100%",
+                            height: "40px",
+                            minHeight: "40px",
+                            border: countryDropdownOpen ? "1.5px solid #2c7cb2" : "1.5px solid #e2e8f0",
+                            boxShadow: countryDropdownOpen ? "0 0 0 3px rgba(44, 124, 178, 0.15)" : "none",
+                            borderRadius: "10px",
+                            background: "#ffffff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "0 12px",
+                            cursor: "pointer",
+                            boxSizing: "border-box",
+                            userSelect: "none",
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: "13.5px",
+                              fontFamily: "'Poppins', sans-serif",
+                              color: businessCountry ? "#0f172a" : "#94a3b8",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {businessCountry || "Select Country *"}
+                          </span>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke={countryDropdownOpen ? "#2c7cb2" : "#64748b"}
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{
+                              transform: countryDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                              flexShrink: 0,
+                              marginLeft: "6px",
+                            }}
+                          >
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </div>
+
+                        {countryDropdownOpen && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "calc(100% + 4px)",
+                              left: 0,
+                              bottom: "auto",
+                              width: "100%",
+                              minWidth: "100%",
+                              maxWidth: "100%",
+                              boxSizing: "border-box",
+                              background: "#ffffff",
+                              border: "1.5px solid #2c7cb2",
+                              borderRadius: "10px",
+                              boxShadow: "0 8px 24px rgba(15, 31, 61, 0.14)",
+                              zIndex: 99999,
+                              overflow: "hidden",
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* Search bar */}
+                            <div
+                              style={{
+                                padding: "8px 10px",
+                                borderBottom: "1px solid #e2e8f0",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                background: "#f8fafc",
+                              }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                              </svg>
+                              <input
+                                type="text"
+                                placeholder="Search country..."
+                                value={countrySearch}
+                                onChange={(e) => setCountrySearch(e.target.value)}
+                                autoFocus
+                                style={{
+                                  width: "100%",
+                                  border: "none",
+                                  outline: "none",
+                                  background: "transparent",
+                                  fontSize: "13px",
+                                  fontFamily: "'Poppins', sans-serif",
+                                  color: "#0f172a",
+                                }}
+                              />
+                              {countrySearch && (
+                                <span
+                                  onClick={() => setCountrySearch("")}
+                                  style={{ cursor: "pointer", fontSize: "12px", color: "#94a3b8" }}
+                                >
+                                  ✕
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Options list */}
+                            <div
+                              style={{
+                                maxHeight: "190px",
+                                overflowY: "auto",
+                                overflowX: "hidden",
+                                padding: "4px 0",
+                              }}
+                            >
+                              {filteredCountries.length === 0 ? (
+                                <div style={{ padding: "10px 14px", fontSize: "13px", color: "#94a3b8", textAlign: "center" }}>
+                                  No countries found
+                                </div>
+                              ) : (
+                                filteredCountries.map((c) => {
+                                  const isSelected = businessCountry === c.name;
+                                  return (
+                                    <div
+                                      key={c.code || c.name}
+                                      onClick={() => {
+                                        setBusinessCountry(c.name);
+                                        setCountryDropdownOpen(false);
+                                        setCountrySearch("");
+                                      }}
+                                      style={{
+                                        padding: "8px 14px",
+                                        fontSize: "13px",
+                                        fontFamily: "'Poppins', sans-serif",
+                                        color: isSelected ? "#ffffff" : "#1e293b",
+                                        background: isSelected ? "#2c7cb2" : "transparent",
+                                        cursor: "pointer",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        transition: "background 0.15s ease",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!isSelected) e.currentTarget.style.background = "transparent";
+                                      }}
+                                    >
+                                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</span>
+                                      {isSelected && <span style={{ marginLeft: "6px" }}>✓</span>}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2315,38 +2708,44 @@ const AccProfile = () => {
                       <MailIcon /> Contact Information
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <div className="partner-modal-grid-row" style={{ marginTop: "0px" }}>
                       <InputDivsCreatePartner placeholderText="First Name..." setFunc={setFirstName} funcValue={firstName} />
                       <InputDivsCreatePartner placeholderText="Last Name..." setFunc={setLastName} funcValue={lastName} />
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                    <div className="partner-modal-grid-row">
                       <InputDivsCreatePartner placeholderText="Your Designation / Position (e.g. Director, Partner)" setFunc={setPosition} funcValue={position} />
                       <div
+                        ref={phoneContainerRef}
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          border: "1px solid #2c7cb2",
+                          border: (phoneCodeDropdownOpen || phoneInputFocused) ? "1.5px solid #2c7cb2" : "1.5px solid #e2e8f0",
+                          boxShadow: (phoneCodeDropdownOpen || phoneInputFocused) ? "0 0 0 3px rgba(44, 124, 178, 0.15)" : "none",
                           borderRadius: "10px",
-                          height: "54px",
+                          height: "40px",
+                          minHeight: "40px",
                           background: "#ffffff",
-                          padding: "0 12px",
+                          padding: "0 10px",
                           boxSizing: "border-box",
-                          marginBottom: "10px",
+                          marginBottom: "0px",
                           width: "100%",
                           position: "relative",
+                          transition: "all 0.2s ease",
                         }}
                       >
-                        {/* Country Calling Code & Flag selector */}
+                        {/* Country Calling Code & Flag selector trigger */}
                         <div
+                          onClick={() => setPhoneCodeDropdownOpen((prev) => !prev)}
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "4px",
-                            position: "relative",
+                            gap: "5px",
                             paddingRight: "8px",
                             borderRight: "1px solid #e2e8f0",
                             cursor: "pointer",
                             flexShrink: 0,
+                            height: "100%",
+                            userSelect: "none",
                           }}
                         >
                           <img
@@ -2366,27 +2765,20 @@ const AccProfile = () => {
                           <span style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>
                             {currentPhoneCountry.code}
                           </span>
-                          <span style={{ fontSize: "8px", color: "#64748b" }}>▼</span>
-                          <select
-                            value={selectedPhoneIso}
-                            onChange={(e) => handlePhoneCountryChange(e.target.value)}
-                            title="Select Country Calling Code"
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#64748b"
+                            strokeWidth="2.5"
                             style={{
-                              position: "absolute",
-                              top: 0,
-                              left: 0,
-                              width: "100%",
-                              height: "100%",
-                              opacity: 0,
-                              cursor: "pointer",
+                              transform: phoneCodeDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
                             }}
                           >
-                            {dialCodeOptions.map((opt) => (
-                              <option key={`${opt.isoCode}-${opt.code}`} value={opt.isoCode}>
-                                {opt.name} ({opt.code})
-                              </option>
-                            ))}
-                          </select>
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
                         </div>
 
                         {/* Local Mobile Number Input */}
@@ -2399,11 +2791,14 @@ const AccProfile = () => {
                           onChange={(e) => handlePartnerPhoneChange(e.target.value)}
                           onKeyDown={handlePhoneKeyDown}
                           onPaste={handlePhonePaste}
+                          onFocus={() => setPhoneInputFocused(true)}
+                          onBlur={() => setPhoneInputFocused(false)}
                           style={{
                             border: "none",
                             outline: "none",
                             background: "transparent",
-                            fontSize: "14px",
+                            fontSize: "13.5px",
+                            fontFamily: "'Poppins', sans-serif",
                             fontWeight: "500",
                             color: "#0f172a",
                             flex: 1,
@@ -2413,6 +2808,141 @@ const AccProfile = () => {
                             boxSizing: "border-box",
                           }}
                         />
+
+                        {/* Phone Code Dropdown Menu: TOP BOX SIZE ONLY, STRICTLY DOWNWARDS */}
+                        {phoneCodeDropdownOpen && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: "calc(100% + 4px)",
+                              left: 0,
+                              bottom: "auto",
+                              width: "100%",
+                              minWidth: "100%",
+                              maxWidth: "100%",
+                              boxSizing: "border-box",
+                              background: "#ffffff",
+                              border: "1.5px solid #2c7cb2",
+                              borderRadius: "10px",
+                              boxShadow: "0 8px 24px rgba(15, 31, 61, 0.14)",
+                              zIndex: 99999,
+                              overflow: "hidden",
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* Search wrap */}
+                            <div
+                              style={{
+                                padding: "8px 10px",
+                                borderBottom: "1px solid #e2e8f0",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                background: "#f8fafc",
+                              }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                              </svg>
+                              <input
+                                type="text"
+                                placeholder="Search code or country..."
+                                value={phoneCodeSearch}
+                                onChange={(e) => setPhoneCodeSearch(e.target.value)}
+                                autoFocus
+                                style={{
+                                  width: "100%",
+                                  border: "none",
+                                  outline: "none",
+                                  background: "transparent",
+                                  fontSize: "13px",
+                                  fontFamily: "'Poppins', sans-serif",
+                                  color: "#0f172a",
+                                }}
+                              />
+                              {phoneCodeSearch && (
+                                <span
+                                  onClick={() => setPhoneCodeSearch("")}
+                                  style={{ cursor: "pointer", fontSize: "12px", color: "#94a3b8" }}
+                                >
+                                  ✕
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Code List */}
+                            <div
+                              style={{
+                                maxHeight: "190px",
+                                overflowY: "auto",
+                                overflowX: "hidden",
+                                padding: "4px 0",
+                              }}
+                            >
+                              {filteredDialCodes.length === 0 ? (
+                                <div style={{ padding: "10px 14px", fontSize: "13px", color: "#94a3b8", textAlign: "center" }}>
+                                  No codes found
+                                </div>
+                              ) : (
+                                filteredDialCodes.map((opt) => {
+                                  const isSelected = opt.isoCode === selectedPhoneIso;
+                                  return (
+                                    <div
+                                      key={`${opt.isoCode}-${opt.code}`}
+                                      onClick={() => {
+                                        handlePhoneCountryChange(opt.isoCode);
+                                        setPhoneCodeDropdownOpen(false);
+                                        setPhoneCodeSearch("");
+                                      }}
+                                      style={{
+                                        padding: "8px 12px",
+                                        fontSize: "13px",
+                                        fontFamily: "'Poppins', sans-serif",
+                                        color: isSelected ? "#ffffff" : "#1e293b",
+                                        background: isSelected ? "#2c7cb2" : "transparent",
+                                        cursor: "pointer",
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "8px",
+                                        transition: "background 0.15s ease",
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (!isSelected) e.currentTarget.style.background = "transparent";
+                                      }}
+                                    >
+                                      <img
+                                        src={`https://flagcdn.com/w40/${opt.isoCode.toLowerCase()}.png`}
+                                        alt={opt.name}
+                                        style={{
+                                          width: "16px",
+                                          height: "11px",
+                                          objectFit: "cover",
+                                          borderRadius: "2px",
+                                          flexShrink: 0,
+                                        }}
+                                        onError={(e) => {
+                                          e.target.style.display = "none";
+                                        }}
+                                      />
+                                      <span style={{ fontWeight: "600", minWidth: "42px" }}>{opt.code}</span>
+                                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{opt.name}</span>
+                                      {isSelected && <span>✓</span>}
+                                    </div>
+                                  );
+                                })
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2449,8 +2979,22 @@ const AccProfile = () => {
             <>
               <div className="head-txt" style={{ padding: "0 3rem", height: "4rem" }}>
                 <div>Step 2</div>
-                <div onClick={() => { setCreateBrandProfile(false); setCreateBrandProfileStep(1); }} className="close-div">
-                  <img src={close} alt="" />
+                <div onClick={() => { setCreateBrandProfile(false); setCreateBrandProfileStep(1); }} className="close-div" aria-label="Close">
+                  <img src={close} alt="" className="partner-close-img-desktop" />
+                  <svg
+                    className="partner-close-svg-mobile"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#334155"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </div>
               </div>
               <div className="overall-div" style={{ height: "calc(100% - 4rem)" }}>
