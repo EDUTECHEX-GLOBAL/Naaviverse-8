@@ -419,10 +419,10 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
       <div className="admin-steps-content">
 
         {pathId && (
-          <div className="steps-back-banner">
-            <div className="steps-banner-actions">
+          <div className="steps-back-banner admin-steps-banner">
+            <div className="admin-steps-banner-left">
               <span
-                className="back-link"
+                className="admin-steps-back-btn"
                 onClick={() => {
                   if (setaccsideNav) setaccsideNav("Paths");
                   navigate("/admin/dashboard/paths?tab=active");
@@ -430,19 +430,21 @@ await axios.put(`${BASE_URL}/api/steps/update/${selectedStep._id}`, payload);
               >
                 ← Back to Paths
               </span>
-              <span
-                className="back-link clear-filter-link"
-                onClick={() => {
-                  const tabValue = stepsMenu === "Inactive Steps" ? "inactive" : "active";
-                  navigate(`/admin/dashboard/steps?tab=${tabValue}`);
-                }}
-              >
-                Show All Steps
+              <span className="admin-steps-banner-divider">|</span>
+              <span className="admin-steps-banner-label">
+                Showing steps for: <strong>{decodeURIComponent(pathName || "")}</strong>
               </span>
             </div>
-            <span className="back-label">
-              Showing steps for: <strong>{decodeURIComponent(pathName || "")}</strong>
-            </span>
+            <button
+              type="button"
+              className="admin-steps-clear-btn"
+              onClick={() => {
+                const tabValue = stepsMenu === "Inactive Steps" ? "inactive" : "active";
+                navigate(`/admin/dashboard/steps?tab=${tabValue}`);
+              }}
+            >
+              Show All Steps
+            </button>
           </div>
         )}
         <div className="admin-steps-list">

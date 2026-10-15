@@ -1196,9 +1196,11 @@ const AccDashboard = () => {
             onClick={() => resetpop()}
             style={{
               height: "100vh",
-              overflow: "auto",
+              overflowY: "auto",
+              overflowX: "hidden",
               flex: 1,
               minWidth: 0,
+              maxWidth: "100%",
             }}
           >
             <div style={{ height: "100%", width: "100%", maxWidth: "100%", minWidth: 0, boxSizing: "border-box" }}>

@@ -262,7 +262,7 @@ const AdminAccDashsidebar = ({
           title={collapsed ? "Expand sidebar" : "Naavi"}
         >
           <img
-            className="dashboard-logo"
+            className={`dashboard-logo ${collapsed ? "collapsed-logo" : ""}`}
             src={collapsed ? faviconLogo : logo}
             alt="Naavi"
             style={{
@@ -270,6 +270,7 @@ const AdminAccDashsidebar = ({
               height: collapsed ? 32 : "auto",
               objectFit: "contain",
               margin: collapsed ? "0 auto" : "0",
+              display: "block",
               transition: "transform 0.18s ease",
             }}
           />
@@ -449,7 +450,6 @@ const AdminAccDashsidebar = ({
           <span />
           <span />
         </button>
-        <img src={logo} alt="Naavi" className="sidebar-mobile-logo" />
       </div>
 
       {/* ═══════════════════════════════════════════════
@@ -543,6 +543,7 @@ const AdminAccDashsidebar = ({
         }
 
         .sidebar-mobile-logo {
+          display: none !important;
           height: 28px;
           width: auto;
           object-fit: contain;
@@ -641,11 +642,15 @@ const AdminAccDashsidebar = ({
           }
 
           /* Push page content down so topbar doesn't overlap */
-          .dashboard-body,
-          .dashboard-screens,
-          .admin-steps-container,
-          .dashboard-main > *:not(.sidebar-mobile-topbar) {
-            padding-top: 56px;
+          .dashboard-body {
+            padding-top: 0 !important;
+          }
+          .dashboard-screens {
+            padding-top: 56px !important;
+            box-sizing: border-box !important;
+          }
+          .admin-steps-container {
+            padding-top: 56px !important;
           }
         }
       `}</style>

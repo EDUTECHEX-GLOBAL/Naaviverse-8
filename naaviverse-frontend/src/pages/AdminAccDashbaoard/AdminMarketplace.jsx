@@ -326,12 +326,12 @@ const AdminMarketplace = () => {
           {/* Stat Cards */}
           <div className="adm-stats">
         {[
-          { label: "Total Listings", value: totalItems,     Icon: StatListings },
-          { label: "Paid Items",     value: paidItems,      Icon: StatPaid     },
-          { label: "Free Items",     value: freeItems,      Icon: StatFree     },
-          { label: "Partners",       value: uniquePartners, Icon: StatPartners },
-        ].map(({ label, value, Icon }) => (
-          <div className="adm-stat" key={label}>
+          { label: "Total Listings", value: totalItems,     Icon: StatListings, variant: "total" },
+          { label: "Paid Items",     value: paidItems,      Icon: StatPaid,     variant: "paid" },
+          { label: "Free Items",     value: freeItems,      Icon: StatFree,     variant: "free" },
+          { label: "Partners",       value: uniquePartners, Icon: StatPartners, variant: "partners" },
+        ].map(({ label, value, Icon, variant }) => (
+          <div className={`adm-stat adm-stat--${variant}`} key={label}>
             <div className="adm-stat__icon"><Icon /></div>
             <div className="adm-stat__body">
               <span className="adm-stat__label">{label}</span>

@@ -109,6 +109,59 @@ const InternalPartners = () => {
     );
   }, [dialCodeOptions, selectedPhoneIso]);
 
+  const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
+  const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
+  const phoneDropdownRef = useRef(null);
+
+  const [modalCategoryOpen, setModalCategoryOpen] = useState(false);
+  const modalCategoryRef = useRef(null);
+
+  const [toolbarCategoryOpen, setToolbarCategoryOpen] = useState(false);
+  const toolbarCategoryRef = useRef(null);
+
+  const filteredDialCodes = useMemo(() => {
+    if (!phoneCodeSearch.trim()) return dialCodeOptions;
+    const q = phoneCodeSearch.toLowerCase();
+    return dialCodeOptions.filter(
+      (opt) =>
+        opt.name.toLowerCase().includes(q) ||
+        opt.code.includes(q) ||
+        opt.isoCode.toLowerCase().includes(q)
+    );
+  }, [dialCodeOptions, phoneCodeSearch]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (phoneDropdownRef.current && !phoneDropdownRef.current.contains(e.target)) {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+      }
+      if (modalCategoryRef.current && !modalCategoryRef.current.contains(e.target)) {
+        setModalCategoryOpen(false);
+      }
+      if (toolbarCategoryRef.current && !toolbarCategoryRef.current.contains(e.target)) {
+        setToolbarCategoryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+        setModalCategoryOpen(false);
+        setToolbarCategoryOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Synchronize calling code when Country input changes
   useEffect(() => {
     if (formData.country) {
@@ -610,22 +663,44 @@ const InternalPartners = () => {
           {search && <button className="clear-btn" onClick={() => setSearch("")}>✕</button>}
         </div>
 
+        <div className="ip-category-dropdown" ref={toolbarCategoryRef}>
+          <div
+            className={`ip-category-trigger ${toolbarCategoryOpen ? "open" : ""}`}
+            onClick={() => setToolbarCategoryOpen((prev) => !prev)}
+            title={categoryFilter}
+          >
+            <span className="cat-label">{categoryFilter}</span>
+            <span className={`cat-arrow ${toolbarCategoryOpen ? "open" : ""}`}>▼</span>
+          </div>
+
+          {toolbarCategoryOpen && (
+            <div className="ip-category-menu" onClick={(e) => e.stopPropagation()}>
+              {CATEGORIES.map((cat) => {
+                const isSelected = categoryFilter === cat;
+                return (
+                  <div
+                    key={cat}
+                    className={`ip-category-item ${isSelected ? "active" : ""}`}
+                    onClick={() => {
+                      setCategoryFilter(cat);
+                      setToolbarCategoryOpen(false);
+                    }}
+                    title={cat}
+                  >
+                    {cat}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="ip-segment-pills">
           <button className={`seg-btn ${statusFilter === "all" ? "active" : ""}`} onClick={() => setStatusFilter("all")}>All</button>
           <button className={`seg-btn ${statusFilter === "active" ? "active" : ""}`} onClick={() => setStatusFilter("active")}>Active</button>
           <button className={`seg-btn ${statusFilter === "inactive" ? "active" : ""}`} onClick={() => setStatusFilter("inactive")}>Inactive</button>
           <button className={`seg-btn ${statusFilter === "tempPass" ? "active" : ""}`} onClick={() => setStatusFilter("tempPass")}>Temp</button>
         </div>
-
-        <select
-          className="ip-select-compact"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
 
         <div className="ip-view-switch">
           <button className={`v-btn ${viewMode === "table" ? "active" : ""}`} onClick={() => setViewMode("table")} title="List view">
@@ -873,16 +948,103 @@ const InternalPartners = () => {
                 </div>
 
                 <div className="m-row">
-                  <div className="m-field">
+                  <div className="m-field" style={{ position: "relative" }} ref={modalCategoryRef}>
                     <label>Category *</label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    <div
+                      onClick={() => setModalCategoryOpen((prev) => !prev)}
+                      style={{
+                        height: "34px",
+                        border: modalCategoryOpen ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: "#fafbfe",
+                        borderRadius: "7px",
+                        padding: "0 10px",
+                        fontSize: "0.78rem",
+                        color: "var(--ink)",
+                        fontFamily: "'Poppins', sans-serif",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        cursor: "pointer",
+                        userSelect: "none",
+                        boxSizing: "border-box",
+                        transition: "all 0.15s ease",
+                      }}
+                      title={formData.category}
                     >
-                      {CATEGORIES.filter((c) => c !== "All Categories").map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {formData.category || "Select Category"}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "8px",
+                          color: "var(--ink-faint)",
+                          transform: modalCategoryOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.15s ease",
+                          flexShrink: 0,
+                          marginLeft: "6px",
+                        }}
+                      >
+                        ▼
+                      </span>
+                    </div>
+
+                    {/* Modal Category Dropdown Menu: EXACT TOP BOX SIZE ONLY, STRICTLY DOWNWARDS */}
+                    {modalCategoryOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          right: 0,
+                          width: "100%",
+                          minWidth: "100%",
+                          maxWidth: "100%",
+                          boxSizing: "border-box",
+                          background: "#ffffff",
+                          border: "1px solid #c7bffb",
+                          borderRadius: "8px",
+                          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.14)",
+                          zIndex: 9999,
+                          overflow: "hidden",
+                          padding: "4px 0",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {CATEGORIES.filter((c) => c !== "All Categories").map((cat) => {
+                          const isSelected = formData.category === cat;
+                          return (
+                            <div
+                              key={cat}
+                              onClick={() => {
+                                setFormData({ ...formData, category: cat });
+                                setModalCategoryOpen(false);
+                              }}
+                              style={{
+                                padding: "7px 10px",
+                                fontSize: "0.76rem",
+                                fontFamily: "'Poppins', sans-serif",
+                                color: isSelected ? "#ffffff" : "var(--ink)",
+                                background: isSelected ? "var(--accent)" : "transparent",
+                                cursor: "pointer",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                transition: "background 0.1s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelected) e.currentTarget.style.background = "#f4f3ff";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelected) e.currentTarget.style.background = "transparent";
+                              }}
+                              title={cat}
+                            >
+                              {cat}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div className="m-field">
                     <label>Position / Role</label>
@@ -909,13 +1071,14 @@ const InternalPartners = () => {
                   <div className="m-field">
                     <label>Phone Number</label>
                     <div
+                      ref={phoneDropdownRef}
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        border: "1px solid var(--border)",
+                        border: phoneCodeDropdownOpen ? "1px solid var(--accent)" : "1px solid var(--border)",
                         background: "#fafbfe",
-                        borderRadius: "var(--radius-sm)",
-                        height: "38px",
+                        borderRadius: "7px",
+                        height: "34px",
                         padding: "0 10px",
                         boxSizing: "border-box",
                         transition: "all 0.15s ease",
@@ -923,8 +1086,9 @@ const InternalPartners = () => {
                       }}
                       className="ip-phone-input-group"
                     >
-                      {/* Country Calling Code & Flag selector */}
+                      {/* Country Calling Code & Flag trigger */}
                       <div
+                        onClick={() => setPhoneCodeDropdownOpen((prev) => !prev)}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -935,7 +1099,9 @@ const InternalPartners = () => {
                           cursor: "pointer",
                           flexShrink: 0,
                           height: "100%",
+                          userSelect: "none",
                         }}
+                        title="Click to select country calling code"
                       >
                         <img
                           src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
@@ -951,30 +1117,20 @@ const InternalPartners = () => {
                             e.target.style.display = "none";
                           }}
                         />
-                        <span style={{ fontSize: "13px", fontWeight: "600", color: "var(--ink)" }}>
+                        <span style={{ fontSize: "12px", fontWeight: "600", color: "var(--ink)" }}>
                           {currentPhoneCountry.code}
                         </span>
-                        <span style={{ fontSize: "8px", color: "var(--ink-faint)" }}>▼</span>
-                        <select
-                          value={selectedPhoneIso}
-                          onChange={(e) => handlePhoneCountryChange(e.target.value)}
-                          title="Select Country Calling Code"
+                        <span
                           style={{
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            opacity: 0,
-                            cursor: "pointer",
+                            fontSize: "8px",
+                            color: "var(--ink-faint)",
+                            display: "inline-block",
+                            transform: phoneCodeDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                            transition: "transform 0.15s ease",
                           }}
                         >
-                          {dialCodeOptions.map((opt) => (
-                            <option key={`${opt.isoCode}-${opt.code}`} value={opt.isoCode}>
-                              {opt.name} ({opt.code})
-                            </option>
-                          ))}
-                        </select>
+                          ▼
+                        </span>
                       </div>
 
                       {/* Phone Number Input */}
@@ -992,17 +1148,160 @@ const InternalPartners = () => {
                           border: "none",
                           outline: "none",
                           background: "transparent",
-                          fontSize: "0.85rem",
+                          fontSize: "0.78rem",
                           fontWeight: "500",
                           color: "var(--ink)",
                           flex: 1,
                           width: "100%",
                           height: "100%",
-                          padding: "0 0 0 10px",
+                          padding: "0 0 0 8px",
                           boxSizing: "border-box",
                           boxShadow: "none",
                         }}
                       />
+
+                      {/* Phone Code Dropdown Menu: EXACT TOP BOX SIZE ONLY, STRICTLY DOWNWARDS */}
+                      {phoneCodeDropdownOpen && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "calc(100% + 4px)",
+                            left: 0,
+                            right: 0,
+                            width: "100%",
+                            minWidth: "100%",
+                            maxWidth: "100%",
+                            boxSizing: "border-box",
+                            background: "#ffffff",
+                            border: "1px solid #c7bffb",
+                            borderRadius: "8px",
+                            boxShadow: "0 8px 24px rgba(15, 23, 42, 0.14)",
+                            zIndex: 9999,
+                            overflow: "hidden",
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {/* Search wrap */}
+                          <div
+                            style={{
+                              padding: "6px 8px",
+                              borderBottom: "1px solid #edf0f7",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              background: "#fafbfe",
+                            }}
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5">
+                              <circle cx="11" cy="11" r="8" />
+                              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="Search country or code..."
+                              value={phoneCodeSearch}
+                              onChange={(e) => setPhoneCodeSearch(e.target.value)}
+                              autoFocus
+                              style={{
+                                width: "100%",
+                                border: "none",
+                                outline: "none",
+                                background: "transparent",
+                                fontSize: "11.5px",
+                                fontFamily: "'Poppins', sans-serif",
+                                color: "var(--ink)",
+                                height: "22px",
+                                padding: 0,
+                              }}
+                            />
+                            {phoneCodeSearch && (
+                              <span
+                                onClick={() => setPhoneCodeSearch("")}
+                                style={{ cursor: "pointer", fontSize: "11px", color: "#94a3b8" }}
+                              >
+                                ✕
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Code List */}
+                          <div
+                            style={{
+                              maxHeight: "160px",
+                              overflowY: "auto",
+                              overflowX: "hidden",
+                              padding: "3px 0",
+                            }}
+                          >
+                            {filteredDialCodes.length === 0 ? (
+                              <div style={{ padding: "8px 10px", fontSize: "11.5px", color: "#94a3b8", textAlign: "center" }}>
+                                No codes found
+                              </div>
+                            ) : (
+                              filteredDialCodes.map((opt) => {
+                                const isSelected = opt.isoCode === selectedPhoneIso;
+                                return (
+                                  <div
+                                    key={`${opt.isoCode}-${opt.code}`}
+                                    onClick={() => {
+                                      handlePhoneCountryChange(opt.isoCode);
+                                      setPhoneCodeDropdownOpen(false);
+                                      setPhoneCodeSearch("");
+                                    }}
+                                    style={{
+                                      padding: "6px 10px",
+                                      fontSize: "11.5px",
+                                      fontFamily: "'Poppins', sans-serif",
+                                      color: isSelected ? "#ffffff" : "var(--ink)",
+                                      background: isSelected ? "var(--accent)" : "transparent",
+                                      cursor: "pointer",
+                                      whiteSpace: "nowrap",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      gap: "6px",
+                                      transition: "background 0.1s ease",
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      if (!isSelected) e.currentTarget.style.background = "#f4f3ff";
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      if (!isSelected) e.currentTarget.style.background = "transparent";
+                                    }}
+                                  >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                      <img
+                                        src={`https://flagcdn.com/w40/${opt.isoCode.toLowerCase()}.png`}
+                                        alt={opt.name}
+                                        style={{
+                                          width: "16px",
+                                          height: "11px",
+                                          objectFit: "cover",
+                                          borderRadius: "2px",
+                                          flexShrink: 0,
+                                        }}
+                                        onError={(e) => {
+                                          e.target.style.display = "none";
+                                        }}
+                                      />
+                                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        {opt.name}
+                                      </span>
+                                    </div>
+                                    <span style={{ fontWeight: "600", fontSize: "11px", color: isSelected ? "#ffffff" : "var(--ink-soft)", flexShrink: 0 }}>
+                                      {opt.code}
+                                    </span>
+                                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

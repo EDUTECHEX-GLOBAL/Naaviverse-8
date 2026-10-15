@@ -7,8 +7,16 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 /* ── Normalizers ────────────────────────────────────────────────── */
 const normalizePlan = (planTier) => {
   if (!planTier) return "Standard";
-  const map = { gold: "Standard", silver: "Pro", platinum: "Pro Plus" };
-  return map[planTier.toLowerCase()] || planTier;
+  const clean = String(planTier).trim().toLowerCase().replace(/[\s_-]+/g, "");
+  const map = {
+    standard: "Standard",
+    gold: "Standard",
+    pro: "Pro",
+    silver: "Pro",
+    proplus: "Pro Plus",
+    platinum: "Pro Plus",
+  };
+  return map[clean] || (planTier.charAt(0).toUpperCase() + planTier.slice(1));
 };
 const normalizeLayer = (tier) => {
   if (!tier) return "Micro";
@@ -52,6 +60,9 @@ const PLAN_META = {
   Standard:   { bg: "#eff6ff", color: "#2563eb", border: "#bfdbfe" },
   Pro:        { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
   "Pro Plus": { bg: "#fff7ed", color: "#ea580c", border: "#fed7aa" },
+  proplus:    { bg: "#fff7ed", color: "#ea580c", border: "#fed7aa" },
+  pro:        { bg: "#f0fdf4", color: "#16a34a", border: "#bbf7d0" },
+  standard:   { bg: "#eff6ff", color: "#2563eb", border: "#bfdbfe" },
 };
 const AVATAR_GRADIENTS = [
   ["#fbbf24","#d97706"],["#34d399","#059669"],
@@ -132,10 +143,19 @@ export default function Subscriptions() {
   }));
 
   const filtered = normalized.filter((s) => {
-    const q = search.toLowerCase();
-    const matchSearch = s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
-    const matchPlan   = planFilter === "All" || s.plan.toLowerCase() === planFilter.toLowerCase();
-    const matchStatus = statusFilter === "All" || s.status.toLowerCase() === statusFilter.toLowerCase();
+    const q = search.toLowerCase().trim();
+    const matchSearch =
+      !q ||
+      s.name.toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q) ||
+      s.plan.toLowerCase().includes(q);
+    const matchPlan =
+      planFilter === "All" ||
+      s.plan.toLowerCase().replace(/[\s_-]+/g, "") ===
+        planFilter.toLowerCase().replace(/[\s_-]+/g, "");
+    const matchStatus =
+      statusFilter === "All" ||
+      s.status.toLowerCase() === statusFilter.toLowerCase();
     return matchSearch && matchPlan && matchStatus;
   });
 

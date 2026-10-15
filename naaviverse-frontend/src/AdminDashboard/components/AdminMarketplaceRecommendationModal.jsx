@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import ReactDOM from "react-dom";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 
@@ -185,7 +186,7 @@ export default function AdminMarketplaceRecommendationModal({
   const isFormValid =
     activeTab === "custom" ? customName.trim().length > 0 : Boolean(selectedService);
 
-  return (
+  const modalElement = (
     <div className="admin-mkt-rec-overlay" onClick={onClose}>
       <div className="admin-mkt-rec-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -572,4 +573,8 @@ export default function AdminMarketplaceRecommendationModal({
       )}
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? ReactDOM.createPortal(modalElement, document.body)
+    : modalElement;
 }

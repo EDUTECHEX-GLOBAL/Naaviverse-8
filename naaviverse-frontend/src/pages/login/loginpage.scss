@@ -869,26 +869,32 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0
   line-height: 1.6;
 }
 
-.back-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 13.5px;
-  color: $primary;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 18px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  text-align: center;
-  width: 100%;
+.login-form-panel,
+.login-card,
+.login-container,
+.admin-login-wrapper,
+.admin-login-card {
+  .back-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13.5px;
+    color: $primary;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 18px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-align: center;
+    width: 100%;
 
-  &:hover {
-    color: $primary-dark;
-    background: rgba(44, 124, 178, 0.06);
-    text-decoration: underline;
+    &:hover {
+      color: $primary-dark;
+      background: rgba(44, 124, 178, 0.06);
+      text-decoration: underline;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import "./MarketplaceAssistance.scss";
 import marketplaceReplacementService from "../../services/marketplaceReplacementService";
 import AdminMarketplaceRecommendationModal from "./AdminMarketplaceRecommendationModal";
@@ -28,8 +29,20 @@ export default function AssistanceRequestDetailsModal({
   const [sending, setSending] = useState(false);
   const [showRecModal, setShowRecModal] = useState(false);
   const [copiedTicket, setCopiedTicket] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState("details"); // "details" | "chat" | "all"
   const messagesEndRef = useRef(null);
   const chatMessagesRef = useRef(null);
+
+  // Lock body scroll when modal is open so background does not scroll on mobile
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   const handleCopyTicket = (e) => {
     e.stopPropagation();
@@ -37,6 +50,17 @@ export default function AssistanceRequestDetailsModal({
     navigator.clipboard?.writeText(request.id);
     setCopiedTicket(true);
     setTimeout(() => setCopiedTicket(false), 2000);
+  };
+
+  const handleStatusUpdate = (newStatus) => {
+    if (typeof onStatusChange === "function") {
+      const updated = { ...request, status: newStatus };
+      if (onStatusChange.length === 1) {
+        onStatusChange(updated);
+      } else {
+        onStatusChange(request.id, newStatus);
+      }
+    }
   };
 
   const loadMessages = React.useCallback(async () => {
@@ -102,7 +126,7 @@ export default function AssistanceRequestDetailsModal({
       });
       setMessages((prev) => [...prev, sent]);
       if (request.status === "pending") {
-        onStatusChange(request.id, "reviewing");
+        handleStatusUpdate("reviewing");
       }
     } catch (err) {
       console.error("Error recommending service:", err);
@@ -111,38 +135,45 @@ export default function AssistanceRequestDetailsModal({
 
   const reasonsList = request.userRequirement?.reasons || [];
 
-  return (
+  const modalElement = (
     <div className="admin-assist-details-overlay" onClick={onClose}>
       <div className="admin-assist-details-drawer" onClick={(e) => e.stopPropagation()}>
         {/* Top Header */}
         <div className="aadd-header">
-          <div>
+          <div className="aadd-header-content">
             <div className="aadd-meta-top">
-              <span
-                className="aadd-id"
-                onClick={handleCopyTicket}
-                title="Click to copy Ticket ID"
-                style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
-              >
-                <span>Ticket #{request.id}</span>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-                {copiedTicket && (
-                  <span style={{ fontSize: "10.5px", color: "#16a34a", fontWeight: 700 }}>Copied!</span>
-                )}
-              </span>
-              <span className={`aadd-status-badge status-${request.status}`}>
-                {request.status.toUpperCase()}
-              </span>
+              <div className="aadd-meta-left">
+                <span
+                  className="aadd-id"
+                  onClick={handleCopyTicket}
+                  title="Click to copy Ticket ID"
+                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <span className="aadd-id-text">Ticket #{request.id}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  {copiedTicket && (
+                    <span style={{ fontSize: "10.5px", color: "#16a34a", fontWeight: 700 }}>Copied!</span>
+                  )}
+                </span>
+                <span className={`aadd-status-badge status-${request.status}`}>
+                  {request.status.toUpperCase()}
+                </span>
+              </div>
+              <button className="aadd-close-btn aadd-close-btn--inline" onClick={onClose} aria-label="Close details modal" title="Close">✕</button>
             </div>
-            <h2 className="aadd-title">{request.userName} ({request.userEmail})</h2>
+            <h2 className="aadd-title">
+              <span className="aadd-user-name">{request.userName}</span>
+              {request.userEmail && <span className="aadd-user-email"> ({request.userEmail})</span>}
+            </h2>
             <div className="aadd-path-step">
-              Path: <strong>{request.pathName}</strong> › Step: <strong>{request.stepName}</strong>
+              <span className="aadd-path-part">Path: <strong>{request.pathName}</strong></span>
+              {request.stepName && <span className="aadd-step-part"> › Step: <strong>{request.stepName}</strong></span>}
             </div>
           </div>
-          <button className="aadd-close-btn" onClick={onClose}>✕</button>
+          <button className="aadd-close-btn aadd-close-btn--desktop" onClick={onClose} aria-label="Close details modal" title="Close">✕</button>
         </div>
 
         {/* Action Toolbar */}
@@ -152,7 +183,7 @@ export default function AssistanceRequestDetailsModal({
             <select
               className="status-dropdown"
               value={request.status}
-              onChange={(e) => onStatusChange(request.id, e.target.value)}
+              onChange={(e) => handleStatusUpdate(e.target.value)}
             >
               <option value="pending">Pending</option>
               <option value="reviewing">In Review / Chatting</option>
@@ -169,8 +200,44 @@ export default function AssistanceRequestDetailsModal({
           </button>
         </div>
 
+        {/* Mobile Tab Switcher (Visible only on mobile <= 768px) */}
+        <div className="aadd-mobile-tab-nav">
+          <button
+            type="button"
+            className={`aadd-mobile-tab-btn ${activeMobileTab === "details" ? "active" : ""}`}
+            onClick={() => setActiveMobileTab("details")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span>Ticket Details</span>
+          </button>
+          <button
+            type="button"
+            className={`aadd-mobile-tab-btn ${activeMobileTab === "chat" ? "active" : ""}`}
+            onClick={() => setActiveMobileTab("chat")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>Live Chat {messages.length > 0 ? `(${messages.length})` : ""}</span>
+          </button>
+          <button
+            type="button"
+            className={`aadd-mobile-tab-btn ${activeMobileTab === "all" ? "active" : ""}`}
+            onClick={() => setActiveMobileTab("all")}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+            </svg>
+            <span>All</span>
+          </button>
+        </div>
+
         {/* Content Container (Two Column / Split) */}
-        <div className="aadd-content-grid">
+        <div className={`aadd-content-grid tab-${activeMobileTab}`}>
           {/* Left Column: Requirements & History */}
           <div className="aadd-info-pane">
             <div className="aadd-card">
@@ -287,4 +354,9 @@ export default function AssistanceRequestDetailsModal({
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? ReactDOM.createPortal(modalElement, document.body)
+    : modalElement;
 }
+

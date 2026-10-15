@@ -155,105 +155,122 @@ $pink-soft: rgba(99, 102, 241, 0.05);
 }
 
 // ─── Back-to-paths Banner ───────────────────────────────────────
-.steps-back-banner {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  gap: 16px;
-  background: #e6f3f4;
-  border: 1px solid rgba(13, 107, 110, 0.2);
-  border-radius: 12px;
-  padding: 10px 16px;
-  margin: 10px 12px 0;
-  font-size: 0.85rem;
-  box-sizing: border-box;
+.steps-back-banner,
+.admin-steps-banner {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 10px 16px !important;
+  background: #e6f3f4 !important;
+  border: 1px solid rgba(13, 107, 110, 0.2) !important;
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  margin: 10px 12px 14px !important;
+  font-size: 0.85rem !important;
+  box-sizing: border-box !important;
 
-  .steps-banner-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    margin: 0;
-    padding: 0;
-    line-height: 1.4;
+  .admin-steps-banner-left {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
   }
 
+  .admin-steps-back-btn,
   .back-link {
-    cursor: pointer;
-    color: #0d6b6e;
-    font-weight: 600;
-    white-space: nowrap;
-    flex-shrink: 0;
+    cursor: pointer !important;
+    color: #0d6b6e !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    width: auto !important;
+    max-width: none !important;
     margin: 0 !important;
-    padding: 0;
-    line-height: 1.4;
-    display: inline-flex;
-    align-items: center;
-    transition: opacity 0.15s ease;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    background: transparent !important;
+    border: none !important;
+    font-size: 0.85rem !important;
+    font-family: 'Poppins', sans-serif !important;
+    transition: opacity 0.15s ease !important;
 
     &:hover {
-      text-decoration: underline;
-      opacity: 0.85;
+      text-decoration: underline !important;
+      opacity: 0.85 !important;
     }
   }
 
-  .back-separator {
-    display: none;
+  .admin-steps-banner-divider {
+    color: rgba(13, 107, 110, 0.35) !important;
+    font-size: 0.85rem !important;
+    user-select: none !important;
   }
 
-  .clear-filter-link {
-    color: #0d6b6e;
-    font-weight: 600;
-    margin: 0 !important;
-  }
-
+  .admin-steps-banner-label,
   .back-label {
-    color: #334155;
-    flex: 1 1 auto;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.4;
-    margin: 0;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
+    color: #334155 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
 
     strong {
-      color: #0f172a;
-      font-weight: 700;
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  .admin-steps-clear-btn,
+  .clear-filter-link {
+    background: rgba(13, 107, 110, 0.12) !important;
+    border: 1px solid rgba(13, 107, 110, 0.25) !important;
+    border-radius: 20px !important;
+    padding: 4px 12px !important;
+    cursor: pointer !important;
+    color: #0d6b6e !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    width: auto !important;
+    margin: 0 !important;
+    transition: all 0.15s ease !important;
+    font-family: 'Poppins', sans-serif !important;
+    flex-shrink: 0 !important;
+
+    &:hover {
+      background: #0d6b6e !important;
+      color: #ffffff !important;
+      border-color: #0d6b6e !important;
     }
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 10px 14px;
-    margin: 8px 10px 0;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+    margin: 8px 10px 12px !important;
 
-    .steps-banner-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      white-space: nowrap;
-      margin: 0;
+    .admin-steps-banner-left {
+      width: 100% !important;
     }
 
-    .back-link {
-      margin: 0 !important;
-    }
-
+    .admin-steps-banner-label,
     .back-label {
-      width: 100%;
-      font-size: 0.82rem;
-      white-space: normal;
-      word-break: break-word;
-      line-height: 1.4;
-      display: block;
+      width: 100% !important;
+      font-size: 0.82rem !important;
     }
   }
 }

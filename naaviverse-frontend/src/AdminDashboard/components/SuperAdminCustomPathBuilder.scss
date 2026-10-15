@@ -6,6 +6,7 @@
 .sacp-page-container {
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   min-height: 100%;
   background: #f8fafc;
   display: flex;
@@ -317,6 +318,7 @@
   display: flex;
   flex-direction: column;
   gap: 7px;
+  min-width: 0;
 
   label {
     font-size: 12.5px;
@@ -333,6 +335,8 @@
   select,
   textarea {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
     padding: 9px 12px;
     font-size: 13px;
@@ -1011,3 +1015,491 @@
     }
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE COMPATIBILITY & ALIGNMENT (max-width: 768px)
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .sacp-page-container {
+    padding: 10px 8px 24px 8px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ── Header ── */
+  .sacp-page-header {
+    padding: 14px 12px !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .sacp-header-top-row {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+    width: 100% !important;
+
+    .sacp-back-action-btn {
+      padding: 6px 10px !important;
+      font-size: 11.5px !important;
+      border-radius: 6px !important;
+    }
+
+    .sacp-status-tag {
+      font-size: 10.5px !important;
+      padding: 3px 8px !important;
+    }
+  }
+
+  .sacp-header-main-titles {
+    h2 {
+      font-size: 18px !important;
+      line-height: 1.3 !important;
+      margin: 0 !important;
+    }
+    p {
+      font-size: 12px !important;
+      line-height: 1.45 !important;
+      margin-top: 4px !important;
+      color: #64748b !important;
+    }
+  }
+
+  /* ── Request Summary Bar (Clean key-value alignment) ── */
+  .sacp-request-summary-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    margin-top: 12px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    .summary-item {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: flex-start !important;
+      gap: 10px !important;
+      font-size: 12px !important;
+      padding-bottom: 7px !important;
+      border-bottom: 1px dashed #e2e8f0 !important;
+
+      &:last-child {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+      }
+
+      .lbl {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.3px !important;
+        flex-shrink: 0 !important;
+        line-height: 1.4 !important;
+      }
+
+      .val {
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        text-align: right !important;
+        flex: 1 !important;
+        min-width: 0 !important;
+        word-break: break-word !important;
+        line-height: 1.4 !important;
+
+        &.highlight {
+          color: #4f46e5 !important;
+          font-weight: 700 !important;
+        }
+
+        &.badge-id {
+          font-size: 11px !important;
+          padding: 2px 7px !important;
+        }
+
+        &.val-email {
+          white-space: nowrap !important;
+          word-break: keep-all !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          font-size: 11.5px !important;
+        }
+      }
+
+      &.summary-item-email {
+        .val {
+          white-space: nowrap !important;
+          word-break: keep-all !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          font-size: 11.5px !important;
+        }
+      }
+    }
+  }
+
+  /* ── Stepper Bar (Smooth horizontal swipe on mobile) ── */
+  .sacp-stepper-bar {
+    display: flex !important;
+    align-items: center !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 6px 8px !important;
+    margin-bottom: 14px !important;
+    gap: 4px !important;
+    border-radius: 10px !important;
+    scrollbar-width: none !important;
+    &::-webkit-scrollbar { display: none !important; }
+
+    .sacp-step-tab {
+      flex: 0 0 auto !important;
+      padding: 6px 10px !important;
+      font-size: 11.5px !important;
+      gap: 6px !important;
+      border-radius: 6px !important;
+
+      .step-num {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 11px !important;
+      }
+
+      .step-label {
+        white-space: nowrap !important;
+      }
+    }
+
+    .step-divider {
+      min-width: 8px !important;
+      margin: 0 2px !important;
+      flex-shrink: 0 !important;
+    }
+  }
+
+  /* ── Body & Card Section ── */
+  .sacp-page-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .sacp-stage-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .sacp-card-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    padding: 16px 12px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+
+    .sacp-section-heading {
+      font-size: 14.5px !important;
+      line-height: 1.35 !important;
+      word-break: break-word !important;
+      margin-bottom: 4px !important;
+    }
+
+    .sacp-section-sub {
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+      margin-bottom: 14px !important;
+    }
+  }
+
+  /* ── Form Grids & Fields (Fits 100% on mobile screens) ── */
+  .sacp-grid-2col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-top: 12px !important;
+
+    .sacp-col-span-2 {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  .sacp-field {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    gap: 5px !important;
+
+    label {
+      font-size: 12px !important;
+      word-break: break-word !important;
+      line-height: 1.35 !important;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      box-sizing: border-box !important;
+      font-size: 13px !important;
+      border-radius: 8px !important;
+    }
+
+    input,
+    select {
+      height: 38px !important;
+    }
+  }
+
+  .sacp-pill-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    width: 100% !important;
+
+    .sacp-toggle-pill {
+      padding: 5px 10px !important;
+      font-size: 11.5px !important;
+      border-radius: 6px !important;
+    }
+  }
+
+  .sacp-duration-inputs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+
+    > div {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+    }
+  }
+
+  /* ── Stage 2: Milestones & Views ── */
+  .sacp-step-nav-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    .step-pill-list {
+      display: flex !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+      padding-bottom: 3px !important;
+      scrollbar-width: none !important;
+      &::-webkit-scrollbar { display: none !important; }
+
+      .sacp-step-nav-item {
+        flex: 0 0 auto !important;
+        padding: 5px 10px !important;
+        font-size: 11.5px !important;
+
+        .step-remove-icon {
+          display: none !important;
+        }
+      }
+    }
+
+    .sacp-add-step-btn {
+      width: 100% !important;
+      justify-content: center !important;
+      padding: 6px 12px !important;
+      font-size: 12px !important;
+    }
+  }
+
+  .sacp-active-step-panel {
+    padding: 14px 12px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+
+    .step-main-meta {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      width: 100% !important;
+    }
+  }
+
+  .sacp-views-container {
+    width: 100% !important;
+
+    .sacp-view-selector-tabs {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      .sacp-view-tab {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 12px !important;
+      }
+    }
+
+    .sacp-view-editor-card {
+      padding: 12px !important;
+      border-radius: 8px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  /* ── Stage 3: Marketplace Recommendations ── */
+  .sacp-market-header-nav {
+    width: 100% !important;
+
+    .market-selector-row {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      width: 100% !important;
+
+      .market-sel-group {
+        width: 100% !important;
+        justify-content: space-between !important;
+
+        label {
+          font-size: 12px !important;
+        }
+
+        select {
+          flex: 1 !important;
+          max-width: 60% !important;
+          height: 36px !important;
+          font-size: 12px !important;
+        }
+      }
+    }
+
+    .sacp-market-cat-tabs {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      width: 100% !important;
+      padding-bottom: 6px !important;
+      scrollbar-width: none !important;
+      &::-webkit-scrollbar { display: none !important; }
+
+      .sacp-cat-tab {
+        flex: 0 0 auto !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+      }
+    }
+  }
+
+  .sacp-add-rec-box {
+    padding: 12px !important;
+    border-radius: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    .sacp-rec-form-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      width: 100% !important;
+
+      input,
+      select {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        height: 36px !important;
+      }
+    }
+
+    .sacp-add-rec-btn {
+      width: 100% !important;
+      justify-content: center !important;
+    }
+  }
+
+  .sacp-rec-list {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* ── Stage 4: Review ── */
+  .sacp-review-card {
+    padding: 14px 12px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    .review-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      padding: 12px !important;
+    }
+  }
+
+  /* ── Page Footer Navigation ── */
+  .sacp-page-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    .footer-left,
+    .footer-right {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 8px !important;
+      width: 100% !important;
+
+      .sacp-btn {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+    }
+  }
+}
+

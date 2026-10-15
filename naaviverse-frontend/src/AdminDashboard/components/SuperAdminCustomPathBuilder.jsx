@@ -553,9 +553,9 @@ export default function SuperAdminCustomPathBuilder({
             <span className="lbl">Student:</span>
             <span className="val">{request.userName || "Student"}</span>
           </div>
-          <div className="summary-item">
+          <div className="summary-item summary-item-email">
             <span className="lbl">Email:</span>
-            <span className="val">{request.userEmail}</span>
+            <span className="val val-email" title={request.userEmail}>{request.userEmail}</span>
           </div>
           <div className="summary-item">
             <span className="lbl">Requested Goal:</span>
