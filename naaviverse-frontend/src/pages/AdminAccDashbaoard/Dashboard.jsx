@@ -15,14 +15,45 @@ const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
   const [pos, setPos] = useState(null);
 
-  useEffect(() => {
+  const updatePos = useCallback(() => {
     if (isOpen && anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: rect.right });
+      const viewportWidth = window.innerWidth;
+      const isMobile = viewportWidth <= 768;
+
+      if (isMobile) {
+        // Mobile: align with button left edge, clamped within safe margins so it's never cut off
+        const dropdownWidth = 210;
+        const left = Math.max(12, Math.min(rect.left, viewportWidth - dropdownWidth - 12));
+        setPos({
+          top: rect.bottom + 6,
+          left,
+          isMobile: true,
+        });
+      } else {
+        // Desktop: preserve existing exact behavior (anchor to right with translateX(-100%))
+        setPos({
+          top: rect.bottom + 6,
+          left: rect.right,
+          isMobile: false,
+        });
+      }
     } else {
       setPos(null);
     }
   }, [isOpen, anchorRef]);
+
+  useEffect(() => {
+    updatePos();
+    if (isOpen) {
+      window.addEventListener("resize", updatePos);
+      window.addEventListener("scroll", updatePos, true);
+      return () => {
+        window.removeEventListener("resize", updatePos);
+        window.removeEventListener("scroll", updatePos, true);
+      };
+    }
+  }, [isOpen, updatePos]);
 
   if (!isOpen || !pos) return null;
 
@@ -30,8 +61,16 @@ function PortalDropdown({ anchorRef, isOpen, onClose, children }) {
     <>
       <div onClick={onClose} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99998 }} />
       <div
-        className="role-dropdown-menu"
-        style={{ position: "fixed", top: pos.top, left: pos.left, transform: "translateX(-100%)", zIndex: 99999, minWidth: "210px" }}
+        className={`role-dropdown-menu ${pos.isMobile ? "mobile-dropdown" : ""}`}
+        style={{
+          position: "fixed",
+          top: pos.top,
+          left: pos.left,
+          transform: pos.isMobile ? "none" : "translateX(-100%)",
+          zIndex: 99999,
+          minWidth: "210px",
+          maxWidth: "calc(100vw - 24px)",
+        }}
       >
         {children}
       </div>
@@ -177,6 +216,60 @@ const PURCHASE_AVATAR_PALETTE = [
   { color: "#ede9fe", textColor: "#4338ca" },
 ];
 const PLAN_BADGE_CLASS = { Micro: "plan-micro", Nano: "plan-nano", Bundle: "plan-bundle", Premium: "plan-premium" };
+
+const renderEventTitle = (title) => {
+  if (!title) return null;
+  const match = typeof title === "string" && title.match(/^Selected Path:\s*(.*)$/i);
+  if (match) {
+    const pathText = match[1].trim();
+    const bulletIdx = pathText.indexOf(" • ");
+    let line1 = pathText;
+    let line2 = "";
+    if (bulletIdx !== -1) {
+      line1 = pathText.slice(0, bulletIdx).trim();
+      line2 = pathText.slice(bulletIdx + 3).trim();
+    } else {
+      const words = pathText.split(" ");
+      if (words.length > 5) {
+        const mid = Math.ceil(words.length / 2);
+        line1 = words.slice(0, mid).join(" ");
+        line2 = words.slice(mid).join(" ");
+      }
+    }
+    return (
+      <div style={{ minWidth: 0, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--slate-800)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px 8px" }}>
+          <span style={{
+            display: "inline-flex",
+            alignItems: "center",
+            background: "#ede9fe",
+            color: "#6d28d9",
+            fontSize: "10px",
+            fontWeight: 700,
+            padding: "2px 7px",
+            borderRadius: "4px",
+            letterSpacing: "0.4px",
+            textTransform: "uppercase",
+            flexShrink: 0
+          }}>
+            Selected Path
+          </span>
+          <span style={{ color: "var(--slate-800)", fontWeight: 600 }}>{line1}</span>
+        </div>
+        {line2 && (
+          <div style={{ fontSize: 12, color: "var(--slate-500)", marginTop: 2, overflowWrap: "break-word", wordBreak: "normal" }}>
+            {line2}
+          </div>
+        )}
+      </div>
+    );
+  }
+  return (
+    <div style={{ fontSize: 13, fontWeight: 500, color: "var(--slate-800)", lineHeight: 1.35, overflowWrap: "break-word", wordBreak: "normal" }}>
+      {title}
+    </div>
+  );
+};
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function Dashboard() {
@@ -672,7 +765,7 @@ export default function Dashboard() {
             <div className="home-header-left">
               <p className="home-sub">Your AI-powered path engine — all key metrics at a glance</p>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="home-header-right-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
 
               {/* Bell + dropdown */}
               <div ref={notifDropdownRef} style={{ position: "relative" }}>
@@ -734,6 +827,12 @@ export default function Dashboard() {
               </div>
 
               <div className="home-date-badge">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" />
+                </svg>
                 {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
               </div>
             </div>
@@ -766,7 +865,10 @@ export default function Dashboard() {
           <div className="kpi-section">
             <div className="kpi-header">
               <h2>Key Performance Indicators</h2>
-              <span className="kpi-tag">Live Data</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span className="kpi-swipe-hint">Swipe ↔</span>
+                <span className="kpi-tag">Live Data</span>
+              </div>
             </div>
 
             <div className="kpi-grid-2col">
@@ -1148,10 +1250,13 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="table-wrapper">
-              <table>
+              <table className="activity-table" style={{ tableLayout: "fixed", width: "100%" }}>
                 <thead>
                   <tr>
-                    <th>User</th><th>Status</th><th>Last Event</th><th>Journey</th><th>Actions</th>
+                    <th className="col-act-user" style={{ width: "25%" }}>User</th>
+                    <th className="col-act-status" style={{ width: "14%" }}>Status</th>
+                    <th className="col-act-event" style={{ width: "45%" }}>Last Event</th>
+                    <th className="col-act-actions" style={{ width: "16%", textAlign: "center", paddingRight: "36px" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1161,45 +1266,48 @@ export default function Dashboard() {
                     const cfg = TYPE_CONFIG[last?.type] || TYPE_CONFIG.login;
                     return (
                       <tr key={u.id} className="table-row">
-                        <td>
-                          <div className="business-info">
-                            <div className="row-avatar" style={{ background: palette.color, color: palette.textColor }}>
+                        <td className="col-act-user" style={{ verticalAlign: "middle", overflow: "hidden" }}>
+                          <div className="business-info" style={{ minWidth: 0 }}>
+                            <div className="row-avatar" style={{ background: palette.color, color: palette.textColor, flexShrink: 0 }}>
                               {u.initials || (u.name?.trim() ? u.name.trim().split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : null) || u.email?.slice(0, 2).toUpperCase() || "??"}
                             </div>
-                            <div>
-                              <div className="business-name">{u.name}</div>
-                              <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                            <div style={{ minWidth: 0, overflow: "hidden" }}>
+                              <div className="business-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name}</div>
+                              <div style={{ fontSize: 12, color: "var(--slate-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
                             </div>
                           </div>
                         </td>
-                        <td>
-                          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: STATUS_COLORS[u.status] || STATUS_COLORS.offline, fontWeight: 600 }}>
+                        <td className="col-act-status" style={{ verticalAlign: "middle", whiteSpace: "nowrap" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: STATUS_COLORS[u.status] || STATUS_COLORS.offline, fontWeight: 600 }}>
                             <span style={{ width: 7, height: 7, borderRadius: "50%", background: STATUS_COLORS[u.status] || STATUS_COLORS.offline, display: "inline-block" }} />
                             {u.status?.charAt(0).toUpperCase() + u.status?.slice(1) || "Offline"}
                           </span>
                         </td>
-                        <td>
+                        <td className="col-act-event" style={{ verticalAlign: "middle", overflow: "hidden" }}>
                           {last ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <span style={{ background: cfg.bg, padding: "4px 6px", borderRadius: 6, fontSize: 13 }}>{cfg.emoji}</span>
-                              <div>
-                                <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
-                                <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0 }}>
+                              <span style={{
+                                width: 26,
+                                height: 26,
+                                borderRadius: 7,
+                                background: cfg.bg,
+                                color: cfg.color,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                marginTop: 1
+                              }}>
+                                {cfg.svg}
+                              </span>
+                              <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+                                {renderEventTitle(last.title)}
+                                <div style={{ fontSize: 11, color: "var(--slate-400)", marginTop: 2 }}>{last.time}</div>
                               </div>
                             </div>
                           ) : <span style={{ color: "var(--slate-300)" }}>—</span>}
                         </td>
-                        <td>
-                          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                            {["login", "explore", "path", "market"].map((t) => {
-                              const done = u.events?.some((e) => e.type === t);
-                              return (
-                                <span key={t} title={t} style={{ width: 9, height: 9, borderRadius: "50%", background: done ? TYPE_CONFIG[t]?.bg : "#e2e8f0", border: done ? `1.5px solid ${TYPE_CONFIG[t]?.color}40` : "none", display: "inline-block" }} />
-                              );
-                            })}
-                          </div>
-                        </td>
-                        <td>
+                        <td className="col-act-actions" style={{ textAlign: "center", verticalAlign: "middle", whiteSpace: "nowrap", paddingRight: "36px" }}>
                           <button className="view-btn" onClick={() => setSelectedActivityUser({ ...u, palette })}>View Journey</button>
                         </td>
                       </tr>
@@ -1264,7 +1372,7 @@ export default function Dashboard() {
                     </div>
                     <div className="activity-tl-body">
                       <div className="activity-tl-time">{ev.time}</div>
-                      <div className="activity-tl-title">{ev.title}</div>
+                      <div className="activity-tl-title">{renderEventTitle(ev.title, 500)}</div>
                       {ev.type === "step" && ev.pathName && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 2, margin: "4px 0" }}>
                           <div style={{ fontSize: 12, color: "var(--violet-600)", fontWeight: 600 }}><SvgPin size={14} /> {ev.pathName}</div>
@@ -1342,9 +1450,15 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="table-wrapper">
-              <table>
+              <table className="partner-activity-table" style={{ tableLayout: "fixed", width: "100%" }}>
                 <thead>
-                  <tr><th>Partner</th><th>Type</th><th>Status</th><th>Last Event</th><th>Journey</th><th>Actions</th></tr>
+                  <tr>
+                    <th className="col-pa-partner" style={{ width: "23%" }}>Partner</th>
+                    <th className="col-pa-type" style={{ width: "18%" }}>Type</th>
+                    <th className="col-pa-status" style={{ width: "13%" }}>Status</th>
+                    <th className="col-pa-event" style={{ width: "31%" }}>Last Event</th>
+                    <th className="col-pa-actions" style={{ width: "15%", textAlign: "center", paddingRight: "36px" }}>Actions</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {filteredPartners.map((u, idx) => {
@@ -1352,39 +1466,49 @@ export default function Dashboard() {
                     const last = u.events?.[u.events.length - 1];
                     return (
                       <tr key={u.id} className="table-row">
-                        <td>
-                          <div className="business-info">
-                            <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>{u.initials}</div>
-                            <div>
-                              <div className="business-name">{u.name}</div>
-                              <div style={{ fontSize: 12, color: "var(--slate-400)" }}>{u.email}</div>
+                        <td className="col-pa-partner" style={{ verticalAlign: "middle", overflow: "hidden" }}>
+                          <div className="business-info" style={{ minWidth: 0 }}>
+                            <div className="row-avatar" style={{ background: pal.color, color: pal.textColor, flexShrink: 0 }}>{u.initials}</div>
+                            <div style={{ minWidth: 0, overflow: "hidden" }}>
+                              <div className="business-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name}</div>
+                              <div style={{ fontSize: 12, color: "var(--slate-400)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.email}</div>
                             </div>
                           </div>
                         </td>
-                        <td><span className="type-badge">{u.type}</span></td>
-                        <td>
-                          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8" }}>
+                        <td className="col-pa-type" style={{ verticalAlign: "middle", overflow: "hidden" }}>
+                          <span className="type-badge" title={u.type}>{u.type}</span>
+                        </td>
+                        <td className="col-pa-status" style={{ verticalAlign: "middle", whiteSpace: "nowrap", paddingLeft: "6px" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: PARTNER_STATUS_COLORS[u.status] || "#94a3b8" }}>
                             <span style={{ width: 7, height: 7, borderRadius: "50%", background: PARTNER_STATUS_COLORS[u.status] || "#94a3b8", display: "inline-block" }} />
                             {u.status?.charAt(0).toUpperCase() + u.status?.slice(1) || "Offline"}
                           </span>
                         </td>
-                        <td>
+                        <td className="col-pa-event" style={{ verticalAlign: "middle", overflow: "hidden" }}>
                           {last ? (
-                            <div>
-                              <div style={{ fontSize: 13, fontWeight: 500 }}>{last.title}</div>
-                              <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{last.time}</div>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, minWidth: 0 }}>
+                              <span style={{
+                                width: 26,
+                                height: 26,
+                                borderRadius: 7,
+                                background: "#f1f5f9",
+                                color: "#475569",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                marginTop: 1
+                              }}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17L8 7l4 6 4-4 4 8" /></svg>
+                              </span>
+                              <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
+                                {renderEventTitle(last.title)}
+                                <div style={{ fontSize: 11, color: "var(--slate-400)", marginTop: 2 }}>{last.time}</div>
+                              </div>
                             </div>
                           ) : <span style={{ color: "var(--slate-300)" }}>—</span>}
                         </td>
-                        <td>
-                          <div style={{ display: "flex", gap: 5 }}>
-                            {["login", "publish", "listing", "approval", "invite", "message"].map((t) => {
-                              const done = u.events?.some((e) => e.type === t);
-                              return <span key={t} title={t} style={{ width: 9, height: 9, borderRadius: "50%", background: done ? "#10b981" : "#e2e8f0", border: done ? "1.5px solid #05966940" : "none", display: "inline-block" }} />;
-                            })}
-                          </div>
-                        </td>
-                        <td>
+                        <td className="col-pa-actions" style={{ textAlign: "center", verticalAlign: "middle", whiteSpace: "nowrap", paddingRight: "36px" }}>
                           <button className="view-btn" onClick={() => setSelectedPartnerUser({ ...u, palette: pal })}>View Journey</button>
                         </td>
                       </tr>
@@ -1452,7 +1576,7 @@ export default function Dashboard() {
                     </div>
                     <div className="activity-tl-body">
                       <div className="activity-tl-time">{ev.time}</div>
-                      <div className="activity-tl-title">{ev.title}</div>
+                      <div className="activity-tl-title">{renderEventTitle(ev.title, 500)}</div>
                       <div className="activity-tl-desc">{ev.desc}</div>
                       <span className={`activity-chip ${ev.chipClass}`}>{ev.chipLabel}</span>
                     </div>
@@ -1497,7 +1621,7 @@ export default function Dashboard() {
                 <p className="header-subtitle">All user purchases — micro · nano · bundle · premium plans</p>
               </div>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, background: "#e0e7ff", color: "#4338ca", padding: "6px 16px", borderRadius: 999, border: "1px solid #c7d2fe" }}>
+            <div className="pur-revenue-badge" style={{ fontSize: 13, fontWeight: 700, background: "#e0e7ff", color: "#4338ca", padding: "6px 16px", borderRadius: 999, border: "1px solid #c7d2fe" }}>
               Revenue: {purchaseStats.revenue}
             </div>
           </div>
@@ -1519,42 +1643,61 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="table-wrapper">
-              <table>
+              <table className="purchases-table">
                 <thead>
-                  <tr><th>User</th><th>Item</th><th>Plan</th><th>Marketplace</th><th>Amount</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+                  <tr>
+                    <th className="col-pur-user">User</th>
+                    <th className="col-pur-item">Item</th>
+                    <th className="col-pur-plan">Plan</th>
+                    <th className="col-pur-market">Marketplace</th>
+                    <th className="col-pur-amount">Amount</th>
+                    <th className="col-pur-date">Date</th>
+                    <th className="col-pur-status">Status</th>
+                    <th className="col-pur-actions">Actions</th>
+                  </tr>
                 </thead>
                 <tbody>
-                  {filteredPurchases.map((p, idx) => {
-                    const pal = PURCHASE_AVATAR_PALETTE[idx % PURCHASE_AVATAR_PALETTE.length];
-                    return (
-                      <tr key={p.id} className="table-row">
-                        <td>
-                          <div className="business-info">
-                            <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>{p.initials}</div>
-                            <div>
-                              <div className="business-name">{p.user}</div>
-                              <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.email}</div>
+                  {filteredPurchases.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="no-results" style={{ textAlign: "center", padding: "40px 14px", color: "var(--slate-400)" }}>
+                        <div className="empty-state">
+                          <div className="empty-icon">🛍️</div>
+                          <p>No {purchaseTab} purchases found</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPurchases.map((p, idx) => {
+                      const pal = PURCHASE_AVATAR_PALETTE[idx % PURCHASE_AVATAR_PALETTE.length];
+                      return (
+                        <tr key={p.id} className="table-row">
+                          <td className="col-pur-user">
+                            <div className="business-info">
+                              <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>{p.initials}</div>
+                              <div>
+                                <div className="business-name">{p.user}</div>
+                                <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.email}</div>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--slate-800)" }}>{p.item}</div>
-                          <div style={{ fontSize: 11, color: "var(--slate-400)" }}>{p.type}</div>
-                        </td>
-                        <td><span className={`plan-badge ${PLAN_BADGE_CLASS[p.plan]}`}>{p.plan}</span></td>
-                        <td style={{ fontSize: 12.5, color: "var(--slate-600)" }}>{p.marketplace}</td>
-                        <td style={{ fontSize: 14, fontWeight: 700, color: "#4f46e5" }}>{p.amount}</td>
-                        <td className="date-cell">{p.date}</td>
-                        <td>
-                          <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
-                            {p.status === "completed" ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Done</> : "Pending"}
-
-                          </span>
-                        </td>
-                        <td><button className="view-btn" onClick={() => setSelectedPurchase(p)}>Details</button></td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                          <td className="col-pur-item">
+                            <div className="pur-item-title">{p.item}</div>
+                            <div className="pur-item-type">{p.type}</div>
+                          </td>
+                          <td className="col-pur-plan"><span className={`plan-badge ${PLAN_BADGE_CLASS[p.plan]}`}>{p.plan}</span></td>
+                          <td className="col-pur-market">{p.marketplace}</td>
+                          <td className="col-pur-amount">{p.amount}</td>
+                          <td className="col-pur-date date-cell">{p.date}</td>
+                          <td className="col-pur-status">
+                            <span className={`status-pill ${p.status === "completed" ? "approved" : "pending"}`}>
+                              {p.status === "completed" ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Done</> : "Pending"}
+                            </span>
+                          </td>
+                          <td className="col-pur-actions"><button className="view-btn" onClick={() => setSelectedPurchase(p)}>Details</button></td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1961,7 +2104,7 @@ export default function Dashboard() {
               <PortalDropdown anchorRef={dropdownRef} isOpen={showRoleDropdown} onClose={() => setShowRoleDropdown(false)}>
                 <button className={roleView === "partner" ? "partner-active" : ""} onClick={() => { setRoleView("partner"); setTab("all"); setPartnerScope("all"); setShowRoleDropdown(false); }}>
                   <span className="menu-icon">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
                   </span> Partners
                   <span className="menu-count partner-count">{partnerData.length}</span>
                 </button>
@@ -2067,8 +2210,8 @@ export default function Dashboard() {
                     pathRequests.map((req, idx) => {
                       const pal = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
                       return (
-                        <tr key={req._id || req.requestId} className="table-row">
-                          <td>
+                        <tr key={req._id || req.requestId} className="table-row path-req-table-row">
+                          <td className="col-student">
                             <div className="business-info">
                               <div className="row-avatar" style={{ background: pal.color, color: pal.textColor }}>
                                 {req.userName?.slice(0, 2).toUpperCase() || "ST"}
@@ -2079,20 +2222,23 @@ export default function Dashboard() {
                               </div>
                             </div>
                           </td>
-                          <td>
+                          <td className="col-target">
                             <div style={{ fontSize: 13, fontWeight: 700, color: "var(--slate-800)" }}>{req.targetGoal}</div>
                             {req.targetInstitution && (
                               <div style={{ fontSize: 11.5, color: "#6366f1", fontWeight: 600 }}><SvgBuilding size={14} /> {req.targetInstitution}</div>
                             )}
                           </td>
-                          <td>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--slate-700)" }}>{req.sector}</div>
-                            <div style={{ fontSize: 11, color: "var(--slate-400)" }}><SvgClock size={14} /> {req.targetTimeline}</div>
+                          <td className="col-sector">
+                            <div className="col-sector-timeline">
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--slate-700)" }}>{req.sector}</div>
+                              <div style={{ fontSize: 11, color: "var(--slate-400)" }}><SvgClock size={14} /> {req.targetTimeline}</div>
+                            </div>
                           </td>
-                          <td style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12, color: "var(--slate-500)" }} title={req.mandatoryRequirements}>
+                          <td className="col-prereq" title={req.mandatoryRequirements}>
+                            <span className="mobile-label prereq-mobile-label">Prerequisites: </span>
                             {req.mandatoryRequirements || "—"}
                           </td>
-                          <td>
+                          <td className="col-status">
                             <span className={`status-pill ${req.status}`}>
                               {req.status === "created"
                                 ? <><SvgCheck size={12} style={{ marginRight: 4 }} /> Created</>
@@ -2103,10 +2249,11 @@ export default function Dashboard() {
                                 : <><SvgHourglass size={12} style={{ marginRight: 4 }} /> Pending</>}
                             </span>
                           </td>
-                          <td className="date-cell">
+                          <td className="date-cell col-date">
+                            <span className="mobile-label date-mobile-label">Date: </span>
                             {new Date(req.createdAt).toLocaleDateString()}
                           </td>
-                          <td>
+                          <td className="col-actions">
                             <button
                               className="view-btn"
                               style={{ background: "#f5f3ff", color: "#6d28d9", borderColor: "#ddd6fe", fontWeight: 700 }}
@@ -2149,8 +2296,8 @@ export default function Dashboard() {
               <tbody>
                 {filtered.length > 0 ? (
                   filtered.map((item) => (
-                    <tr key={item._id} className="table-row">
-                      <td>
+                    <tr key={item._id} className="table-row approval-table-row">
+                      <td className="col-business">
                         <div className="business-info">
                           <div className={`row-avatar ${isPartnerView ? "partner-row-avatar" : "user-row-avatar"}`}>
                             {item.businessName?.charAt(0).toUpperCase() || "?"}
@@ -2158,17 +2305,17 @@ export default function Dashboard() {
                           <span className="business-name">{item.businessName}</span>
                         </div>
                       </td>
-                      <td><span className="type-badge">{item.type || "—"}</span></td>
+                      <td className="col-type"><span className="type-badge">{item.type || "—"}</span></td>
                       {isPartnerView && (
-                        <td>
+                        <td className="col-scope">
                           <span className={`scope-badge ${item.partnerScope === "internal" ? "scope-internal" : "scope-external"}`}>
                             {item.partnerScope === "internal" ? <><SvgBuilding size={12} style={{ marginRight: 4 }} /> Internal</> : <><SvgGlobe size={12} style={{ marginRight: 4 }} /> External</>}
                           </span>
                         </td>
                       )}
-                      <td className="email-cell">{item.email}</td>
-                      <td className="date-cell">{item.date}</td>
-                      <td style={{ whiteSpace: "nowrap" }}>
+                      <td className="email-cell col-email">{item.email}</td>
+                      <td className="date-cell col-date">{item.date}</td>
+                      <td className="col-actions" style={{ whiteSpace: "nowrap" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <button className="view-btn" onClick={() => setSelected(item)}>View</button>
                           {item.status !== "deactivated" ? (

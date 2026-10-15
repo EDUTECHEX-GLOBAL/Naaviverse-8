@@ -351,7 +351,12 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
     )).then(results => setProductDataArray(results.filter(Boolean)));
   }, [productKeys]);
 
-  useEffect(() => { setShowSelectedPath(null); }, [mypathsMenu]);
+  useEffect(() => {
+    setShowSelectedPath(null);
+    setSearchName("");
+    setSearchEmail("");
+    setSourceTypeFilter("all");
+  }, [mypathsMenu]);
 
   useEffect(() => {
     if (pathActionEnabled || stepActionEnabled) document.body.classList.add("admin-popup-open");
@@ -760,6 +765,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 setMypathsMenu("All Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
+                setSearchName("");
+                setSearchEmail("");
+                setSourceTypeFilter("all");
                 fetchAllStatusPaths();
                 navigate("/admin/dashboard/paths?tab=all");
               }}>
@@ -776,6 +784,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
               setMypathsMenu("Paths");
               setViewPathEnabled(false);
               setViewPathData([]);
+              setSearchName("");
+              setSearchEmail("");
+              setSourceTypeFilter("all");
               getAllPaths();
               navigate("/admin/dashboard/paths?tab=active");
             }}>
@@ -792,6 +803,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 setMypathsMenu("Pending Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
+                setSearchName("");
+                setSearchEmail("");
+                setSourceTypeFilter("all");
                 getNewPath();
                 navigate("/admin/dashboard/paths?tab=pending");
               }}>
@@ -809,6 +823,9 @@ const MyPathsAdmin = ({ search, admin, fetchAllServicesAgain, stepDataPage }) =>
                 setMypathsMenu("Inactive Paths");
                 setViewPathEnabled(false);
                 setViewPathData([]);
+                setSearchName("");
+                setSearchEmail("");
+                setSourceTypeFilter("all");
                 getInactivePath();
                 navigate("/admin/dashboard/paths?tab=inactive");
               }}>

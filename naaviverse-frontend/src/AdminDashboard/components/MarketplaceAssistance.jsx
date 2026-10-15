@@ -301,15 +301,6 @@ export default function MarketplaceAssistance() {
         ) : (
           <div className="table-responsive">
             <table className="map-table">
-              <colgroup>
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "23%" }} />
-                <col style={{ width: "9%" }} />
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "10%" }} />
-              </colgroup>
               <thead>
                 <tr>
                   <th>Date</th>
@@ -318,7 +309,7 @@ export default function MarketplaceAssistance() {
                   <th>Requirement Snippet</th>
                   <th>Replacements</th>
                   <th style={{ textAlign: "center" }}>Status</th>
-                  <th style={{ textAlign: "right" }}>Action</th>
+                  <th style={{ textAlign: "center" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -409,7 +400,7 @@ export default function MarketplaceAssistance() {
                       </td>
 
                       {/* Action - ample space, no overlap */}
-                      <td className="col-action" style={{ textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                      <td className="col-action" style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
                         <button
                           className="btn-view-ticket"
                           onClick={() => setSelectedRequest(r)}

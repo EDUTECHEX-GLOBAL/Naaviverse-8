@@ -34,6 +34,10 @@ $paid-light : #FEE2E2;
   padding: 18px 22px 34px;
   background: linear-gradient(180deg, #f8fbff 0%, #f3f6fb 48%, #f7f8fb 100%);
 
+  @media (max-width: 768px) {
+    padding: 10px 10px 24px;
+  }
+
   &::-webkit-scrollbar {
     width: 4px;
   }
@@ -51,6 +55,11 @@ $paid-light : #FEE2E2;
   align-items: center;
   justify-content: flex-start;
 
+  @media (max-width: 768px) {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
   .adm-header-tabs {
     display: inline-flex;
     align-items: center;
@@ -59,6 +68,14 @@ $paid-light : #FEE2E2;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
     gap: 3px;
+
+    @media (max-width: 768px) {
+      display: flex;
+      width: 100%;
+      padding: 2.5px;
+      gap: 3px;
+      border-radius: 8px;
+    }
 
     .adm-header-tab {
       display: inline-flex;
@@ -74,6 +91,37 @@ $paid-light : #FEE2E2;
       color: #64748b;
       cursor: pointer;
       transition: all 0.16s ease;
+
+      @media (max-width: 768px) {
+        flex: 1 1 50%;
+        justify-content: center;
+        padding: 6px 6px;
+        font-size: 11px;
+        gap: 5px;
+        border-radius: 6px;
+        white-space: nowrap;
+
+        svg {
+          width: 13px !important;
+          height: 13px !important;
+          flex-shrink: 0;
+        }
+
+        span {
+          font-size: 11px;
+          white-space: nowrap;
+        }
+      }
+
+      @media (max-width: 380px) {
+        font-size: 10px;
+        padding: 5px 3px;
+        gap: 3px;
+
+        span {
+          font-size: 10px;
+        }
+      }
 
       svg {
         color: #94a3b8;
@@ -149,58 +197,169 @@ $paid-light : #FEE2E2;
 .adm-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    gap: 7px;
+    margin-bottom: 10px;
+  }
 }
 
 .adm-stat {
-  border-radius: 13px;
+  border-radius: 12px;
   padding: 12px 14px;
   display: flex;
   align-items: center;
-  gap: 11px;
-  background: $card;
-  border: 1px solid $border;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+  user-select: none;
+
+  @media (max-width: 768px) {
+    padding: 7px 9px;
+    border-radius: 9px;
+    gap: 8px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+  }
 
   &__icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    background: $primary-light;
-    color: $primary;
+    transition: all 0.2s ease;
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
+    }
+
+    @media (max-width: 768px) {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+
+      svg {
+        width: 13px;
+        height: 13px;
+      }
     }
   }
 
   &__body {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
+    min-width: 0;
   }
 
   &__label {
     font-size: 9.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.06em;
     line-height: 1;
-    color: $muted;
+    color: #64748b;
+    white-space: nowrap;
+
+    @media (max-width: 768px) {
+      font-size: 8px;
+      letter-spacing: 0.03em;
+    }
   }
 
   &__val {
-    font-size: 17px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     line-height: 1.1;
     font-family: 'Poppins', sans-serif !important;
-    color: $text;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  // ── Colors matching Assistance Requests ──
+  &--total {
+    background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+    border-color: #e0e7ff;
+    .adm-stat__icon {
+      background: #eef2ff;
+      color: #4f46e5;
+      border: 1px solid #e0e7ff;
+    }
+    .adm-stat__val {
+      color: #1e1b4b;
+    }
+    &:hover {
+      border-color: #818cf8;
+      box-shadow: 0 8px 22px rgba(99, 102, 241, 0.15);
+    }
+  }
+
+  &--paid {
+    background: linear-gradient(135deg, #ffffff 0%, #f2fbf6 100%);
+    border-color: #d1fae5;
+    .adm-stat__icon {
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+    .adm-stat__val {
+      color: #15803d;
+    }
+    &:hover {
+      border-color: #34d399;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  &--free {
+    background: linear-gradient(135deg, #ffffff 0%, #fffdf5 100%);
+    border-color: #fef3c7;
+    .adm-stat__icon {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+    .adm-stat__val {
+      color: #b45309;
+    }
+    &:hover {
+      border-color: #fbbf24;
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.15);
+    }
+  }
+
+  &--partners {
+    background: linear-gradient(135deg, #ffffff 0%, #f4f8ff 100%);
+    border-color: #dbeafe;
+    .adm-stat__icon {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .adm-stat__val {
+      color: #1d4ed8;
+    }
+    &:hover {
+      border-color: #60a5fa;
+      box-shadow: 0 8px 22px rgba(59, 130, 246, 0.15);
+    }
   }
 }
 
@@ -259,6 +418,11 @@ $paid-light : #FEE2E2;
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
 
+    @media (max-width: 768px) {
+      padding: 4px 10px 4px 6px;
+      gap: 6px;
+    }
+
     &:hover {
       border-color: $primary-mid;
       background: $primary-light;
@@ -285,6 +449,16 @@ $paid-light : #FEE2E2;
       width: 13px;
       height: 13px;
     }
+
+    @media (max-width: 768px) {
+      width: 20px;
+      height: 20px;
+
+      svg {
+        width: 11px;
+        height: 11px;
+      }
+    }
   }
 
   &__count {
@@ -296,6 +470,12 @@ $paid-light : #FEE2E2;
     color: $primary;
     min-width: 20px;
     text-align: center;
+
+    @media (max-width: 768px) {
+      font-size: 10px;
+      padding: 1px 6px;
+      min-width: 16px;
+    }
   }
 
   &__chevron {
@@ -1251,111 +1431,181 @@ $paid-light : #FEE2E2;
     }
 
     tr.adm-row {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      border: 1px solid $border;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      padding: 12px 14px;
-      background: #ffffff;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-      box-sizing: border-box;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      width: 100% !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 12px !important;
+      margin-bottom: 8px !important;
+      padding: 10px 12px 10px !important;
+      background: #ffffff !important;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+      box-sizing: border-box !important;
+      transition: all 0.16s ease !important;
 
       &:hover {
-        background: #f8fafc;
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
       }
 
       &:last-child {
-        margin-bottom: 0;
+        margin-bottom: 0 !important;
       }
     }
 
-    // OVERRIDE desktop nth-child widths with high specificity
-    td,
-    td:nth-child(n) {
-      display: block !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      border-bottom: none !important;
-      padding: 6px 0;
-      box-sizing: border-box;
-    }
-
+    // Title Row (Order 1)
     .adm-row__name-td,
     td:nth-child(1) {
-      padding: 0 0 10px !important;
-      margin-bottom: 6px;
-      border-bottom: 1px solid #f1f5f9 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      order: 1 !important;
+      padding: 0 0 3px !important;
+      margin: 0 !important;
+      border: none !important;
       display: block !important;
     }
 
     .adm-row__name-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      width: 100% !important;
     }
 
     .adm-row__icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      flex-shrink: 0;
-    }
+      width: 26px !important;
+      height: 26px !important;
+      border-radius: 6px !important;
+      flex-shrink: 0 !important;
 
-    .adm-row__name {
-      font-size: 13.5px;
-      font-weight: 600;
-      color: $text;
-      line-height: 1.4;
-      white-space: normal;
-      word-break: break-word;
-      flex: 1;
-    }
-
-    // Labeled rows: "Email you@x.com", "Rating [star] 4.5", "Access Free"
-    td[data-label] {
-      display: flex !important;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 7px 0;
-      border-bottom: 1px solid #fafafa !important;
-
-      &::before {
-        content: attr(data-label);
-        font-size: 10.5px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: $muted;
-        flex-shrink: 0;
+      svg {
+        width: 13px !important;
+        height: 13px !important;
       }
     }
 
-    .adm-row__email {
-      white-space: normal;
-      word-break: break-all;
-      text-align: right;
-      font-size: 12px;
-      color: $text;
-      flex: 1;
+    .adm-row__name {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #0f172a !important;
+      line-height: 1.35 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      flex: 1 !important;
     }
 
-    // Action cell (View button) — right aligned, own row
+    // Email Subtitle Row (Order 2)
+    .adm-row__email,
+    td:nth-child(2) {
+      width: 100% !important;
+      max-width: 100% !important;
+      order: 2 !important;
+      padding: 0 0 8px 34px !important;
+      margin: 0 0 6px 0 !important;
+      border: none !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+      display: block !important;
+      text-align: left !important;
+      font-size: 11.5px !important;
+      color: #64748b !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+
+      &::before {
+        display: none !important;
+        content: none !important;
+      }
+    }
+
+    // Footer items: Rating, Access, View button on a single bottom bar
+    td[data-label] {
+      &::before {
+        display: none !important;
+        content: none !important;
+      }
+    }
+
+    // Rating Badge (Order 3)
+    td:nth-child(3) {
+      width: auto !important;
+      max-width: none !important;
+      order: 3 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+
+      .adm-rating-badge {
+        font-size: 10.5px !important;
+        padding: 2px 7px !important;
+        border-radius: 20px !important;
+        background: #f8faff !important;
+        border: 1px solid #dbeafe !important;
+        color: #1e40af !important;
+        font-weight: 600 !important;
+
+        .adm-rating-stars {
+          font-size: 8.5px !important;
+          color: #f59e0b !important;
+          margin-right: 3px !important;
+        }
+      }
+    }
+
+    // Access Badge (Order 4)
+    td:nth-child(4) {
+      width: auto !important;
+      max-width: none !important;
+      order: 4 !important;
+      padding: 0 !important;
+      margin: 0 0 0 6px !important;
+      border: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+
+      .adm-access {
+        font-size: 10.5px !important;
+        padding: 2px 9px !important;
+        border-radius: 20px !important;
+        font-weight: 600 !important;
+        line-height: 1.4 !important;
+      }
+    }
+
+    // View button (Order 5, pushed to the far right)
     td:last-child,
     td:nth-child(5) {
-      display: flex !important;
-      justify-content: flex-end;
-      padding-top: 10px;
-      padding-bottom: 2px;
-      border-top: 1px solid #f8fafc;
-      margin-top: 4px;
+      width: auto !important;
+      max-width: none !important;
+      order: 5 !important;
+      margin-left: auto !important;
+      padding: 0 !important;
+      border: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
 
       .adm-view-btn {
-        padding: 5px 18px;
-        font-size: 12px;
+        padding: 4px 14px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        height: 26px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #f5f3ff !important;
+        color: #6d28d9 !important;
+        border: 1px solid #ddd6fe !important;
+        transition: all 0.15s ease !important;
+
+        &:hover {
+          background: #ede9fe !important;
+          border-color: #c4b5fd !important;
+        }
       }
     }
   }
@@ -1394,28 +1644,28 @@ $paid-light : #FEE2E2;
 
   .adm-modal__head {
     box-sizing: border-box;
-    padding: 14px 14px 12px;
+    padding: 10px 12px 8px;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-areas:
       "avatar actions"
       "text   text";
-    gap: 8px 10px;
+    gap: 6px 10px;
     align-items: center;
     width: 100%;
   }
 
   .adm-modal__avatar {
     grid-area: avatar;
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     box-sizing: border-box;
     flex-shrink: 0;
 
     svg {
-      width: 17px;
-      height: 17px;
+      width: 15px;
+      height: 15px;
     }
   }
 
@@ -1437,12 +1687,13 @@ $paid-light : #FEE2E2;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     box-sizing: border-box;
   }
 
   .adm-modal__name {
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 600;
     line-height: 1.35;
     word-break: break-word;
     color: $text;
@@ -1455,6 +1706,7 @@ $paid-light : #FEE2E2;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    color: #64748b;
 
     span {
       max-width: 100%;
@@ -1463,25 +1715,179 @@ $paid-light : #FEE2E2;
   }
 
   .adm-modal__role-tag {
-    font-size: 10px;
-    padding: 2px 8px;
+    font-size: 9.5px;
+    padding: 2px 7px;
     box-sizing: border-box;
   }
 
   .adm-modal__body {
     box-sizing: border-box;
-    padding: 14px 14px 16px;
+    padding: 10px 12px 14px;
+    max-height: calc(88vh - 65px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
+  // ── 2-Column Compact Chips Grid (Fixes excessive vertical height & empty space) ──
   .adm-chips {
-    gap: 6px;
-    box-sizing: border-box;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+    box-sizing: border-box !important;
   }
 
   .adm-chip {
-    min-width: 64px;
-    flex: 1 1 30%;
-    box-sizing: border-box;
+    min-width: 0 !important;
+    flex: unset !important;
+    padding: 6px 9px !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+    border: 1px solid #edf2f7 !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+
+    &__label {
+      font-size: 8.5px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.05em !important;
+      margin-bottom: 2px !important;
+      color: #94a3b8 !important;
+      line-height: 1 !important;
+    }
+
+    &__val {
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
+      line-height: 1.25 !important;
+      word-break: break-word !important;
+      color: #0f172a !important;
+
+      &--free {
+        color: #10b981 !important;
+      }
+
+      &--paid {
+        color: #ef4444 !important;
+      }
+    }
+
+    .adm-rating-badge--modal {
+      padding: 1px 6px !important;
+      font-size: 10.5px !important;
+      gap: 3px !important;
+      width: fit-content !important;
+
+      .adm-rating-stars {
+        font-size: 8px !important;
+      }
+    }
+
+    .adm-layer-pill {
+      font-size: 9.5px !important;
+      padding: 1px 6px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      width: fit-content !important;
+    }
+
+    &__input {
+      font-size: 11px !important;
+      padding: 2px 5px !important;
+    }
+  }
+
+  // ── Compact Text Fields (Goal, Outcomes, Features) ──
+  .adm-mfield {
+    padding: 7px 9px !important;
+    margin-bottom: 6px !important;
+    border-radius: 8px !important;
+    background: #f8fafc !important;
+    border: 1px solid #edf2f7 !important;
+
+    &__label {
+      font-size: 8.5px !important;
+      font-weight: 700 !important;
+      margin-bottom: 2px !important;
+      color: #94a3b8 !important;
+      letter-spacing: 0.05em !important;
+      line-height: 1 !important;
+    }
+
+    &__text {
+      font-size: 11.5px !important;
+      line-height: 1.35 !important;
+      color: #334155 !important;
+    }
+
+    &__textarea {
+      font-size: 11.5px !important;
+      padding: 5px 7px !important;
+      line-height: 1.35 !important;
+    }
+  }
+
+  .adm-feature-chips {
+    gap: 4px !important;
+    margin-top: 2px !important;
+  }
+
+  .adm-feature-chip {
+    font-size: 9.5px !important;
+    padding: 2px 7px !important;
+    border-radius: 12px !important;
+  }
+
+  // ── Score Inspector Compact ──
+  .adm-score-inspector {
+    margin-top: 8px !important;
+    border-radius: 10px !important;
+    padding: 10px !important;
+
+    &__head {
+      padding-bottom: 6px !important;
+      margin-bottom: 8px !important;
+    }
+
+    &__tag {
+      font-size: 7.5px !important;
+    }
+
+    &__title {
+      font-size: 11.5px !important;
+    }
+
+    &__badge {
+      padding: 2px 7px !important;
+      border-radius: 6px !important;
+    }
+
+    &__score-num {
+      font-size: 13px !important;
+    }
+
+    &__score-max {
+      font-size: 8.5px !important;
+    }
+  }
+
+  .adm-score-factors {
+    gap: 6px !important;
+  }
+
+  .adm-factor-row {
+    gap: 2px !important;
+
+    &__info {
+      font-size: 10px !important;
+    }
+
+    &__bar-track {
+      height: 4px !important;
+    }
   }
 }
 
