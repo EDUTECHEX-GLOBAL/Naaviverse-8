@@ -68,7 +68,7 @@ const FancyFeatureNineteen = () => {
             </div>
 
             {/* RIGHT SIDE – IMAGE */}
-            <div className="illustration-holder" data-aos="fade-left">
+            <div className="illustration-holder process-illustration-holder" data-aos="fade-left">
               <img
                 src={img22}
                 alt="Naavi process illustration"

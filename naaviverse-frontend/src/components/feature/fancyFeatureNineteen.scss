@@ -44,9 +44,9 @@
   }
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1199px) {
   .fancy-feature-nineteen {
-    padding: 20px 0 10px 0 !important;
+    padding: 20px 0 30px 0 !important;
 
     .main-title {
       font-size: 40px !important;
@@ -56,27 +56,38 @@
     }
 
     .feature-grid {
-      grid-template-columns: 1fr;
-      gap: 32px;
+      grid-template-columns: 1fr !important;
+      gap: 32px !important;
     }
 
-    .illustration-holder {
-      margin-top: 0 !important; // ← reset on mobile
-      margin-bottom: -15px !important; // Pull FAQ section UP slightly while keeping elegant space
+    .illustration-holder,
+    & .illustration-holder {
+      position: relative !important;
+      top: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      right: auto !important;
+      margin: 28px auto 0 auto !important;
       width: 100% !important;
+      max-width: 560px !important;
       display: flex !important;
       justify-content: center !important;
+      align-items: center !important;
+      z-index: 1 !important;
     }
 
     .main-illustration {
-      width: 116% !important;
-      max-width: 116% !important;
-      margin: 0 auto -15px auto !important; /* Pull up by gentle negative bottom margin, expand to fit mobile screen */
+      position: relative !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      margin: 0 auto !important;
       display: block !important;
+      object-fit: contain !important;
     }
   }
 
-  /* Override parent wrapper padding to reduce bottom spacing of 2nd image */
+  /* Override parent wrapper padding */
   .fancy-feature-nineteen.position-relative {
     padding-top: 20px !important;
   }
@@ -91,55 +102,96 @@
     display: none !important;
   }
 
-  /* Reduce space above FAQ section */
+  /* Provide clean breathing room above FAQ section so matter is never covered */
   .fancy-feature-twenty {
-    margin-top: 10px !important;
-    padding-top: 10px !important;
-    padding-bottom: 20px !important;
-  }
-
-  /* Robust flexbox layout for list items to avoid circular numbers overlapping text on mobile */
-  .block-style-thirteen .list-item li {
-    padding: 20px 15px 20px 75px !important;
     position: relative !important;
+    z-index: 2 !important;
+    margin-top: 40px !important;
+    padding-top: 30px !important;
+    padding-bottom: 20px !important;
+    clear: both !important;
   }
 
-  @media (max-width: 575px) {
-    .block-style-thirteen .list-item li {
-      padding: 16px !important;
+  /* Clean, symmetrical grid for process steps on iPad Pro, Surface Pro 10, and mobile */
+  .block-style-thirteen .list-item {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+    padding: 0 !important;
+    margin: 20px 0 0 0 !important;
+    width: 100% !important;
+
+    li,
+    li.process-item {
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 22px 20px 22px 75px !important;
+      position: relative !important;
       display: flex !important;
-      align-items: flex-start !important;
-      gap: 15px !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+      min-height: 95px !important;
+      background: #ffffff !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 20px rgba(0, 40, 99, 0.05) !important;
     }
 
-    .block-style-thirteen .list-item .numb {
-      position: static !important; /* Re-flow number circle into the flexbox layout */
-      flex-shrink: 0 !important;
-      width: 40px !important;
-      height: 40px !important;
-      line-height: 38px !important;
-      font-size: 16px !important;
+    .numb {
+      position: absolute !important;
+      top: 50% !important;
+      left: 18px !important;
+      transform: translateY(-50%) !important;
       margin: 0 !important;
-      margin-top: 2px !important; /* Align numbers beautifully with the first line of the text */
     }
 
     .process-copy {
       display: flex !important;
       flex-direction: column !important;
-      justify-content: flex-start !important;
+      justify-content: center !important;
       text-align: left !important;
     }
 
-    .block-style-thirteen .list-item li h6 {
+    li h6 {
       margin: 0 0 4px 0 !important;
-      font-size: 16px !important;
+      font-size: 17px !important;
       line-height: 1.3 !important;
     }
 
-    .block-style-thirteen .list-item li span {
-      font-size: 13px !important;
+    li span {
+      font-size: 14px !important;
       line-height: 1.4 !important;
       display: block !important;
+      color: #6B7A8D !important;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .block-style-thirteen .list-item {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+
+      li,
+      li.process-item {
+        padding: 16px 16px 16px 65px !important;
+        min-height: auto !important;
+      }
+
+      .numb {
+        left: 14px !important;
+        width: 38px !important;
+        height: 38px !important;
+        line-height: 36px !important;
+        font-size: 16px !important;
+      }
+
+      li h6 {
+        font-size: 15px !important;
+      }
+
+      li span {
+        font-size: 13px !important;
+      }
     }
   }
 }

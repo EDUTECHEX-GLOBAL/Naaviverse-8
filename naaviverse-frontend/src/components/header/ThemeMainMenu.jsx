@@ -213,6 +213,23 @@ const NAAVI_STYLES = `
     white-space: nowrap;
     box-shadow: 0 2px 12px rgba(34, 115, 230, 0.28);
   }
+
+  @media (max-width: 1250px) {
+    .naavi-navbar .nav-link {
+      font-size: 11px !important;
+      padding: 8px 6px !important;
+      letter-spacing: 0.02em !important;
+      gap: 3px !important;
+    }
+
+    .naavi-navbar .get-started-btn {
+      margin-left: 10px !important;
+      width: 86px !important;
+      height: 34px !important;
+      font-size: 11.5px !important;
+      border-radius: 6px !important;
+    }
+  }
 `;
 
 function useInjectStyles(css) {

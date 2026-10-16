@@ -320,12 +320,180 @@ $success: #27ae60;
   color: #b0b8c4 !important;
 }
 
-.contact-form-group select {
+.contact-form-group select,
+.contact-select {
   cursor: pointer !important;
   appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7A8D' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
   background-repeat: no-repeat !important;
   background-position: right 14px center !important;
+  max-width: 100% !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+
+  option {
+    font-family: 'Poppins', sans-serif !important;
+    color: $text-dark !important;
+    max-width: 100% !important;
+  }
+}
+
+// ── Custom Dropdown for Mobile (strictly constrained to input width) ──
+.custom-dropdown-container {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.custom-dropdown-trigger {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 44px !important;
+  padding: 0 14px !important;
+  background: $white !important;
+  border: 1px solid $border-light !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  color: $text-dark !important;
+  font-family: 'Poppins', sans-serif !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
+  transition: all 0.2s ease !important;
+
+  &:focus,
+  &.active {
+    outline: none !important;
+    border-color: $green !important;
+    box-shadow: 0 0 0 3px rgba(45, 182, 125, 0.1) !important;
+  }
+
+  .custom-dropdown-label {
+    flex: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 14px !important;
+    color: $text-dark !important;
+  }
+
+  .custom-dropdown-arrow {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin-left: 8px !important;
+    flex-shrink: 0 !important;
+    transition: transform 0.2s ease !important;
+
+    &.open {
+      transform: rotate(180deg) !important;
+    }
+  }
+}
+
+.custom-dropdown-menu {
+  position: absolute !important;
+  top: calc(100% + 4px) !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12) !important;
+  max-height: 260px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  z-index: 99999 !important;
+  padding: 4px 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+  box-sizing: border-box !important;
+}
+
+.custom-dropdown-item {
+  padding: 9px 14px !important;
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  color: #1a1a2e !important;
+  cursor: pointer !important;
+  font-family: 'Poppins', sans-serif !important;
+  transition: background 0.15s ease !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  box-sizing: border-box !important;
+
+  &:hover {
+    background: rgba(45, 182, 125, 0.08) !important;
+    color: #1a1a2e !important;
+  }
+
+  &.selected {
+    background: #bde8f8 !important;
+    color: #0b435c !important;
+    font-weight: 500 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-dropdown-trigger {
+    height: 40px !important;
+    font-size: 13px !important;
+    padding: 0 12px !important;
+
+    .custom-dropdown-label {
+      font-size: 13px !important;
+    }
+  }
+
+  .custom-dropdown-item {
+    font-size: 12.5px !important;
+    padding: 8px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-dropdown-trigger {
+    height: 36px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+
+    .custom-dropdown-label {
+      font-size: 12px !important;
+    }
+  }
+
+  .custom-dropdown-item {
+    font-size: 11.5px !important;
+    padding: 7px 10px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .custom-dropdown-trigger {
+    height: 35px !important;
+    font-size: 11.5px !important;
+    padding: 0 8px !important;
+    border-radius: 7px !important;
+
+    .custom-dropdown-label {
+      font-size: 11.5px !important;
+    }
+  }
+
+  .custom-dropdown-item {
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+  }
 }
 
 // ══════════════════════════════
@@ -481,6 +649,20 @@ $success: #27ae60;
     width: 100% !important;
     justify-content: center !important;
   }
+
+  .contact-form-group select,
+  .contact-select {
+    height: 40px !important;
+    font-size: 13px !important;
+    padding: 0 32px 0 12px !important;
+    background-position: right 12px center !important;
+    background-size: 12px !important;
+
+    option {
+      font-size: 12.5px !important;
+      padding: 6px 10px !important;
+    }
+  }
 }
 
 @media (max-width: 480px) {
@@ -511,10 +693,24 @@ $success: #27ae60;
     gap: 18px;
   }
 
-  .contact-form-group input,
-  .contact-form-group select {
-    height: 42px !important;
-    font-size: 13px !important;
+  .contact-form-group input {
+    height: 38px !important;
+    font-size: 12.5px !important;
+  }
+
+  .contact-form-group select,
+  .contact-select {
+    height: 36px !important;
+    font-size: 12px !important;
+    padding: 0 26px 0 10px !important;
+    border-radius: 8px !important;
+    background-position: right 8px center !important;
+    background-size: 11px !important;
+
+    option {
+      font-size: 11.5px !important;
+      padding: 4px 6px !important;
+    }
   }
 }
 
@@ -547,6 +743,19 @@ $success: #27ae60;
 
   .contact-hero-desc {
     font-size: 13.5px !important;
+  }
+
+  .contact-form-group select,
+  .contact-select {
+    height: 35px !important;
+    font-size: 11.5px !important;
+    padding: 0 24px 0 8px !important;
+    border-radius: 7px !important;
+
+    option {
+      font-size: 11px !important;
+      padding: 3px 5px !important;
+    }
   }
 }
 

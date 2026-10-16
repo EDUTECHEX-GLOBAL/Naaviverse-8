@@ -1242,8 +1242,13 @@
         left: 1%;
     }
     .fancy-feature-nineteen .illustration-holder {
-        top: 42%;
-        right: 1%;
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        left: auto !important;
+        width: 100% !important;
+        max-width: 520px !important;
+        margin: 30px auto 0 !important;
     }
     .fancy-feature-nineteen .bg-shape {
         width: 68%;

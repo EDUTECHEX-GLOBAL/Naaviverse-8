@@ -7,6 +7,10 @@ import logos from "../../assets/images/logo/naavi_final_logo2.png";
 import "./toggler.scss"; // Add this import
 import { SvgPhone } from "../../utils/SvgIcons";
 
+const Chevron = ({ isOpen }) => (
+  <span className={`chevron-icon ${isOpen ? "open" : ""}`} aria-hidden="true" />
+);
+
 export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
 
@@ -53,12 +57,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                     className="mobile-nav-link"
                     onClick={() => toggleDropdown("about")}
                   >
-                    ABOUT{" "}
-                    <i
-                      className={`fas fa-chevron-down chevron-icon ${
-                        activeDropdown === "about" ? "open" : ""
-                      }`}
-                    ></i>
+                    ABOUT <Chevron isOpen={activeDropdown === "about"} />
                   </span>
                   <ul
                     className={`mobile-sub-menu ${
@@ -136,12 +135,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                     className="mobile-nav-link"
                     onClick={() => toggleDropdown("team")}
                   >
-                    TEAM{" "}
-                    <i
-                      className={`fas fa-chevron-down chevron-icon ${
-                        activeDropdown === "team" ? "open" : ""
-                      }`}
-                    ></i>
+                    TEAM <Chevron isOpen={activeDropdown === "team"} />
                   </span>
                   <ul
                     className={`mobile-sub-menu ${
@@ -165,12 +159,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                     className="mobile-nav-link"
                     onClick={() => toggleDropdown("impact")}
                   >
-                    IMPACT{" "}
-                    <i
-                      className={`fas fa-chevron-down chevron-icon ${
-                        activeDropdown === "impact" ? "open" : ""
-                      }`}
-                    ></i>
+                    IMPACT <Chevron isOpen={activeDropdown === "impact"} />
                   </span>
                   <ul
                     className={`mobile-sub-menu ${
@@ -248,12 +237,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                     className="mobile-nav-link"
                     onClick={() => toggleDropdown("technology")}
                   >
-                    TECHNOLOGY{" "}
-                    <i
-                      className={`fas fa-chevron-down chevron-icon ${
-                        activeDropdown === "technology" ? "open" : ""
-                      }`}
-                    ></i>
+                    TECHNOLOGY <Chevron isOpen={activeDropdown === "technology"} />
                   </span>
                   <ul
                     className={`mobile-sub-menu ${
@@ -286,12 +270,7 @@ export default function SideTogglePanel({ isOpen, onClose, isMobile }) {
                     className="mobile-nav-link"
                     onClick={() => toggleDropdown("more")}
                   >
-                    MORE{" "}
-                    <i
-                      className={`fas fa-chevron-down chevron-icon ${
-                        activeDropdown === "more" ? "open" : ""
-                      }`}
-                    ></i>
+                    MORE <Chevron isOpen={activeDropdown === "more"} />
                   </span>
                   <ul
                     className={`mobile-sub-menu ${

@@ -145,7 +145,24 @@ const FancyFeatureSeventeen = () => {
 
         @media (max-width: 1024px) {
           .features-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+          }
+          .feature-card {
+            padding: 16px 14px;
+          }
+          .card-title {
+            font-size: 1.15rem;
+            min-height: 48px !important;
+          }
+          .card-description {
+            font-size: 0.88rem;
+          }
+          .action-button {
+            padding: 8px 12px !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap !important;
+            gap: 6px !important;
           }
         }
 
@@ -154,6 +171,7 @@ const FancyFeatureSeventeen = () => {
             grid-template-columns: 1fr;
             max-width: 400px;
             margin: 0 auto;
+            gap: 20px;
           }
         }
 

@@ -1001,7 +1001,15 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 
 @media (max-width: 768px) {
   .imp-story {
-    padding: 36px 0;
+    padding: 20px 0 !important;
+  }
+
+  .imp-story-inner {
+    gap: 16px !important;
+  }
+
+  .imp-vis-image-wrap--gap {
+    margin-bottom: -24px !important;
   }
 
   .imp-story-title {
@@ -1035,8 +1043,20 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
   }
 }
 
-// [phone] Moto Edge 50 Pro & Flagship Mobile Tier (390px - 430px)
+// 📱 iPhone 16 / Flagship Mobile Tier (390px - 430px)
 @media (min-width: 390px) and (max-width: 430px) {
+  .imp-story {
+    padding: 14px 0 !important;
+  }
+
+  .imp-story-inner {
+    gap: 12px !important;
+  }
+
+  .imp-vis-image-wrap--gap {
+    margin-bottom: -36px !important;
+  }
+
   .imp-container {
     padding: 0 18px;
   }
@@ -1058,6 +1078,14 @@ $primary-grad: linear-gradient(135deg, $green, $green-d);
 }
 
 @media (max-width: 380px) {
+  .imp-story {
+    padding: 12px 0 !important;
+  }
+
+  .imp-vis-image-wrap--gap {
+    margin-bottom: -30px !important;
+  }
+
   .imp-container {
     padding: 0 14px;
   }
