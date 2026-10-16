@@ -100,3 +100,90 @@
     padding-bottom: 10px !important;
   }
 }
+
+/* ── Tablet & iPad Pro 13" (width <= 1250px) Header Responsive ── */
+@media (max-width: 1250px) {
+  .theme-main-menu.theme-menu-four {
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+
+    .container {
+      max-width: 100% !important;
+      width: 100% !important;
+      padding-left: 18px !important;
+      padding-right: 18px !important;
+      box-sizing: border-box !important;
+    }
+
+    .inner-content {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 6px !important;
+    }
+
+    .logo {
+      flex-shrink: 0 !important;
+
+      img {
+        width: 120px !important;
+        height: auto !important;
+      }
+    }
+
+    .navbar {
+      padding: 4px 0 !important;
+      flex-shrink: 1 !important;
+      min-width: 0 !important;
+    }
+
+    .naavi-navbar {
+      display: flex !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+
+      .navbar-nav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0 !important;
+      }
+
+      .nav-item {
+        flex-shrink: 0 !important;
+      }
+
+      .nav-link {
+        font-size: 11px !important;
+        padding: 8px 6px !important;
+        letter-spacing: 0.02em !important;
+        gap: 3px !important;
+        white-space: nowrap !important;
+      }
+
+      .get-started-btn {
+        margin-left: 10px !important;
+        width: 86px !important;
+        height: 34px !important;
+        font-size: 11.5px !important;
+        border-radius: 6px !important;
+        flex-shrink: 0 !important;
+        box-shadow: 0 2px 8px rgba(34, 115, 230, 0.25) !important;
+      }
+    }
+
+    .menu-icon-btn,
+    .menu-icon-btn1 {
+      margin-left: 8px !important;
+      margin-right: 0 !important;
+      width: 34px !important;
+      height: 34px !important;
+      min-width: 34px !important;
+      min-height: 34px !important;
+      flex-shrink: 0 !important;
+    }
+  }
+}

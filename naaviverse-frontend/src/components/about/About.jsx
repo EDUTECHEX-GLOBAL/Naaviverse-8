@@ -80,7 +80,7 @@ const About = () => {
 
       {/* Responsive styles */}
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1199px) {
           .fancy-feature-eighteen {
             padding-top: 30px !important;
             padding-bottom: 20px !important;
@@ -100,12 +100,18 @@ const About = () => {
             margin-top: 15px !important;
           }
           .fancy-feature-eighteen .block-style-two ul.list-item {
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
             padding-left: 20px !important;
+            margin: 0 !important;
           }
           .fancy-feature-eighteen .block-style-two ul.list-item li {
+            display: block !important;
+            width: 100% !important;
             font-size: 16px !important;
             line-height: 1.5 !important;
-            margin-bottom: 10px !important;
+            margin-bottom: 12px !important;
             padding-left: 28px !important;
           }
           .fancy-feature-eighteen .block-style-two ul.list-item li:before {
@@ -124,7 +130,7 @@ const About = () => {
 
         @media (max-width: 480px) {
           .fancy-feature-eighteen .main-title {
-            font-size: 40px !important;
+            font-size: 32px !important;
             line-height: 1.2 !important;
             font-family: 'Poppins', sans-serif !important;
           }

@@ -9,9 +9,48 @@ import { validateEmail, validatePersonName } from "../../../utils/emailValidator
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+const INQUIRY_OPTIONS = [
+  { value: "WHAT_IS_NAAVI", desktop: "What is Naavi and how does it work?", mobile: "What is Naavi & how it works?" },
+  { value: "PATHWAY_ENGINE", desktop: "How does the AI Pathway Engine generate my path?", mobile: "How does AI Pathway Engine work?" },
+  { value: "SKILL_GAP", desktop: "How does Naavi help bridge my skill gap?", mobile: "How Naavi bridges skill gaps?" },
+  { value: "MENTOR_CONNECT", desktop: "How can I connect with mentors on Naavi?", mobile: "How to connect with mentors?" },
+  { value: "NAAVIVERSE", desktop: "What is the Naaviverse ecosystem?", mobile: "What is Naaviverse ecosystem?" },
+  { value: "CAREER_PATHS", desktop: "Can Naavi help me switch careers or industries?", mobile: "Can Naavi help switch careers?" },
+  { value: "INSTITUTIONS", desktop: "How can my institution partner with Naavi?", mobile: "How can institutions partner?" },
+  { value: "DEMO", desktop: "I'd like to request a product demo", mobile: "Request a product demo" },
+  { value: "PARTNERSHIP", desktop: "Explore a partnership opportunity", mobile: "Explore partnership opportunity" },
+  { value: "OTHER", desktop: "Something else", mobile: "Something else" },
+];
+
 export default function Contact() {
   const formRef = useRef(null);
+  const dropdownRef = useRef(null);
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== "undefined" && window.innerWidth <= 1199);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (formRef.current) {
@@ -29,6 +68,8 @@ export default function Contact() {
   const [status, setStatus] = useState("");
   const [statusType, setStatusType] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
+
+  const selectedOption = INQUIRY_OPTIONS.find((item) => item.value === product);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -249,23 +290,56 @@ export default function Contact() {
                   </div>
                   <div className="contact-form-group">
                     <label>Inquiry Type *</label>
-                    <select
-                      value={product}
-                      onChange={(e) => setProduct(e.target.value)}
-                      required
-                    >
-                      <option value="">Select your question</option>
-                      <option value="WHAT_IS_NAAVI">What is Naavi and how does it work?</option>
-                      <option value="PATHWAY_ENGINE">How does the AI Pathway Engine generate my path?</option>
-                      <option value="SKILL_GAP">How does Naavi help bridge my skill gap?</option>
-                      <option value="MENTOR_CONNECT">How can I connect with mentors on Naavi?</option>
-                      <option value="NAAVIVERSE">What is the Naaviverse ecosystem?</option>
-                      <option value="CAREER_PATHS">Can Naavi help me switch careers or industries?</option>
-                      <option value="INSTITUTIONS">How can my institution partner with Naavi?</option>
-                      <option value="DEMO">I'd like to request a product demo</option>
-                      <option value="PARTNERSHIP">Explore a partnership opportunity</option>
-                      <option value="OTHER">Something else</option>
-                    </select>
+                    <div className="custom-dropdown-container" ref={dropdownRef}>
+                      <button
+                        type="button"
+                        className={`custom-dropdown-trigger ${isDropdownOpen ? 'active' : ''}`}
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        aria-haspopup="listbox"
+                        aria-expanded={isDropdownOpen}
+                      >
+                        <span className="custom-dropdown-label">
+                          {selectedOption
+                            ? (isMobile ? selectedOption.mobile : selectedOption.desktop)
+                            : "Select your question"}
+                        </span>
+                        <span className={`custom-dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B7A8D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                          </svg>
+                        </span>
+                      </button>
+                      {isDropdownOpen && (
+                        <ul className="custom-dropdown-menu" role="listbox">
+                          <li
+                            className={`custom-dropdown-item ${product === "" ? 'selected' : ''}`}
+                            onClick={() => {
+                              setProduct("");
+                              setIsDropdownOpen(false);
+                            }}
+                            role="option"
+                            aria-selected={product === ""}
+                          >
+                            Select your question
+                          </li>
+                          {INQUIRY_OPTIONS.map((item) => (
+                            <li
+                              key={item.value}
+                              className={`custom-dropdown-item ${product === item.value ? 'selected' : ''}`}
+                              onClick={() => {
+                                setProduct(item.value);
+                                setIsDropdownOpen(false);
+                              }}
+                              role="option"
+                              aria-selected={product === item.value}
+                            >
+                              {isMobile ? item.mobile : item.desktop}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <input type="hidden" name="product" value={product} />
+                    </div>
                   </div>
                 </div>
 
