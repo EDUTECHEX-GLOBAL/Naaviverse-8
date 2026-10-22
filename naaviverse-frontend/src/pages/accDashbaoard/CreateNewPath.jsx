@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './CreateNewPath.scss';
-import { useEffect, useRef } from 'react';
+import CustomSelect from './CustomSelect';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { SvgArrowUp } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -175,25 +177,62 @@ const CreateNewPath = ({
   };
 
   const handleNextStepClick = () => {
-    if (!pathSteps?.nameOfPath || !pathSteps?.description || !pathSteps?.program || !pathSteps?.destination_institution) {
-      alert('Please fill in all required fields'); return;
+    if (!pathSteps?.nameOfPath || !pathSteps?.nameOfPath.trim()) {
+      toast.error('Please enter the name of the path (*)');
+      return;
     }
-    if (grade.length === 0 || gradeAvg.length === 0 || curriculum.length === 0 || stream.length === 0 || finance.length === 0 || !personality) {
-      alert('Please select at least one option from each category'); return;
+    if (!pathSteps?.description || !pathSteps?.description.trim()) {
+      toast.error('Please enter a description for the path (*)');
+      return;
+    }
+    if (!pathSteps?.destination_institution) {
+      toast.error('Please select the destination institution / university (*)');
+      return;
+    }
+    if (!pathSteps?.program) {
+      toast.error('Please select a program (*)');
+      return;
+    }
+    if (grade.length === 0) {
+      toast.error('Please select an ideal grade for participant (*)');
+      return;
+    }
+    if (gradeAvg.length === 0) {
+      toast.error('Please select an ideal grade point average (*)');
+      return;
+    }
+    if (curriculum.length === 0) {
+      toast.error('Please select an ideal curriculum (*)');
+      return;
+    }
+    if (stream.length === 0) {
+      toast.error('Please select an ideal stream (*)');
+      return;
+    }
+    if (finance.length === 0) {
+      toast.error('Please select an ideal financial situation (*)');
+      return;
+    }
+    if (!personality) {
+      toast.error('Please select an ideal personality type (*)');
+      return;
     }
     setShowPopup(true);
   };
 
-const handleContinue = () => {
-  if (!stepCount || parseInt(stepCount) < 1) { alert("Please enter a valid number of steps"); return; }
-  setShowPopup(false);
-  const years = parseInt(duration.years) || 0;
-  const months = parseInt(duration.months) || 0;
-  const days = parseInt(duration.days) || 0;
-  setPathSteps({ ...pathSteps, duration: { years, months, days, totalDays: (years * 365) + (months * 30) + days }, preferredLocation });
-  setStepCount(Number(stepCount));
-  pathSubmission(Number(stepCount));  // ← pass value directly, bypasses stale state
-};
+  const handleContinue = () => {
+    if (!stepCount || parseInt(stepCount) < 1) {
+      toast.error("Please enter a valid number of steps (*)");
+      return;
+    }
+    setShowPopup(false);
+    const years = parseInt(duration.years) || 0;
+    const months = parseInt(duration.months) || 0;
+    const days = parseInt(duration.days) || 0;
+    setPathSteps({ ...pathSteps, duration: { years, months, days, totalDays: (years * 365) + (months * 30) + days }, preferredLocation });
+    setStepCount(Number(stepCount));
+    pathSubmission(Number(stepCount));  // ← pass value directly, bypasses stale state
+  };
 
 const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
 
@@ -207,6 +246,54 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
       default: break;
     }
   };
+
+  // Memoized, alphabetically sorted country options from countryApiValue
+  const sortedCountryOptions = useMemo(() => {
+    if (!Array.isArray(countryApiValue)) return [];
+    const seen = new Set();
+    const list = [];
+    for (const item of countryApiValue) {
+      const name = item?.name?.common || (typeof item?.name === 'string' ? item.name : '') || item?.country || '';
+      const clean = String(name || '').trim();
+      if (clean && !seen.has(clean.toLowerCase())) {
+        seen.add(clean.toLowerCase());
+        list.push({ value: clean, label: clean });
+      }
+    }
+    return list.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+  }, [countryApiValue]);
+
+  const sortedProfileStateOptions = useMemo(() => {
+    if (!Array.isArray(profileStates)) return [];
+    return [...profileStates]
+      .filter(Boolean)
+      .sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }))
+      .map((s) => ({ value: s, label: s }));
+  }, [profileStates]);
+
+  const sortedProfileCityOptions = useMemo(() => {
+    if (!Array.isArray(profileCities)) return [];
+    return [...profileCities]
+      .filter(Boolean)
+      .sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }))
+      .map((c) => ({ value: c, label: c }));
+  }, [profileCities]);
+
+  const sortedTargetStateOptions = useMemo(() => {
+    if (!Array.isArray(targetStates)) return [];
+    return [...targetStates]
+      .filter(Boolean)
+      .sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }))
+      .map((s) => ({ value: s, label: s }));
+  }, [targetStates]);
+
+  const sortedTargetCityOptions = useMemo(() => {
+    if (!Array.isArray(targetCities)) return [];
+    return [...targetCities]
+      .filter(Boolean)
+      .sort((a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base' }))
+      .map((c) => ({ value: c, label: c }));
+  }, [targetCities]);
 
   return (
     <>
@@ -228,24 +315,30 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
               <div className="duration-dropdown-group">
                 <div className="duration-select">
                   <label>Years</label>
-                  <select value={duration.years} onChange={(e) => setDuration({ ...duration, years: e.target.value })}>
-                    <option value="">Select</option>
-                    {[...Array(11)].map((_, i) => <option key={i} value={i}>{i}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={duration.years}
+                    placeholder="Select"
+                    options={[...Array(11)].map((_, i) => ({ value: String(i), label: String(i) }))}
+                    onChange={(e) => setDuration({ ...duration, years: e.target.value })}
+                  />
                 </div>
                 <div className="duration-select">
                   <label>Months</label>
-                  <select value={duration.months} onChange={(e) => setDuration({ ...duration, months: e.target.value })}>
-                    <option value="">Select</option>
-                    {[...Array(12)].map((_, i) => <option key={i} value={i}>{i}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={duration.months}
+                    placeholder="Select"
+                    options={[...Array(12)].map((_, i) => ({ value: String(i), label: String(i) }))}
+                    onChange={(e) => setDuration({ ...duration, months: e.target.value })}
+                  />
                 </div>
                 <div className="duration-select">
                   <label>Days</label>
-                  <select value={duration.days} onChange={(e) => setDuration({ ...duration, days: e.target.value })}>
-                    <option value="">Select</option>
-                    {[...Array(31)].map((_, i) => <option key={i} value={i}>{i}</option>)}
-                  </select>
+                  <CustomSelect
+                    value={duration.days}
+                    placeholder="Select"
+                    options={[...Array(31)].map((_, i) => ({ value: String(i), label: String(i) }))}
+                    onChange={(e) => setDuration({ ...duration, days: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
@@ -336,39 +429,30 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, address: e.target.value })} />
 
                 {/* Country */}
-                <select value={preferredLocation.country}
-                  onChange={(e) => setPreferredLocation({ ...preferredLocation, country: e.target.value, state: '', city: '' })}>
-                  <option value="">Select Country</option>
-                  {/* FIX: use index fallback so key is always defined */}
-                  {countryApiValue?.map((item, idx) => (
-                    <option key={item.name?.common || item.name || idx} value={item.name?.common || item.name}>
-                      {item.name?.common || item.name}
-                    </option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={preferredLocation.country}
+                  placeholder="Select Country"
+                  options={sortedCountryOptions}
+                  onChange={(e) => setPreferredLocation({ ...preferredLocation, country: e.target.value, state: '', city: '' })}
+                />
 
                 {/* State */}
-                <select value={preferredLocation.state}
-                  disabled={!preferredLocation.country || profileStates.length === 0}
+                <CustomSelect
+                  value={preferredLocation.state}
+                  placeholder={!preferredLocation.country ? 'Select country first' : sortedProfileStateOptions.length === 0 ? 'No states available' : 'Select State'}
+                  disabled={!preferredLocation.country || sortedProfileStateOptions.length === 0}
+                  options={sortedProfileStateOptions}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, state: e.target.value, city: '' })}
-                  style={{ opacity: preferredLocation.country && profileStates.length > 0 ? 1 : 0.5 }}>
-                  <option value="">
-                    {!preferredLocation.country ? 'Select country first' : profileStates.length === 0 ? 'No states available' : 'Select State'}
-                  </option>
-                  {/* FIX: state strings are unique within a country */}
-                  {profileStates.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                />
 
                 {/* City */}
-                <select value={preferredLocation.city}
-                  disabled={!preferredLocation.state || profileCities.length === 0}
+                <CustomSelect
+                  value={preferredLocation.city}
+                  placeholder={!preferredLocation.state ? 'Select state first' : sortedProfileCityOptions.length === 0 ? 'No cities available' : 'Select City'}
+                  disabled={!preferredLocation.state || sortedProfileCityOptions.length === 0}
+                  options={sortedProfileCityOptions}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, city: e.target.value })}
-                  style={{ opacity: preferredLocation.state && profileCities.length > 0 ? 1 : 0.5 }}>
-                  <option value="">
-                    {!preferredLocation.state ? 'Select state first' : profileCities.length === 0 ? 'No cities available' : 'Select City'}
-                  </option>
-                  {profileCities.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                />
 
               </div>
             </div>
@@ -462,39 +546,34 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
 
               <div>
                 <label>Country</label>
-                <select value={pathSteps?.country || ''}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, country: e.target.value, state: '', city: '' }))}>
-                  <option value="">Select Country</option>
-                  {countryApiValue?.map((item, idx) => (
-                    <option key={item.name?.common || item.name || idx} value={item.name?.common || item.name}>
-                      {item.name?.common || item.name}
-                    </option>
-                  ))}
-                </select>
+                <CustomSelect
+                  value={pathSteps?.country || ''}
+                  placeholder="Select Country"
+                  options={sortedCountryOptions}
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, country: e.target.value, state: '', city: '' }))}
+                />
               </div>
 
               <div>
                 <label>State / Province</label>
-                <select value={pathSteps?.state || ''}
-                  disabled={!pathSteps?.country || targetStates.length === 0}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, state: e.target.value, city: '' }))}>
-                  <option value="">
-                    {!pathSteps?.country ? 'Select country first' : targetStates.length === 0 ? 'No states available' : 'Select State / Province'}
-                  </option>
-                  {targetStates.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
+                <CustomSelect
+                  value={pathSteps?.state || ''}
+                  placeholder={!pathSteps?.country ? 'Select country first' : sortedTargetStateOptions.length === 0 ? 'No states available' : 'Select State / Province'}
+                  disabled={!pathSteps?.country || sortedTargetStateOptions.length === 0}
+                  options={sortedTargetStateOptions}
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, state: e.target.value, city: '' }))}
+                />
               </div>
 
               <div>
                 <label>City</label>
-                <select value={pathSteps?.city || ''}
-                  disabled={!pathSteps?.state || targetCities.length === 0}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, city: e.target.value }))}>
-                  <option value="">
-                    {!pathSteps?.state ? 'Select state first' : targetCities.length === 0 ? 'No cities available' : 'Select City'}
-                  </option>
-                  {targetCities.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <CustomSelect
+                  value={pathSteps?.city || ''}
+                  placeholder={!pathSteps?.state ? 'Select state first' : sortedTargetCityOptions.length === 0 ? 'No cities available' : 'Select City'}
+                  disabled={!pathSteps?.state || sortedTargetCityOptions.length === 0}
+                  options={sortedTargetCityOptions}
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, city: e.target.value }))}
+                />
               </div>
 
             </div>
@@ -524,6 +603,7 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
           </div>
         </>
       )}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
     </>
   );
 };

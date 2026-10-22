@@ -178,5 +178,48 @@ const validatePersonName = (name, fieldLabel = "Full name") => {
   return { isValid: true, cleanName: trimmed };
 };
 
-module.exports = { validateEmail, validatePersonName };
+const validateBusinessName = (name) => {
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return { isValid: false, message: 'Business name is required.' };
+  }
+  const trimmed = name.trim();
+  if (trimmed.length < 2) {
+    return { isValid: false, message: 'Business name must be at least 2 characters long.' };
+  }
+  if (trimmed.length > 100) {
+    return { isValid: false, message: 'Business name cannot exceed 100 characters.' };
+  }
+  if (!/[a-zA-Z0-9]/.test(trimmed)) {
+    return { isValid: false, message: 'Business name must contain letters or numbers, not only symbols.' };
+  }
+  if (/[<>^=+`~|]/.test(trimmed)) {
+    return { isValid: false, message: 'Business name cannot contain invalid characters (< > ^ = + | ~ `).' };
+  }
+  return { isValid: true, cleanName: trimmed };
+};
+
+const validatePostalCode = (postalCode, countryName = '') => {
+  if (!postalCode || typeof postalCode !== 'string' || !postalCode.trim()) {
+    return { isValid: false, message: 'Postal code is required.' };
+  }
+  const trimmed = postalCode.trim();
+  const isIndia = (countryName || '').toLowerCase().includes('india');
+  if (isIndia) {
+    const indiaPinRegex = /^[1-9][0-9]{5}$/;
+    if (!indiaPinRegex.test(trimmed)) {
+      return { isValid: false, message: 'Indian PIN code must be exactly 6 digits.' };
+    }
+    return { isValid: true, cleanPostalCode: trimmed };
+  }
+  if (trimmed.length < 3 || trimmed.length > 10) {
+    return { isValid: false, message: 'Postal code must be between 3 and 10 characters.' };
+  }
+  const generalPostalRegex = /^[a-zA-Z0-9]+([ -][a-zA-Z0-9]+)*$/;
+  if (!generalPostalRegex.test(trimmed)) {
+    return { isValid: false, message: 'Please enter a valid postal code.' };
+  }
+  return { isValid: true, cleanPostalCode: trimmed };
+};
+
+module.exports = { validateEmail, validatePersonName, validateBusinessName, validatePostalCode };
 

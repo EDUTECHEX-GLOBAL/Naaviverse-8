@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import "./StepsListPage.scss";
 import { SvgClose } from "../../utils/SvgIcons";
@@ -76,7 +78,7 @@ const handleDeleteStep = async (stepId, e) => {
     await fetchSteps();
   } catch (err) {
     console.error("Error deleting step:", err);
-    alert("Failed to delete step");
+    toast.error("Failed to delete step");
   }
 };
   const handleRemoveServiceFromStep = async (serviceId) => {
@@ -95,7 +97,7 @@ const handleDeleteStep = async (stepId, e) => {
 
     } catch (err) {
       console.error("Error removing service:", err);
-      alert("Failed to remove service");
+      toast.error("Failed to remove service");
     } finally {
       setRemovingService(null);
     }

@@ -28,8 +28,8 @@ function getOtpEmailContent({ type, otpCode, recipientName, userType, expiresIn 
     ? `Naaviverse Password Reset OTP [LOCK]`
     : `Naaviverse Registration Confirmation OTP [LOCK]`;
 
-  // Spaced digits for OTP with compact 4px spacing
-  const formattedOtp = String(otpCode).split("").join("&nbsp;");
+  // Clean continuous digits so user can select/copy pure 6 digits without embedded spaces
+  const cleanOtp = String(otpCode).replace(/\s+/g, "").trim();
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -74,13 +74,11 @@ function getOtpEmailContent({ type, otpCode, recipientName, userType, expiresIn 
               </p>
 
               <!-- COMPACT OTP CARD BOX -->
-              <div style="background-color: #F7F4EE; border: 1px solid #EBE5D8; border-radius: 8px; padding: 16px 20px; text-align: center; margin-bottom: 22px;">
-                <div style="color: #8C8275; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;">
+              <div style="background-color: #F7F4EE; border: 1px solid #EBE5D8; border-radius: 8px; padding: 18px 20px; text-align: center; margin-bottom: 22px;">
+                <div style="color: #8C8275; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px;">
                   YOUR ONE-TIME CODE
                 </div>
-                <div style="font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 700; color: #0A192F; letter-spacing: 4px; margin: 0 0 6px 0; line-height: 1;">
-                  ${formattedOtp}
-                </div>
+                <div style="display: inline-block; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 34px; font-weight: 700; color: #0A192F; letter-spacing: 6px; margin: 0 0 8px 0; line-height: 1.2; user-select: all; -webkit-user-select: all;">${cleanOtp}</div>
                 <div style="color: #718096; font-size: 11px; font-weight: 500;">
                   Expires in ${expiresIn}
                 </div>

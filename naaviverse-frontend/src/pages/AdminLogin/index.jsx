@@ -205,7 +205,23 @@ const AdminLogin = () => {
                                         type="text"
                                         placeholder="Enter code"
                                         value={code}
-                                        onInput={e => setCode(e.target.value)}
+                                        onPaste={(e) => {
+                                            e.preventDefault();
+                                            const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+                                            const cleanDigits = pasted.replace(/[^0-9]/g, "").slice(0, 6);
+                                            setCode(cleanDigits);
+                                        }}
+                                        onChange={e => {
+                                            const cleanDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                                            setCode(cleanDigits);
+                                        }}
+                                        onInput={e => {
+                                            const cleanDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                                            setCode(cleanDigits);
+                                        }}
+                                        maxLength={6}
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
                                     />
                                 </div>
                                 <div className="input-box">

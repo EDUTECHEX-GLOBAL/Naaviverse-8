@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 // import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
 import "./ServicesListPage.scss";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -81,7 +83,7 @@ const location = useLocation();
       );
     } catch (err) {
       console.error("Error removing service from step:", err);
-      alert("Failed to remove service from step");
+      toast.error("Failed to remove service from step");
     } finally {
       setRemovingStep(null);
     }
@@ -111,7 +113,7 @@ const location = useLocation();
       }
     } catch (err) {
       console.error("Error deleting service:", err);
-      alert("Failed to delete service");
+      toast.error("Failed to delete service");
     } finally {
       setDeletingService(null);
     }

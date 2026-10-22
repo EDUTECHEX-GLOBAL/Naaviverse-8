@@ -418,7 +418,7 @@
 
 /* Profile Section */
 .partner-profile-section {
-  padding: 10px 10px;
+  padding: 8px 10px 4px 10px;
   border-top: 1px solid #f1f5f9;
   background: #ffffff;
   margin-top: auto;
@@ -428,8 +428,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 10px;
+  padding: 5px 8px 4px 8px;
+  border-radius: 8px;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s ease;
@@ -465,21 +465,30 @@
 .partner-profile-details {
   overflow: hidden;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .partner-profile-name {
   font-weight: 600;
   font-size: 13px;
+  line-height: 1.25;
   color: #1e293b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: 0;
+  padding: 0;
 }
 
 .partner-profile-status {
   font-size: 10px;
   font-weight: 500;
-  margin-top: 1px;
+  line-height: 1.2;
+  margin-top: 2px;
+  margin-bottom: 0;
+  padding: 0;
 }
 
 .partner-dots-btn {

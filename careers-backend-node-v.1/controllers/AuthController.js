@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/UsersModel");
 const Partner = require("../models/PartnerModel");
+const Approval = require("../models/ApprovalModel");
 require("dotenv").config({ path: ".env" });
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -148,8 +149,12 @@ const forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ success: false, message: "Email is required" });
 
-    const userFound = await User.findOne({ email });
-    if (!userFound) return res.status(400).json({ success: false, message: "User not found" });
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
+    const userFound = await User.findOne({ email: emailRegex });
+    if (!userFound) {
+      return res.status(404).json({ success: false, message: "No user account found with this email address" });
+    }
 
     const OTP = generateOTP();
     userFound.OTP = OTP;
@@ -163,7 +168,7 @@ const forgotPassword = async (req, res) => {
       expiresIn: "10 minutes",
     });
 
-    await sendNotificationMail(email, otpSubject, otpHtml);
+    await sendNotificationMail(cleanEmail, otpSubject, otpHtml);
 
     const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: 86400 });
     return res.status(200).json({ success: true, token, message: "OTP sent successfully to your email address" });
@@ -456,6 +461,10 @@ const updatePassword = async (req, res) => {
     const { email, code, newPassword } = req.body;
     if (!email || !code || !newPassword) {
       return res.status(400).json({ success: false, message: "Email, OTP code, and new password are required" });
+    }
+
+    if (newPassword.length < 10) {
+      return res.status(400).json({ success: false, message: "Password must be at least 10 characters long" });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });

@@ -26,7 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
-import { validatePersonName } from "../../utils/emailValidator";
+import { validatePersonName, validateBusinessName, validatePostalCode, validateWebsite } from "../../utils/emailValidator";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -457,12 +457,20 @@ const AccProfile = () => {
   };
 
   const handlePartnerPinCodeChange = (val) => {
-    setPinCode(val);
+    const isIndia = (businessCountry || "").toLowerCase().includes("india");
+    let cleanVal = val || "";
+    if (isIndia) {
+      // Numbers only, strictly max 6 digits
+      cleanVal = cleanVal.replace(/\D/g, "").slice(0, 6);
+    } else {
+      // Alphanumeric, space, hyphen only, strictly max 10 chars
+      cleanVal = cleanVal.replace(/[^a-zA-Z0-9\s-]/g, "").slice(0, 10);
+    }
+    setPinCode(cleanVal);
     clearTimeout(partnerPostalTimerRef.current);
-    const trimmed = (val || "").trim();
-    if (trimmed.length >= 3) {
+    if (cleanVal.length >= 3) {
       partnerPostalTimerRef.current = setTimeout(() => {
-        lookupPartnerPostalCode(trimmed, businessCountry);
+        lookupPartnerPostalCode(cleanVal, businessCountry);
       }, 250);
     }
   };
@@ -681,27 +689,36 @@ const AccProfile = () => {
 
   const isFirstNameValid = validatePersonName(firstName, "First Name").isValid;
   const isLastNameValid = validatePersonName(lastName, "Last Name").isValid;
+  const isBusinessNameValid = validateBusinessName(businessName).isValid;
+  const isPostalCodeValid = validatePostalCode(pinCode, businessCountry).isValid;
+  const isWebsiteValid = validateWebsite(website).isValid;
 
-  const allSelected = businessName && businessDesc && website &&
-    businessType && businessLogo && street && city && pinCode &&
-    businessState && businessCountry && isFirstNameValid && isLastNameValid && position &&
-    isPhoneValid;
+  const allSelected = Boolean(
+    isBusinessNameValid &&
+    businessType &&
+    businessLogo &&
+    isPostalCodeValid &&
+    businessCountry &&
+    (city && city.trim()) &&
+    (businessState && businessState.trim()) &&
+    isFirstNameValid &&
+    isLastNameValid &&
+    (position && position.trim()) &&
+    isPhoneValid &&
+    isWebsiteValid
+  );
 
   // ─── Approval Flow Helpers ──────────────────────────────────────────────────
 
   /**
-   * Helper to verify if partner has actually submitted all essential onboarding details.
-   * Prevents accounts with dummy or partial data from getting stuck in pending review.
+   * Helper to verify if partner has actually submitted onboarding details.
    */
   const checkIsProfileComplete = (raw, profileRes) => {
     if (!raw) return false;
-    if (profileRes?.data?.profileIncomplete === true) return false;
     return Boolean(
-      raw.businessName &&
-      raw.businessName.trim() !== "" &&
-      raw.website &&
-      raw.website.trim() !== "" &&
-      (raw.city || raw.street || raw.firstName)
+      (raw.businessName && String(raw.businessName).trim() !== "") ||
+      (raw.firstName && String(raw.firstName).trim() !== "") ||
+      raw.logo
     );
   };
 
@@ -720,6 +737,7 @@ const AccProfile = () => {
    * (approved partners can edit; pending/rejected see read-only).
    */
   const fetchAndShowProfile = (mailId, targetStatus = "approved") => {
+    setIsLoadingProfile(true);
     axios
       .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
       .then((profileRes) => {
@@ -729,7 +747,7 @@ const AccProfile = () => {
           // API returned empty or incomplete data - no complete profile exists yet
           setIsProfileData(false);
           setProfileData({});
-          setCreateBrandProfile(true);
+          setCreateBrandProfile(false);
           setAccStatus("");
           setIsLoadingProfile(false);
           return;
@@ -764,6 +782,7 @@ const AccProfile = () => {
         setIsProfileData(false);
         setProfileData({});
         setAccStatus("");
+        setCreateBrandProfile(false);
         setIsLoadingProfile(false);
       });
   };
@@ -774,6 +793,7 @@ const AccProfile = () => {
    * displayed in read-only mode with a status banner on top.
    */
   const loadApprovalThenProfile = (mailId) => {
+    setIsLoadingProfile(true);
     axios
       .get(`${BASE_URL}/api/approvals/status?email=${mailId}`)
       .then((approvalRes) => {
@@ -792,7 +812,7 @@ const AccProfile = () => {
           // Still load the profile so the partner can see what they submitted
           fetchAndShowProfile(mailId, "rejected");
         } else if (liveStatus === "pending") {
-          // Verify they actually submitted a complete profile before locking into pending view
+          // Verify they actually submitted a profile before locking into pending view
           axios
             .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
             .then((profileRes) => {
@@ -802,11 +822,10 @@ const AccProfile = () => {
                 setCreateBrandProfile(false);
                 fetchAndShowProfile(mailId, "pending");
               } else {
-                // Profile incomplete -> open profile creation modal
                 setIsProfileData(false);
                 setProfileData({});
                 setAccStatus("");
-                setCreateBrandProfile(true);
+                setCreateBrandProfile(false);
                 setIsLoadingProfile(false);
               }
             })
@@ -822,7 +841,6 @@ const AccProfile = () => {
             .then((profileRes) => {
               const raw = profileRes.data?.data || {};
               if (checkIsProfileComplete(raw, profileRes)) {
-                // Profile exists and is complete, but no approval record yet — treat as pending
                 console.log("Profile found but no approval record -> pending");
                 const normalized = { ...raw, type: raw.type || raw.partnerType || raw.businessType || "" };
                 setIsProfileData(true);
@@ -830,8 +848,6 @@ const AccProfile = () => {
                 setprofileSpecalities(raw.specialities || []);
                 setCreateBrandProfile(false);
                 setAccStatus("pending");
-                // Write pending + profile fields so sidebar shows businessName
-                // and approvalStatus survives logout/re-login
                 const existingLS = JSON.parse(localStorage.getItem("partner") || "{}");
                 localStorage.setItem("partner", JSON.stringify({
                   ...existingLS,
@@ -841,29 +857,25 @@ const AccProfile = () => {
                   businessName: raw.businessName || existingLS.businessName,
                 }));
               } else {
-                // Genuinely no profile yet or incomplete -> show create form
                 setIsProfileData(false);
                 setProfileData({});
                 setAccStatus("");
-                setCreateBrandProfile(true);
+                setCreateBrandProfile(false);
               }
               setIsLoadingProfile(false);
             })
             .catch(() => {
-              // Cannot fetch profile -> show create form as fallback
               setIsProfileData(false);
               setProfileData({});
               setAccStatus("");
-              setCreateBrandProfile(true);
+              setCreateBrandProfile(false);
               setIsLoadingProfile(false);
             });
         }
       })
       .catch((err) => {
         console.log("Error fetching approval status:", err);
-        // Approvals API failed — fall back to checking the partner profile
-        // directly so we don't wrongly show the create form to a partner
-        // who already submitted (e.g. approval service is slow / down).
+        // Approvals API failed — fall back to checking the partner profile directly
         axios
           .get(`${BASE_URL}/api/partner/get?email=${mailId}`)
           .then((profileRes) => {
@@ -874,20 +886,14 @@ const AccProfile = () => {
               setProfileData(normalized);
               setprofileSpecalities(raw.specialities || []);
               setCreateBrandProfile(false);
-              setAccStatus("pending"); // treat as pending when approval API is unreachable
               const existingLS = JSON.parse(localStorage.getItem("partner") || "{}");
-              localStorage.setItem("partner", JSON.stringify({
-                ...existingLS,
-                approvalStatus: "pending",
-                firstName: raw.firstName || existingLS.firstName,
-                lastName: raw.lastName || existingLS.lastName,
-                businessName: raw.businessName || existingLS.businessName,
-              }));
+              const fallbackStatus = existingLS.approvalStatus || "approved";
+              setAccStatus(fallbackStatus);
             } else {
               setIsProfileData(false);
               setProfileData({});
               setAccStatus("");
-              setCreateBrandProfile(true);
+              setCreateBrandProfile(false);
             }
             setIsLoadingProfile(false);
           })
@@ -895,6 +901,7 @@ const AccProfile = () => {
             setIsProfileData(false);
             setProfileData({});
             setAccStatus("");
+            setCreateBrandProfile(false);
             setIsLoadingProfile(false);
           });
       });
@@ -1344,6 +1351,24 @@ const AccProfile = () => {
     let email = userDetails?.email || localStorage.getItem("loginEmail");
     if (!email) return;
 
+    const bNameVal = validateBusinessName(businessName);
+    if (!bNameVal.isValid) {
+      toast.error(bNameVal.message);
+      return;
+    }
+
+    const pinVal = validatePostalCode(pinCode, businessCountry);
+    if (!pinVal.isValid) {
+      toast.error(pinVal.message);
+      return;
+    }
+
+    const webVal = validateWebsite(website);
+    if (!webVal.isValid) {
+      toast.error(webVal.message);
+      return;
+    }
+
     const firstVal = validatePersonName(firstName, "First Name");
     if (!firstVal.isValid) {
       toast.error(firstVal.message);
@@ -1526,12 +1551,10 @@ const AccProfile = () => {
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
       <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
         <div className="dashboard-body">
-          <div>
-            <AccDashsidebar
-              handleChangeAccDashsidebar={handleChangeAccDashsidebar}
-              accStatus={accStatus}
-            />
-          </div>
+          <AccDashsidebar
+            handleChangeAccDashsidebar={handleChangeAccDashsidebar}
+            accStatus={accStatus}
+          />
           <div className="dashboard-screens" onClick={() => resetpop()} style={{ background: "#F8FAFC" }}>
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", height: "100%" }}>
               <MenuNav
@@ -1832,7 +1855,11 @@ const AccProfile = () => {
 
                 /* ── PENDING: profile visible in read-only + yellow banner ── */
               ) : accStatus === "pending" && isProfileData ? (
-                <div className="profile-modern-container" style={{ maxWidth: "100%", width: "100%", padding: "0 24px", boxSizing: "border-box" }}>
+                <div className="profile-modern-container" style={{
+                  maxWidth: "100%", width: "100%", padding: "20px 28px",
+                  boxSizing: "border-box", overflowY: "auto", flex: 1, minHeight: 0,
+                  scrollbarWidth: "none", msOverflowStyle: "none",
+                }}>
 
                   {/* ── Pending status banner ── */}
                   <div style={{
@@ -1853,19 +1880,10 @@ const AccProfile = () => {
                   </div>
 
                   {/* Cover Banner — no Edit button */}
-                  <div style={{ position: "relative", marginBottom: "0" }}>
-                    <div style={{
-                      height: "160px",
-                      background: "linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%)",
-                      borderRadius: "16px", width: "100%",
-                    }} />
+                  <div className="profile-header-banner">
+                    <div className="profile-cover" />
                     {/* Avatar */}
-                    <div style={{
-                      position: "absolute", bottom: "-44px", left: "36px",
-                      width: "88px", height: "88px", borderRadius: "14px",
-                      border: "3px solid #fff", background: "#fff",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.12)", overflow: "hidden",
-                    }}>
+                    <div className="profile-avatar-wrapper">
                       <img
                         src={profileData?.logo}
                         alt={profileData?.businessName}
@@ -1880,11 +1898,7 @@ const AccProfile = () => {
                   </div>
 
                   {/* Name + pending badge */}
-                  <div style={{
-                    paddingLeft: "140px", paddingRight: "24px",
-                    paddingTop: "10px", paddingBottom: "20px",
-                    display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap",
-                  }}>
+                  <div className="profile-header-info">
                     <h1 style={{ fontSize: "20px", fontWeight: "700", color: "#1a1f36", margin: 0 }}>
                       {profileData?.businessName}
                     </h1>
@@ -1902,47 +1916,42 @@ const AccProfile = () => {
                   </div>
 
                   {/* Read-only profile details card */}
-                  <div style={{
-                    background: "#fff", borderRadius: "16px",
-                    border: "1px solid #eef0f3", boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-                    margin: "0 0 24px 0", overflow: "hidden",
-                    opacity: 0.85,
-                  }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
+                  <div className="profile-details-card">
+                    <div className="profile-grid-4col">
                       {[
                         { label: "Business Name", value: profileData?.businessName },
                         { label: "Business Type", value: profileData?.type },
                         { label: "Website", value: profileData?.website },
                         { label: "Email", value: userDetails?.email },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
+                      ].map((item) => (
+                        <div key={item.label} className="profile-cell">
                           <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-all" }}>{item.value || "—"}</span>
+                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-word" }}>{item.value || "—"}</span>
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
+                    <div className="profile-grid-5col">
                       {[
                         { label: "First Name", value: profileData?.firstName },
                         { label: "Last Name", value: profileData?.lastName },
                         { label: "Position", value: profileData?.yourPosition },
                         { label: "Phone Number", value: profileData?.phone || profileData?.phoneNumber },
                         { label: "Country", value: profileData?.country },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
+                      ].map((item) => (
+                        <div key={item.label} className="profile-cell">
                           <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36" }}>{item.value || "—"}</span>
+                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-word" }}>{item.value || "—"}</span>
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                      <div style={{ padding: "18px 20px", borderRight: "1px solid #f0f2f5" }}>
+                    <div className="profile-grid-2col">
+                      <div className="profile-cell">
                         <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Description</div>
-                        <span style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6" }}>{profileData?.description || "—"}</span>
+                        <span style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6", wordBreak: "break-word" }}>{profileData?.description || "—"}</span>
                       </div>
-                      <div style={{ padding: "18px 20px" }}>
+                      <div className="profile-cell">
                         <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Address</div>
-                        <div style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.7" }}>
+                        <div style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.7", wordBreak: "break-word" }}>
                           <div>{profileData?.street || "—"}</div>
                           <div>{[profileData?.city, profileData?.state].filter(Boolean).join(", ")}</div>
                           <div>{[profileData?.country, profileData?.pincode].filter(Boolean).join(" ")}</div>
@@ -1954,7 +1963,11 @@ const AccProfile = () => {
 
                 /* ── REJECTED: profile visible in read-only + red banner with reason ── */
               ) : accStatus === "rejected" && isProfileData ? (
-                <div className="profile-modern-container" style={{ maxWidth: "100%", width: "100%", padding: "0 24px", boxSizing: "border-box" }}>
+                <div className="profile-modern-container" style={{
+                  maxWidth: "100%", width: "100%", padding: "20px 28px",
+                  boxSizing: "border-box", overflowY: "auto", flex: 1, minHeight: 0,
+                  scrollbarWidth: "none", msOverflowStyle: "none",
+                }}>
 
                   {/* ── Rejection banner with reason ── */}
                   <div style={{
@@ -1978,18 +1991,9 @@ const AccProfile = () => {
                   </div>
 
                   {/* Cover Banner — no Edit button, greyed out */}
-                  <div style={{ position: "relative", marginBottom: "0" }}>
-                    <div style={{
-                      height: "160px",
-                      background: "linear-gradient(135deg, #fca5a5 0%, #f87171 100%)",
-                      borderRadius: "16px", width: "100%",
-                    }} />
-                    <div style={{
-                      position: "absolute", bottom: "-44px", left: "36px",
-                      width: "88px", height: "88px", borderRadius: "14px",
-                      border: "3px solid #fff", background: "#fff",
-                      boxShadow: "0 4px 16px rgba(0,0,0,0.12)", overflow: "hidden",
-                    }}>
+                  <div className="profile-header-banner">
+                    <div className="profile-cover" style={{ background: "linear-gradient(135deg, #fca5a5 0%, #f87171 100%)" }} />
+                    <div className="profile-avatar-wrapper">
                       <img
                         src={profileData?.logo}
                         alt={profileData?.businessName}
@@ -2004,11 +2008,7 @@ const AccProfile = () => {
                   </div>
 
                   {/* Name + rejected badge */}
-                  <div style={{
-                    paddingLeft: "140px", paddingRight: "24px",
-                    paddingTop: "10px", paddingBottom: "20px",
-                    display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap",
-                  }}>
+                  <div className="profile-header-info">
                     <h1 style={{ fontSize: "20px", fontWeight: "700", color: "#1a1f36", margin: 0 }}>
                       {profileData?.businessName}
                     </h1>
@@ -2024,45 +2024,41 @@ const AccProfile = () => {
                   </div>
 
                   {/* Read-only profile details card */}
-                  <div style={{
-                    background: "#fff", borderRadius: "16px",
-                    border: "1px solid #fee2e2", boxShadow: "0 1px 6px rgba(0,0,0,0.06)",
-                    margin: "0 0 24px 0", overflow: "hidden", opacity: 0.75,
-                  }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
+                  <div className="profile-details-card" style={{ borderColor: "#fee2e2", opacity: 0.85 }}>
+                    <div className="profile-grid-4col">
                       {[
                         { label: "Business Name", value: profileData?.businessName },
                         { label: "Business Type", value: profileData?.type },
                         { label: "Website", value: profileData?.website },
                         { label: "Email", value: userDetails?.email },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
+                      ].map((item) => (
+                        <div key={item.label} className="profile-cell">
                           <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-all" }}>{item.value || "—"}</span>
+                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-word" }}>{item.value || "—"}</span>
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderBottom: "1px solid #f0f2f5" }}>
+                    <div className="profile-grid-4col">
                       {[
                         { label: "First Name", value: profileData?.firstName },
                         { label: "Last Name", value: profileData?.lastName },
                         { label: "Position", value: profileData?.yourPosition },
                         { label: "Country", value: profileData?.country },
-                      ].map((item, i, arr) => (
-                        <div key={item.label} style={{ padding: "18px 20px", borderRight: i < arr.length - 1 ? "1px solid #f0f2f5" : "none" }}>
+                      ].map((item) => (
+                        <div key={item.label} className="profile-cell">
                           <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>{item.label}</div>
-                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36" }}>{item.value || "—"}</span>
+                          <span style={{ fontSize: "14px", fontWeight: "500", color: "#1a1f36", wordBreak: "break-word" }}>{item.value || "—"}</span>
                         </div>
                       ))}
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                      <div style={{ padding: "18px 20px", borderRight: "1px solid #f0f2f5" }}>
+                    <div className="profile-grid-2col">
+                      <div className="profile-cell">
                         <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Description</div>
-                        <span style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6" }}>{profileData?.description || "—"}</span>
+                        <span style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.6", wordBreak: "break-word" }}>{profileData?.description || "—"}</span>
                       </div>
-                      <div style={{ padding: "18px 20px" }}>
+                      <div className="profile-cell">
                         <div style={{ fontSize: "11px", fontWeight: "600", color: "#9aa0ac", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>Address</div>
-                        <div style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.7" }}>
+                        <div style={{ fontSize: "14px", color: "#1a1f36", lineHeight: "1.7", wordBreak: "break-word" }}>
                           <div>{profileData?.street || "—"}</div>
                           <div>{[profileData?.city, profileData?.state].filter(Boolean).join(", ")}</div>
                           <div>{[profileData?.country, profileData?.pincode].filter(Boolean).join(" ")}</div>
@@ -2317,22 +2313,63 @@ const AccProfile = () => {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!allSelected) {
-                      const fnRes = validatePersonName(firstName, "First name");
-                      const lnRes = validatePersonName(lastName, "Last name");
-                      if (!fnRes.isValid) {
-                        toast.error(fnRes.message);
-                      } else if (!lnRes.isValid) {
-                        toast.error(lnRes.message);
-                      } else if (!phone) {
-                        toast.error("Please enter your mobile number");
-                      } else if (!isPhoneValid) {
-                        toast.error(
-                          `Mobile number for ${currentPhoneCountry.name} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.maxLength} digits`}`
-                        );
-                      } else {
-                        toast.error("Please fill in all required fields (*)");
-                      }
+                    const bNameRes = validateBusinessName(businessName);
+                    if (!bNameRes.isValid) {
+                      toast.error(bNameRes.message);
+                      return;
+                    }
+                    if (!businessType) {
+                      toast.error("Please select a business type (*)");
+                      return;
+                    }
+                    if (!businessLogo) {
+                      toast.error("Please upload a company logo (*)");
+                      return;
+                    }
+                    if (!businessCountry) {
+                      toast.error("Please select your country (*)");
+                      return;
+                    }
+                    const pinRes = validatePostalCode(pinCode, businessCountry);
+                    if (!pinRes.isValid) {
+                      toast.error(pinRes.message);
+                      return;
+                    }
+                    if (!city || !city.trim()) {
+                      toast.error("City is required (*)");
+                      return;
+                    }
+                    if (!businessState || !businessState.trim()) {
+                      toast.error("State / Province is required (*)");
+                      return;
+                    }
+                    const fnRes = validatePersonName(firstName, "First name");
+                    if (!fnRes.isValid) {
+                      toast.error(fnRes.message);
+                      return;
+                    }
+                    const lnRes = validatePersonName(lastName, "Last name");
+                    if (!lnRes.isValid) {
+                      toast.error(lnRes.message);
+                      return;
+                    }
+                    if (!position || !position.trim()) {
+                      toast.error("Your designation / position is required (*)");
+                      return;
+                    }
+                    if (!phone) {
+                      toast.error("Please enter your mobile number (*)");
+                      return;
+                    }
+                    if (!isPhoneValid) {
+                      toast.error(
+                        `Mobile number for ${currentPhoneCountry.name} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.maxLength} digits`}`
+                      );
+                      return;
+                    }
+                    const webRes = validateWebsite(website);
+                    if (!webRes.isValid) {
+                      toast.error(webRes.message);
                       return;
                     }
                     createPartnerProfile();
@@ -2348,9 +2385,10 @@ const AccProfile = () => {
                     </div>
 
                     <InputDivsCreatePartner
-                      placeholderText="Business Name (e.g. Acme EdTech Inc.)"
+                      placeholderText="Business Name * (e.g. Acme EdTech Inc.)"
                       setFunc={setBusinessName}
                       funcValue={businessName}
+                      maxLength={100}
                       containerStyle={{ marginBottom: "12px" }}
                       style={{
                         height: "48px",
@@ -2360,7 +2398,7 @@ const AccProfile = () => {
                       }}
                     />
                     <InputDivsTextAreaPartner
-                      placeholderText="Short Business Description & Overview..."
+                      placeholderText="Short Business Description & Overview (Optional)..."
                       setFunc={setBusinessDesc}
                       funcValue={businessDesc}
                       style={{
@@ -2372,7 +2410,12 @@ const AccProfile = () => {
                     />
 
                     <div className="partner-modal-grid-row">
-                      <InputDivsCreatePartner placeholderText="Website (e.g. https://example.com)" setFunc={setWebsite} funcValue={website} />
+                      <InputDivsCreatePartner
+                        placeholderText="Website (e.g. https://example.com) (Optional)"
+                        setFunc={setWebsite}
+                        funcValue={website}
+                        maxLength={150}
+                      />
                       <div
                         ref={businessTypeDropdownRef}
                         style={{
@@ -2411,7 +2454,7 @@ const AccProfile = () => {
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {businessType || "Business Type (e.g. Vendor, Institution)"}
+                            {businessType || "Business Type * (e.g. Vendor, Institution)"}
                           </span>
                           <svg
                             width="14"
@@ -2512,15 +2555,22 @@ const AccProfile = () => {
                       <MapPinIcon /> Business Address
                     </div>
 
-                    <InputDivsCreatePartner placeholderText="Street Address..." setFunc={setStreet} funcValue={street} />
+                    <InputDivsCreatePartner placeholderText="Street Address (Optional)..." setFunc={setStreet} funcValue={street} maxLength={150} />
 
                     <div className="partner-modal-grid-row">
-                      <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
-                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
+                      <InputDivsCreatePartner placeholderText="City *..." setFunc={setCity} funcValue={city} maxLength={60} />
+                      <InputDivsCreatePartner
+                        placeholderText="Pincode / Postal Code *..."
+                        setFunc={handlePartnerPinCodeChange}
+                        onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)}
+                        funcValue={pinCode}
+                        maxLength={(businessCountry || "").toLowerCase().includes("india") ? 6 : 10}
+                        inputMode={(businessCountry || "").toLowerCase().includes("india") ? "numeric" : "text"}
+                      />
                     </div>
 
                     <div className="partner-modal-grid-row">
-                      <InputDivsCreatePartner placeholderText="State / Province..." setFunc={setBusinessState} funcValue={businessState} />
+                      <InputDivsCreatePartner placeholderText="State / Province *..." setFunc={setBusinessState} funcValue={businessState} maxLength={60} />
                       <div
                         ref={countryDropdownRef}
                         style={{
@@ -2710,11 +2760,11 @@ const AccProfile = () => {
                     </div>
 
                     <div className="partner-modal-grid-row" style={{ marginTop: "0px" }}>
-                      <InputDivsCreatePartner placeholderText="First Name..." setFunc={setFirstName} funcValue={firstName} />
-                      <InputDivsCreatePartner placeholderText="Last Name..." setFunc={setLastName} funcValue={lastName} />
+                      <InputDivsCreatePartner placeholderText="First Name *..." setFunc={setFirstName} funcValue={firstName} maxLength={50} />
+                      <InputDivsCreatePartner placeholderText="Last Name *..." setFunc={setLastName} funcValue={lastName} maxLength={50} />
                     </div>
                     <div className="partner-modal-grid-row">
-                      <InputDivsCreatePartner placeholderText="Your Designation / Position (e.g. Director, Partner)" setFunc={setPosition} funcValue={position} />
+                      <InputDivsCreatePartner placeholderText="Your Designation / Position * (e.g. Director, Partner)" setFunc={setPosition} funcValue={position} maxLength={80} />
                       <div
                         ref={phoneContainerRef}
                         style={{
@@ -2786,7 +2836,7 @@ const AccProfile = () => {
                         <input
                           type="tel"
                           inputMode="numeric"
-                          placeholder="Phone Number"
+                          placeholder="Phone Number *"
                           value={phone}
                           maxLength={currentPhoneCountry.maxLength}
                           onChange={(e) => handlePartnerPhoneChange(e.target.value)}
@@ -2963,7 +3013,7 @@ const AccProfile = () => {
                       fontSize: "0.95rem",
                       fontWeight: "700",
                       textAlign: "center",
-                      cursor: allSelected ? "pointer" : "not-allowed",
+                      cursor: "pointer",
                       transition: "all 0.2s ease",
                       boxShadow: allSelected ? "0 4px 14px rgba(44, 124, 178, 0.35)" : "none",
                       marginTop: "10px",

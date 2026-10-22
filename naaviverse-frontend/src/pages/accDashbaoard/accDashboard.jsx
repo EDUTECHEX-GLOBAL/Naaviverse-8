@@ -38,6 +38,8 @@ import "./CreateNewPath.scss";
 import PartnerHome from "./partnerHome";
 import CRMPage from './partnercrm';
 import PartnerFeedback from './PartnerFeedback';
+import tickMark from "../Registration/tick.svg";
+import tickMarkValid from "../Registration/tickMarkValid.svg";
 import MenuNav from "../../components/MenuNav/index.jsx";
 import {
   GetFollowersPerAccount,
@@ -131,14 +133,30 @@ const AccDashboard = () => {
     }
   }, []);
 
+  const checkDashPasswordRequirements = (pwd) => {
+    const password = pwd || "";
+    const capitalLetter = /[A-Z]/.test(password);
+    const specialCharacter = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+    const tenCharacters = password.length >= 10;
+    const oneNumber = /[0-9]/.test(password);
+    return {
+      capitalLetter,
+      specialCharacter,
+      tenCharacters,
+      oneNumber,
+      isValid: capitalLetter && specialCharacter && tenCharacters && oneNumber,
+    };
+  };
+
   const handleDashForcePasswordSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!dashNewPassword || !dashConfirmPassword) {
       setDashPasswordError("Please enter and confirm your new password.");
       return;
     }
-    if (dashNewPassword.length < 6) {
-      setDashPasswordError("Password must be at least 6 characters long.");
+    const reqs = checkDashPasswordRequirements(dashNewPassword);
+    if (!reqs.isValid) {
+      setDashPasswordError("Password must be at least 10 characters and contain a capital letter, number, and special character.");
       return;
     }
     if (dashNewPassword !== dashConfirmPassword) {
@@ -1454,7 +1472,7 @@ const AccDashboard = () => {
 
     if (!finalEmail) {
       console.log("[error] Partner email missing. Cannot create path.");
-      alert("Partner email missing. Please login again.");
+      toast.error("Partner email missing. Please login again.");
       return;
     }
 
@@ -3465,7 +3483,7 @@ const AccDashboard = () => {
                 <label style={{ display: "block", fontSize: "0.78rem", fontWeight: "600", color: "#475569", marginBottom: "6px", textTransform: "uppercase" }}>New Password</label>
                 <input
                   type="password"
-                  placeholder="Enter new password (min. 6 characters)"
+                  placeholder="Enter new password (min. 10 characters)"
                   value={dashNewPassword}
                   onChange={(e) => {
                     setDashPasswordError("");
@@ -3481,6 +3499,40 @@ const AccDashboard = () => {
                   }}
                   required
                 />
+                {dashNewPassword && (
+                  <div style={{
+                    background: "#e8f1f8",
+                    border: "1px solid rgba(44, 124, 178, 0.2)",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    marginTop: "8px",
+                    fontSize: "12px"
+                  }}>
+                    {(() => {
+                      const reqs = checkDashPasswordRequirements(dashNewPassword);
+                      return (
+                        <>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "3px 0", color: reqs.capitalLetter ? "#1e293b" : "#64748b", fontWeight: reqs.capitalLetter ? "600" : "400" }}>
+                            <img src={reqs.capitalLetter ? tickMarkValid : tickMark} alt="" style={{ width: "15px", height: "15px" }} />
+                            One Capital Letter
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "3px 0", color: reqs.specialCharacter ? "#1e293b" : "#64748b", fontWeight: reqs.specialCharacter ? "600" : "400" }}>
+                            <img src={reqs.specialCharacter ? tickMarkValid : tickMark} alt="" style={{ width: "15px", height: "15px" }} />
+                            One Special Character
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "3px 0", color: reqs.tenCharacters ? "#1e293b" : "#64748b", fontWeight: reqs.tenCharacters ? "600" : "400" }}>
+                            <img src={reqs.tenCharacters ? tickMarkValid : tickMark} alt="" style={{ width: "15px", height: "15px" }} />
+                            Ten Characters
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "3px 0", color: reqs.oneNumber ? "#1e293b" : "#64748b", fontWeight: reqs.oneNumber ? "600" : "400" }}>
+                            <img src={reqs.oneNumber ? tickMarkValid : tickMark} alt="" style={{ width: "15px", height: "15px" }} />
+                            One Number
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
 
               <div style={{ marginBottom: "24px" }}>

@@ -13,6 +13,9 @@ import { Loginservice, GoogleLoginservice } from "../../services/loginapis";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { SvgCheck, SvgCheckCircle, SvgClose, SvgWarning, SvgStarFilled } from "../../utils/SvgIcons";
+import { validateEmail } from "../../utils/emailValidator";
+import tickMark from "../Registration/tick.svg";
+import tickMarkValid from "../Registration/tickMarkValid.svg";
 
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -92,6 +95,73 @@ const GoogleIcon = () => (
     </svg>
 );
 
+const checkPasswordRequirements = (pwd) => {
+    const password = pwd || "";
+    const capitalLetter = /[A-Z]/.test(password);
+    const specialCharacter = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+    const tenCharacters = password.length >= 10;
+    const oneNumber = /[0-9]/.test(password);
+    return {
+        capitalLetter,
+        specialCharacter,
+        tenCharacters,
+        oneNumber,
+        isValid: capitalLetter && specialCharacter && tenCharacters && oneNumber,
+    };
+};
+
+const PasswordRequirementsCard = ({ password, showToggle = true }) => {
+    const [showReqs, setShowReqs] = useState(true);
+    const reqs = checkPasswordRequirements(password);
+
+    return (
+        <div style={{ width: "100%", margin: "8px 0 16px 0" }}>
+            {showToggle && (
+                <div
+                    onClick={() => setShowReqs(!showReqs)}
+                    style={{
+                        fontSize: "12.5px",
+                        marginBottom: "8px",
+                        cursor: "pointer",
+                        color: "#2c7cb2",
+                        fontWeight: "500",
+                        display: "inline-block",
+                        userSelect: "none"
+                    }}
+                >
+                    {showReqs ? "Hide" : "View"} Password Requirements
+                </div>
+            )}
+            {showReqs && (
+                <div style={{
+                    background: "#e8f1f8",
+                    border: "1px solid rgba(44, 124, 178, 0.2)",
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    animation: "fadeIn 0.3s ease"
+                }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "4px 0", fontSize: "12.5px", color: reqs.capitalLetter ? "#1e293b" : "#64748b", fontWeight: reqs.capitalLetter ? "600" : "400" }}>
+                        <img src={reqs.capitalLetter ? tickMarkValid : tickMark} alt={reqs.capitalLetter ? "Valid" : "Pending"} style={{ width: "16px", height: "16px" }} />
+                        One Capital Letter
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "4px 0", fontSize: "12.5px", color: reqs.specialCharacter ? "#1e293b" : "#64748b", fontWeight: reqs.specialCharacter ? "600" : "400" }}>
+                        <img src={reqs.specialCharacter ? tickMarkValid : tickMark} alt={reqs.specialCharacter ? "Valid" : "Pending"} style={{ width: "16px", height: "16px" }} />
+                        One Special Character
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "4px 0", fontSize: "12.5px", color: reqs.tenCharacters ? "#1e293b" : "#64748b", fontWeight: reqs.tenCharacters ? "600" : "400" }}>
+                        <img src={reqs.tenCharacters ? tickMarkValid : tickMark} alt={reqs.tenCharacters ? "Valid" : "Pending"} style={{ width: "16px", height: "16px" }} />
+                        Ten Characters
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "9px", padding: "4px 0", fontSize: "12.5px", color: reqs.oneNumber ? "#1e293b" : "#64748b", fontWeight: reqs.oneNumber ? "600" : "400" }}>
+                        <img src={reqs.oneNumber ? tickMarkValid : tickMark} alt={reqs.oneNumber ? "Valid" : "Pending"} style={{ width: "16px", height: "16px" }} />
+                        One Number
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Loginpage = ({ initialType }) => {
     const navigate = useNavigate();
     const { loginType, setLoginType } = useStore();
@@ -112,6 +182,20 @@ const Loginpage = ({ initialType }) => {
     const [forgotEye2, setForgotEye2] = useState(false);
     const [passwordResetMsg, setPasswordResetMsg] = useState("");
     const [loading, setLoading] = useState(false);
+    const [forgotCountdown, setForgotCountdown] = useState(60);
+    const [forgotResendLoading, setForgotResendLoading] = useState(false);
+    const [forgotResendSuccess, setForgotResendSuccess] = useState("");
+
+    // Countdown timer for Forgot Password OTP
+    useEffect(() => {
+        let timer;
+        if (forgotPassword && forgotPasswordStep === 2 && forgotCountdown > 0) {
+            timer = setInterval(() => {
+                setForgotCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [forgotPassword, forgotPasswordStep, forgotCountdown]);
 
     // Force Password Update States (when mustChangePassword is true)
     const [mustChangePasswordMode, setMustChangePasswordMode] = useState(false);
@@ -178,16 +262,21 @@ const Loginpage = ({ initialType }) => {
         const urlParams = new URLSearchParams(window.location.search);
         const role = urlParams.get("role");
         const type = urlParams.get("type");
+        const hash = window.location.hash;
+        const isGoogleAuth = hash && hash.includes("access_token");
+        const storedGoogleRole = isGoogleAuth ? localStorage.getItem("googleAuthRole") : null;
 
         if (
             initialType === "Partner" ||
             window.location.pathname.includes("/partner/login") ||
             type === "partner" ||
             role === "Accountants" ||
-            role === "partner"
+            role === "partner" ||
+            storedGoogleRole === "Accountants" ||
+            storedGoogleRole === "partner"
         ) {
             setLoginType("Accountants");
-        } else if (role === "Users" || role === "user" || type === "user") {
+        } else if (role === "Users" || role === "user" || type === "user" || storedGoogleRole === "Users" || storedGoogleRole === "user") {
             setLoginType("Users");
         }
 
@@ -205,6 +294,10 @@ const Loginpage = ({ initialType }) => {
 
         const handleGoogleCallback = async () => {
             setIsLoading(true);
+            const storedRole = localStorage.getItem("googleAuthRole") || (initialType === "Partner" ? "Accountants" : loginType) || "Users";
+            const targetRole = (storedRole === "Accountants" || storedRole === "partner") ? "Accountants" : "Users";
+            setLoginType(targetRole);
+
             try {
                 // Parse access_token from hash
                 const hashParams = new URLSearchParams(hash.substring(1));
@@ -225,9 +318,6 @@ const Loginpage = ({ initialType }) => {
 
                 const googleUser = googleRes.data;
                 console.log("[check] Google user fetched:", googleUser?.email);
-
-                const storedRole = localStorage.getItem("googleAuthRole") || loginType || "Users";
-                const targetRole = (storedRole === "Accountants" || storedRole === "partner") ? "Accountants" : "Users";
 
                 // Authenticate with backend
                 const res = await GoogleLoginservice({
@@ -250,8 +340,9 @@ const Loginpage = ({ initialType }) => {
                 }
 
                 localStorage.setItem("authToken", result.token);
-                const isUserAuth = result.userType === "user" || targetRole === "Users";
+                const isUserAuth = result.userType === "user" || (!result.partner && Boolean(result.user));
                 localStorage.setItem("userType", isUserAuth ? "user" : "partner");
+                setLoginType(isUserAuth ? "Users" : "Accountants");
 
                 if (result.user) {
                     const userObj = {
@@ -360,28 +451,29 @@ const Loginpage = ({ initialType }) => {
                             `${BASE_URL}/api/partner/get?email=${emailToStore}`
                         );
                         const raw = profileRes.data?.data || {};
-                        const isIncomplete = profileRes.data?.profileIncomplete === true;
-                        isProfileComplete = !isIncomplete && Boolean(
-                            raw.businessName &&
-                            raw.website &&
-                            (raw.street || raw.city || raw.firstName)
+                        const hasProfile = Boolean(
+                            (raw.businessName && String(raw.businessName).trim() !== "") ||
+                            (raw.firstName && String(raw.firstName).trim() !== "") ||
+                            raw.logo
                         );
+                        isProfileComplete = hasProfile;
                     } catch (profileErr) {
                         console.warn("Could not fetch partner profile at login:", profileErr?.message);
                     }
 
+                    const currentApprovalStatus = partnerData.approvalStatus || (isProfileComplete ? "pending" : "not_submitted");
                     const enrichedPartner = {
                         ...partnerData,
                         creationSource: partnerData.creationSource || "self_registered",
-                        approvalStatus: partnerData.approvalStatus || (isProfileComplete ? "pending" : "not_submitted"),
+                        approvalStatus: currentApprovalStatus,
                         mustChangePassword: false,
                     };
                     localStorage.setItem("partner", JSON.stringify(enrichedPartner));
 
-                    if (!isProfileComplete) {
-                        navigate("/dashboard/accountants/profile", { replace: true });
-                    } else {
+                    if (currentApprovalStatus === "approved") {
                         navigate("/dashboard/accountants/home", { replace: true });
+                    } else {
+                        navigate("/dashboard/accountants/profile", { replace: true });
                     }
                 }
             } catch (error) {
@@ -416,6 +508,7 @@ const Loginpage = ({ initialType }) => {
                         actionType: "switch_role",
                     });
                 } else {
+                    setLoginType(targetRole);
                     setLoginError({
                         type: "error",
                         title: "Google Sign-In Failed",
@@ -650,16 +743,16 @@ const Loginpage = ({ initialType }) => {
                     return;
                 }
 
-                const isProfileComplete = Boolean(profileData?.businessName && profileData?.website);
+                const isProfileComplete = Boolean(
+                    (profileData?.businessName && String(profileData.businessName).trim() !== "") ||
+                    (profileData?.firstName && String(profileData.firstName).trim() !== "")
+                );
 
-                if (isInternal) {
-                    // Internal partner created by Admin -> direct home access
-                    navigate("/dashboard/accountants/home");
-                } else if (approvalStatus === "approved" && isProfileComplete) {
-                    // Approved external partner with complete profile -> home access
+                if (isInternal || approvalStatus === "approved") {
+                    // Approved partner -> direct home access
                     navigate("/dashboard/accountants/home");
                 } else {
-                    // New external partner -> directly navigate to profile onboarding
+                    // Pending approval, rejected, or new partner -> profile page
                     navigate("/dashboard/accountants/profile");
                 }
             }
@@ -745,17 +838,20 @@ const Loginpage = ({ initialType }) => {
     };
 
     const handleGoogleAuth = () => {
-        const isUser = loginType === "Users";
+        const effectiveType = (initialType === "Partner" || window.location.pathname.includes("/partner/login"))
+            ? "Accountants"
+            : loginType;
+        const isUser = effectiveType === "Users";
         const role = isUser ? "user" : "partner";
         localStorage.setItem("userType", role);
-        localStorage.setItem("googleAuthRole", loginType);
+        localStorage.setItem("googleAuthRole", effectiveType);
 
         const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
         const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
 
         if (!clientId) {
-            alert(
-                "Google Client ID is missing.\n\nPlease add REACT_APP_GOOGLE_CLIENT_ID=<your-google-client-id> to your .env file."
+            toast.error(
+                "Google Client ID is missing. Please add REACT_APP_GOOGLE_CLIENT_ID to your .env file."
             );
             return;
         }
@@ -771,8 +867,9 @@ const Loginpage = ({ initialType }) => {
             setForcePasswordError("Please enter and confirm your new password.");
             return;
         }
-        if (forceNewPassword.length < 6) {
-            setForcePasswordError("Password must be at least 6 characters long.");
+        const forceReqs = checkPasswordRequirements(forceNewPassword);
+        if (!forceReqs.isValid) {
+            setForcePasswordError("Password must be at least 10 characters and contain a capital letter, number, and special character.");
             return;
         }
         if (forceNewPassword !== forceConfirmPassword) {
@@ -815,29 +912,74 @@ const Loginpage = ({ initialType }) => {
     };
 
     const initiateForgotPassword = async () => {
-        if (!email) return;
+        const cleanEmail = (email || "").trim();
+        if (!cleanEmail) {
+            toast.error("Please enter your email address.");
+            return;
+        }
+
+        const emailValidation = validateEmail(cleanEmail);
+        if (!emailValidation.isValid) {
+            toast.error(emailValidation.message || "Please enter a valid email address.");
+            return;
+        }
 
         setLoading(true);
         try {
             const response = await axios.post(
                 `${BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/forgotPassword`,
-                { email }
+                { email: cleanEmail.toLowerCase() }
             );
 
             const result = response.data;
 
             if (result?.success) {
                 setForgotPasswordStep(2);
-                console.log("OTP sent successfully");
+                setForgotCountdown(60);
+                setForgotResendSuccess("");
+                toast.success("Verification code sent to your email!");
             } else {
-                console.error("Forgot password failed:", result?.message);
-                alert(result?.message || "Something went wrong. Please try again.");
+                toast.error(result?.message || "Failed to send reset code. Please check your email.");
             }
         } catch (error) {
             console.error("Error in initiateForgotPassword:", error);
-            alert("Failed to send reset email. Please check the backend connection.");
+            const errMsg = error.response?.data?.message || "Failed to send reset email. Please enter a registered email.";
+            toast.error(errMsg);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleResendForgotOtp = async () => {
+        if (forgotCountdown > 0 || forgotResendLoading || !email) return;
+        const cleanEmail = (email || "").trim();
+        const emailValidation = validateEmail(cleanEmail);
+        if (!emailValidation.isValid) {
+            toast.error(emailValidation.message || "Please enter a valid email address.");
+            return;
+        }
+
+        setForgotResendLoading(true);
+        setForgotResendSuccess("");
+        try {
+            const response = await axios.post(
+                `${BASE_URL}/${loginType === "Users" ? "api/auth" : "api/partner"}/forgotPassword`,
+                { email: cleanEmail.toLowerCase() }
+            );
+            if (response.data?.success) {
+                setForgotCountdown(60);
+                setCode("");
+                setForgotResendSuccess("A new code has been sent to your email.");
+                toast.success("New verification code sent to your email!");
+                setTimeout(() => setForgotResendSuccess(""), 4000);
+            } else {
+                toast.error(response.data?.message || "Failed to resend code.");
+            }
+        } catch (err) {
+            const errMsg = err.response?.data?.message || "Failed to resend code. Please try again.";
+            toast.error(errMsg);
+        } finally {
+            setForgotResendLoading(false);
         }
     };
 
@@ -845,7 +987,7 @@ const Loginpage = ({ initialType }) => {
         if (!code || !newPassword2) return;
 
         const obj = {
-            email,
+            email: (email || "").trim().toLowerCase(),
             code,
             newPassword: newPassword2,
         };
@@ -858,6 +1000,7 @@ const Loginpage = ({ initialType }) => {
 
             const result = response.data;
             if (result?.success) {
+                toast.success("Password updated successfully! Please log in with your new password.");
                 setPasswordResetMsg("Password reset successfully");
                 setForgotPassword(false);
                 setForgotPasswordStep(1);
@@ -866,12 +1009,12 @@ const Loginpage = ({ initialType }) => {
                 setNewPassword1("");
                 setNewPassword2("");
             } else {
-                console.error("Submit forgot password failed:", result?.message);
-                alert(result?.message || "Password reset failed. Try again.");
+                toast.error(result?.message || "Password reset failed. Please try again.");
             }
         } catch (error) {
             console.error("Error in submitForgotPassword:", error);
-            alert("Error submitting password reset. Please try again.");
+            const errMsg = error.response?.data?.message || "Error submitting password reset. Please try again.";
+            toast.error(errMsg);
         }
     };
 
@@ -1013,12 +1156,53 @@ const Loginpage = ({ initialType }) => {
                                 type="text"
                                 placeholder="Enter 6-digit code"
                                 value={code}
-                                onInput={(e) => setCode(e.target.value.replace(/[^0-9]/g, ""))}
+                                onPaste={(e) => {
+                                    e.preventDefault();
+                                    const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+                                    const cleanDigits = pasted.replace(/[^0-9]/g, "").slice(0, 6);
+                                    setCode(cleanDigits);
+                                }}
+                                onChange={(e) => {
+                                    const cleanDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                                    setCode(cleanDigits);
+                                }}
+                                onInput={(e) => {
+                                    const cleanDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                                    setCode(cleanDigits);
+                                }}
                                 maxLength={6}
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 autoComplete="one-time-code"
                             />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", marginBottom: "16px", fontSize: "13px" }}>
+                            {forgotResendSuccess ? (
+                                <span style={{ color: "#16a34a", fontSize: "12px", fontWeight: "600" }}>{forgotResendSuccess}</span>
+                            ) : <span></span>}
+                            {forgotCountdown > 0 ? (
+                                <span style={{ color: "#64748b", fontSize: "12.5px" }}>
+                                    Resend code in <strong style={{ color: "#0d9488" }}>00:{forgotCountdown < 10 ? `0${forgotCountdown}` : forgotCountdown}</strong>
+                                </span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleResendForgotOtp}
+                                    disabled={forgotResendLoading}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "#0d9488",
+                                        fontWeight: "600",
+                                        cursor: "pointer",
+                                        padding: "0",
+                                        textDecoration: "underline",
+                                        fontSize: "12.5px"
+                                    }}
+                                >
+                                    {forgotResendLoading ? "Sending..." : "Didn't receive code? Resend OTP"}
+                                </button>
+                            )}
                         </div>
                         <button
                             type="submit"
@@ -1044,7 +1228,7 @@ const Loginpage = ({ initialType }) => {
         }
 
         if (forgotPasswordStep === 3) {
-            const isMinLength = (newPassword1 || "").length >= 6;
+            const reqs = checkPasswordRequirements(newPassword1);
 
             return (
                 <div className="login-box">
@@ -1054,12 +1238,12 @@ const Loginpage = ({ initialType }) => {
                     <div className="login-welcome">
                         <div className="auth-step-pill">Step 3 of 4</div>
                         <div className="welcome-title">New Password</div>
-                        <div className="welcome-subtitle">Create a strong password for your account (at least 6 characters).</div>
+                        <div className="welcome-subtitle">Create a strong password for your account (minimum 10 characters).</div>
                     </div>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            if (isMinLength) setForgotPasswordStep(4);
+                            if (reqs.isValid) setForgotPasswordStep(4);
                         }}
                         style={{ width: "100%" }}
                     >
@@ -1068,7 +1252,7 @@ const Loginpage = ({ initialType }) => {
                             <input
                                 className="input-inp"
                                 type={forgotEye1 ? "text" : "password"}
-                                placeholder="New password"
+                                placeholder="Create new password"
                                 value={newPassword1}
                                 onInput={(e) => setNewPassword1(e.target.value)}
                             />
@@ -1077,30 +1261,12 @@ const Loginpage = ({ initialType }) => {
                             </div>
                         </div>
 
-                        {newPassword1?.length > 0 && (
-                            <div style={{
-                                fontSize: "0.8rem",
-                                fontWeight: "500",
-                                marginTop: "-4px",
-                                marginBottom: "14px",
-                                paddingLeft: "4px",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "6px",
-                                color: isMinLength ? "#16a34a" : "#dc2626"
-                            }}>
-                                {isMinLength ? (
-                                    <><span><SvgCheck size={14} /></span> Password meets minimum length (6+ characters)</>
-                                ) : (
-                                    <><span><SvgClose size={14} /></span> Password must be at least 6 characters</>
-                                )}
-                            </div>
-                        )}
+                        <PasswordRequirementsCard password={newPassword1} />
 
                         <button
                             type="submit"
-                            className={`login-btn ${isMinLength ? "" : "disabled"}`}
-                            disabled={!isMinLength}
+                            className={`login-btn ${reqs.isValid ? "" : "disabled"}`}
+                            disabled={!reqs.isValid}
                         >
                             Continue
                         </button>
@@ -1121,9 +1287,9 @@ const Loginpage = ({ initialType }) => {
         }
 
         if (forgotPasswordStep === 4) {
-            const isMinLength = (newPassword2 || "").length >= 6;
-            const isMatching = newPassword2 === newPassword1 && newPassword2.length > 0;
-            const isValid = isMinLength && isMatching;
+            const reqs = checkPasswordRequirements(newPassword1);
+            const isMatching = (newPassword2 || "").length > 0 && newPassword2 === newPassword1;
+            const isValid = reqs.isValid && isMatching;
 
             return (
                 <div className="login-box">
@@ -1162,7 +1328,7 @@ const Loginpage = ({ initialType }) => {
                             <div style={{
                                 fontSize: "0.8rem",
                                 fontWeight: "500",
-                                marginTop: "-4px",
+                                marginTop: "6px",
                                 marginBottom: "14px",
                                 paddingLeft: "4px",
                                 display: "flex",
@@ -1206,9 +1372,9 @@ const Loginpage = ({ initialType }) => {
 
     // ── RENDER: FORCE PASSWORD CHANGE FORM (Internal Partner First Login) ──
     const renderForcePasswordChange = () => {
-        const isMinLength = forceNewPassword.length >= 6;
+        const reqs = checkPasswordRequirements(forceNewPassword);
         const isMatching = forceConfirmPassword.length > 0 && forceNewPassword === forceConfirmPassword;
-        const isPasswordValid = isMinLength && forceNewPassword === forceConfirmPassword;
+        const isPasswordValid = reqs.isValid && isMatching;
 
         return (
             <div className="login-box">
@@ -1221,13 +1387,13 @@ const Loginpage = ({ initialType }) => {
                         <span>Set Permanent Password</span>
                     </div>
                     <div className="welcome-subtitle">
-                        You are logging in with a temporary password. Please set your new permanent password to secure your partner account.
+                        You are logging in with a temporary password. Please set your new permanent password to secure your partner account (minimum 10 characters).
                     </div>
                 </div>
 
                 {forcePasswordError && (
                     <div className="prompt-div" style={{ background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626", padding: "10px 14px", borderRadius: "8px", fontSize: "0.82rem", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span><SvgWarning size={14} />️ {forcePasswordError}</span>
+                        <span><SvgWarning size={14} /> {forcePasswordError}</span>
                     </div>
                 )}
 
@@ -1245,7 +1411,7 @@ const Loginpage = ({ initialType }) => {
                         <input
                             className="input-inp"
                             type={forceEye1 ? "text" : "password"}
-                            placeholder="New Password (min. 6 characters)"
+                            placeholder="New Password (min. 10 characters)"
                             value={forceNewPassword}
                             onChange={(e) => {
                                 setForcePasswordError("");
@@ -1256,11 +1422,8 @@ const Loginpage = ({ initialType }) => {
                             <EyeIcon open={forceEye1} />
                         </div>
                     </div>
-                    {forceNewPassword.length > 0 && forceNewPassword.length < 6 && (
-                        <div style={{ fontSize: "0.78rem", color: "#dc2626", marginTop: "4px", paddingLeft: "4px" }}>
-                            Password must be at least 6 characters
-                        </div>
-                    )}
+
+                    <PasswordRequirementsCard password={forceNewPassword} />
 
                     <div className="input-box password-box" style={{ marginTop: "12px" }}>
                         <LockIcon />
@@ -1288,12 +1451,12 @@ const Loginpage = ({ initialType }) => {
                             display: "flex",
                             alignItems: "center",
                             gap: "6px",
-                            color: isMatching && isMinLength ? "#16a34a" : "#dc2626"
+                            color: isMatching && reqs.isValid ? "#16a34a" : "#dc2626"
                         }}>
-                            {isMatching && isMinLength ? (
+                            {isMatching && reqs.isValid ? (
                                 <><span><SvgCheck size={14} /></span> Passwords match</>
-                            ) : !isMinLength ? (
-                                <><span><SvgClose size={14} /></span> Password must be at least 6 characters</>
+                            ) : !reqs.isValid ? (
+                                <><span><SvgClose size={14} /></span> Password does not meet all requirements</>
                             ) : (
                                 <><span><SvgClose size={14} /></span> Passwords do not match</>
                             )}

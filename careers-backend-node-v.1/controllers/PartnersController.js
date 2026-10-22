@@ -24,7 +24,7 @@ const { getOtpEmailContent } = require("../utils/otpEmailTemplate");
 
 // [OK] Unified activity — replaces the old partneractivity.controller import
 const { logEvent } = require("./ActivityController");
-const { validateEmail, validatePersonName } = require("../utils/emailValidator");
+const { validateEmail, validatePersonName, validateBusinessName, validatePostalCode } = require("../utils/emailValidator");
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -226,29 +226,40 @@ const login = async (req, res) => {
 // FORGOT PASSWORD
 // ─────────────────────────────────────────────────────────────────────────────
 const forgotPassword = async (req, res) => {
-  let partnerFound;
-  if (typeof req.body.email !== "undefined")
-    partnerFound = await Partner.findOne({ email: req.body.email });
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: "Email is required" });
 
-  if (!partnerFound) return res.status(400).json({ message: "User Not Found" });
+    const cleanEmail = email.trim().toLowerCase();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
+    const partnerFound = await Partner.findOne({ email: emailRegex });
 
-  const OTP         = generateOTP();
-  const currentTime = new Date();
-  partnerFound.OTP            = OTP;
-  partnerFound.OTPCreatedTime = currentTime;
-  await partnerFound.save();
+    if (!partnerFound) {
+      return res.status(404).json({ success: false, message: "No partner account found with this email address" });
+    }
 
-  const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
-    type: "partner_forgot",
-    otpCode: OTP,
-    recipientName: partnerFound.username || partnerFound.businessName,
-    expiresIn: "10 minutes",
-  });
+    const OTP         = generateOTP();
+    const currentTime = new Date();
+    partnerFound.OTP            = OTP;
+    partnerFound.OTPCreatedTime = currentTime;
+    await partnerFound.save();
 
-  sendNotificationMail(req.body.email, otpSubject, otpHtml);
+    const { subject: otpSubject, html: otpHtml } = getOtpEmailContent({
+      type: "partner_forgot",
+      otpCode: OTP,
+      recipientName: partnerFound.username || partnerFound.businessName,
+      expiresIn: "10 minutes",
+    });
 
-  const token = jwt.sign({ id: partnerFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: 86400 });
-  return res.status(200).json({ success: true, token, message: "OTP sent to your emailId" });
+    sendNotificationMail(cleanEmail, otpSubject, otpHtml)
+      .catch((err) => console.error("Mail failed:", err));
+
+    const token = jwt.sign({ id: partnerFound._id }, process.env.JWT_SECRET_KEY, { expiresIn: 86400 });
+    return res.status(200).json({ success: true, token, message: "OTP sent to your emailId" });
+  } catch (error) {
+    console.error("Partner forgotPassword Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to send reset code. Please try again." });
+  }
 };
 
 
@@ -460,7 +471,13 @@ const updatePassword = async (req, res) => {
     if (!email || !code || !newPassword)
       return res.status(400).json({ success: false, message: "Email, OTP code, and new password are required" });
 
-    const partner = await Partner.findOne({ email });
+    if (newPassword.length < 10) {
+      return res.status(400).json({ success: false, message: "Password must be at least 10 characters long" });
+    }
+
+    const cleanEmail = (email || "").trim();
+    const emailRegex = new RegExp(`^${cleanEmail.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}$`, 'i');
+    const partner = await Partner.findOne({ email: emailRegex });
     if (!partner) return res.status(404).json({ success: false, message: "Partner not found" });
     if (String(partner.OTP) !== String(code))
       return res.status(400).json({ success: false, message: "Invalid OTP" });
@@ -527,6 +544,22 @@ const updatePartnerProfile = async (req, res) => {
         return res.status(400).json({ success: false, message: lNameVal.message });
       }
       req.body.lastName = lNameVal.cleanName;
+    }
+
+    if (req.body.businessName !== undefined && req.body.businessName.trim() !== "") {
+      const bNameVal = validateBusinessName(req.body.businessName);
+      if (!bNameVal.isValid) {
+        return res.status(400).json({ success: false, message: bNameVal.message });
+      }
+      req.body.businessName = bNameVal.cleanName;
+    }
+
+    if (req.body.pincode !== undefined && req.body.pincode.trim() !== "") {
+      const pinVal = validatePostalCode(req.body.pincode, req.body.country);
+      if (!pinVal.isValid) {
+        return res.status(400).json({ success: false, message: pinVal.message });
+      }
+      req.body.pincode = pinVal.cleanPostalCode;
     }
 
     const updatedFields = {
@@ -605,30 +638,32 @@ const getPartnerByEmail = async (req, res) => {
     const { email } = req.query;
     if (!email) return res.status(400).json({ success: false, message: "Email is required" });
 
-    const partner = await Partner.findOne({ email });
-    if (!partner) return res.status(200).json({ success: false, message: "No profile found" });
+    const cleanEmail = email.trim();
+    const partner = await Partner.findOne({ email: { $regex: new RegExp(`^${cleanEmail}$`, "i") } });
+    if (!partner) return res.status(200).json({ success: false, message: "No profile found", data: null });
 
-    const requiredFields = [
-      "firstName", "lastName", "businessName", "logo", "street",
-      "city", "state", "pincode", "country", "description",
-      "website", "type", "yourPosition",
-    ];
-    const missingFields = requiredFields.filter((f) => !partner[f]);
+    const partnerObj = partner.toObject ? partner.toObject() : { ...partner };
+    partnerObj.type = partnerObj.type || partnerObj.partnerType || "";
 
-    if (missingFields.length > 0) {
-      return res.status(200).json({ success: true, profileIncomplete: true, missingFields, data: partner });
-    }
+    const approval = await Approval.findOne({
+      email: { $regex: new RegExp(`^${cleanEmail}$`, "i") },
+      role: "Partner",
+    });
 
-    const approval = await Approval.findOne({ email: partner.email });
-    if (approval && approval.status !== "approved") {
-      return res.status(403).json({
-        success: false,
-        approvalStatus: approval.status,
-        message: "Your account is waiting for admin approval",
-      });
-    }
+    const approvalStatus = approval ? approval.status : (partner.status ? "approved" : "pending");
 
-    return res.status(200).json({ success: true, profileIncomplete: false, data: partner });
+    const hasProfile = Boolean(
+      (partner.businessName && partner.businessName.trim() !== "") ||
+      (partner.firstName && partner.firstName.trim() !== "") ||
+      partner.logo
+    );
+
+    return res.status(200).json({
+      success: true,
+      profileIncomplete: !hasProfile,
+      approvalStatus,
+      data: partnerObj,
+    });
   } catch (error) {
     console.error("Error fetching partner:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });

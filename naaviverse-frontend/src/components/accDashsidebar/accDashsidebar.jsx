@@ -262,10 +262,8 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
           <div
             className="partner-profile-row"
             onClick={() => {
-              if (!isLocked) {
-                navigate("/dashboard/accountants/profile");
-                setaccsideNav("Profile");
-              }
+              navigate("/dashboard/accountants/profile");
+              setaccsideNav("Profile");
             }}
           >
             <div className="partner-profile-info">

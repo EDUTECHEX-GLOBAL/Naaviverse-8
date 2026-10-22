@@ -172,6 +172,9 @@ const NewHomePage = () => {
   const [loading, setLoading] = useState(false);
   const [signupRole, setSignupRole] = useState("");
   const [showPassReq, setShowPassReq] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(60);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
 
   const [validations, setValidations] = useState({
     capitalLetter: false,
@@ -244,6 +247,59 @@ const NewHomePage = () => {
     });
   };
 
+  // ── Resend OTP Countdown Timer ──
+  useEffect(() => {
+    let timer;
+    if (currentForm.showOtp && resendCountdown > 0) {
+      timer = setInterval(() => {
+        setResendCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [currentForm.showOtp, resendCountdown]);
+
+  const handleResendRegistrationOtp = async () => {
+    if (resendCountdown > 0 || resendLoading) return;
+    setResendLoading(true);
+    setResendSuccess("");
+
+    const signupUrl = isUser
+      ? `${BASE_URL}/api/auth/signup`
+      : `${BASE_URL}/api/partner/signup`;
+
+    const cleanEmail = (currentForm.userEmail || "").trim().toLowerCase();
+    const cleanUser = (currentForm.userName || "").trim();
+
+    const payload = isUser
+      ? {
+        username: cleanUser,
+        email: cleanEmail,
+        password: currentForm.userPassword,
+      }
+      : {
+        username: cleanUser,
+        email: cleanEmail,
+        password: currentForm.userPassword,
+        partnerType: currentForm.partnerType,
+      };
+
+    try {
+      const { data } = await axios.post(signupUrl, payload);
+      setResendLoading(false);
+      if (data.success) {
+        setResendCountdown(60);
+        updateCurrentForm({ wrongOtp: false, userOtp: "" });
+        setResendSuccess("A new code has been sent to your email.");
+        setTimeout(() => setResendSuccess(""), 4000);
+      } else {
+        updateCurrentForm({ errorMessage: data?.message || "Failed to resend code." });
+      }
+    } catch (err) {
+      setResendLoading(false);
+      updateCurrentForm({ errorMessage: err.response?.data?.message || "Error resending code." });
+    }
+  };
+
   const handleCreateAccount = () => {
     const emailVal = validateEmail(currentForm.userEmail);
     if (!emailVal.isValid) {
@@ -252,7 +308,7 @@ const NewHomePage = () => {
     }
 
     if (isPartner && !currentForm.partnerType) {
-      alert("Please select a Partner Type.");
+      updateCurrentForm({ errorMessage: "Please select a Partner Type to continue." });
       return;
     }
 
@@ -354,6 +410,8 @@ const NewHomePage = () => {
       .then(({ data }) => {
         setLoading(false);
         if (data.success) {
+          setResendCountdown(60);
+          setResendSuccess("");
           updateCurrentForm({ showOtp: true, wrongOtp: false });
         } else {
           updateCurrentForm({ errorMessage: data?.message || "Signup failed." });
@@ -483,9 +541,9 @@ const NewHomePage = () => {
     const redirectUri = encodeURIComponent(`${window.location.origin}/login`);
 
     if (!clientId) {
-      alert(
-        "Google Client ID is missing.\n\nPlease add REACT_APP_GOOGLE_CLIENT_ID=<your-google-client-id> to your .env file."
-      );
+      updateCurrentForm({
+        errorMessage: "Google Client ID is missing. Please add REACT_APP_GOOGLE_CLIENT_ID to your .env file."
+      });
       return;
     }
 
@@ -811,7 +869,7 @@ const NewHomePage = () => {
               {showPassReq ? "Hide" : "View"} Password Requirements
             </div>
 
-            {showPassReq && (
+            {(showPassReq || (currentForm.userPassword && currentForm.userPassword.length > 0)) && (
               <div className='passreqCard'>
                 <div>{validations.capitalLetter ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} One Capital Letter</div>
                 <div>{validations.specialCharacter ? <img src={tickMarkValid} alt="Valid" /> : <img src={tickMark} alt="Pending" />} One Special Character</div>
@@ -834,9 +892,48 @@ const NewHomePage = () => {
                     type="text"
                     placeholder='Enter 6-digit code'
                     value={currentForm.userOtp}
-                    onChange={e => updateCurrentForm({ userOtp: e.target.value })}
+                    onPaste={(e) => {
+                      e.preventDefault();
+                      const pasted = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+                      const cleanDigits = pasted.replace(/[^0-9]/g, "").slice(0, 6);
+                      updateCurrentForm({ userOtp: cleanDigits });
+                    }}
+                    onChange={e => {
+                      const cleanDigits = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+                      updateCurrentForm({ userOtp: cleanDigits });
+                    }}
                     maxLength={6}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
                   />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px", marginBottom: "6px", fontSize: "13px" }}>
+                  {resendSuccess ? (
+                    <span style={{ color: "#16a34a", fontSize: "12px", fontWeight: "600" }}>{resendSuccess}</span>
+                  ) : <span></span>}
+                  {resendCountdown > 0 ? (
+                    <span style={{ color: "#64748b", fontSize: "12.5px" }}>
+                      Resend code in <strong style={{ color: "#0d9488" }}>00:{resendCountdown < 10 ? `0${resendCountdown}` : resendCountdown}</strong>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendRegistrationOtp}
+                      disabled={resendLoading}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#0d9488",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        padding: "0",
+                        textDecoration: "underline",
+                        fontSize: "12.5px"
+                      }}
+                    >
+                      {resendLoading ? "Sending..." : "Didn't receive code? Resend OTP"}
+                    </button>
+                  )}
                 </div>
               </>
             )}
