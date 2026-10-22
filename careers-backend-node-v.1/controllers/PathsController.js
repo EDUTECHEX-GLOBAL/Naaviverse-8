@@ -28,11 +28,22 @@ async function getPartnerInfo(email) {
 // ─────────────────────────────────────────────────────────────────────────────
 const addPath = async (req, res) => {
   try {
-    const body = req.body;
+    const body = req.body || {};
+
+    if (!body.email) {
+      return res.status(400).json({ status: false, message: "Partner email is required" });
+    }
+
+    if (!body.nameOfPath || !String(body.nameOfPath).trim()) {
+      return res.status(400).json({ status: false, message: "Path name is required" });
+    }
+
+    const trimmedName = String(body.nameOfPath).trim();
+    const escapedName = trimmedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const existing = await pathModel.findOne({
       email: body.email,
-      nameOfPath: { $regex: `^${body.nameOfPath}$`, $options: "i" },
+      nameOfPath: { $regex: `^${escapedName}$`, $options: "i" },
       status: { $in: ["draft", "waitingforapproval"] }
     });
 
@@ -40,8 +51,13 @@ const addPath = async (req, res) => {
       return res.status(400).json({ status: false, message: "A path with this name already exists and is pending approval" });
     }
 
-    const stepIds = body.the_ids?.map(s => s.step_id) || [];
-    const uniqueStepIds = new Set(stepIds.map(id => id.toString()));
+    // Safely filter and validate step IDs
+    const rawTheIds = Array.isArray(body.the_ids) ? body.the_ids : [];
+    const validSteps = rawTheIds.filter(
+      s => s && s.step_id && mongoose.Types.ObjectId.isValid(s.step_id)
+    );
+    const stepIds = validSteps.map(s => s.step_id.toString());
+    const uniqueStepIds = new Set(stepIds);
     if (uniqueStepIds.size !== stepIds.length) {
       return res.status(400).json({ status: false, message: "Duplicate steps are not allowed in a path" });
     }
@@ -53,59 +69,125 @@ const addPath = async (req, res) => {
       }
     }
 
-    const newPath = {
-      email: body.email,
-      nameOfPath: body.nameOfPath,
-      name: body.nameOfPath,
-      description: body.description || "",
-      current_coordinates: body.current_coordinates,
-      feature_coordinates: body.feature_coordinates,
-      path_type: body.path_type,
-      path_cat: body.path_cat,
-      destination_institution: body.destination_institution,
-      destination_degree: body.destination_degree,
-      length: body.length,
-      total_steps: body.total_steps || 5,
-      city: body.city,
-      country: body.country,
-      program: body.program,
-      grade: body.grade || [],
-      grade_avg: body.grade_avg || [],
-      curriculum: body.curriculum || [],
-      stream: body.stream || [],
-      financialSituation: body.financialSituation || [],
-      personality: body.personality || "",
-      the_ids: body.the_ids?.map(step => ({
-        step_id: step.step_id,
-        stepName: step.stepName,
-        stepDescription: step.stepDescription,
-        backup_pathId: step.backup_pathId || null,
+    // Validate path_type and path_cat against enums
+    const validPathTypes = ['education', 'career', 'immigration'];
+    const pathType = validPathTypes.includes(String(body.path_type || '').toLowerCase())
+      ? String(body.path_type).toLowerCase()
+      : 'education';
+
+    const validPathCats = ['K12', 'Degree'];
+    const pathCat = validPathCats.includes(body.path_cat) ? body.path_cat : 'K12';
+
+    // Validate enum arrays against schema enums to prevent Mongoose ValidationError
+    const validGrades = ['9', '10', '11', '12'];
+    const safeGrade = Array.isArray(body.grade)
+      ? body.grade.map(String).filter(g => validGrades.includes(g))
+      : [];
+
+    const validGradeAvg = [
+      '0% - 35%', '36% - 60%', '61% - 75%', '76% - 85%', '86% - 95%', '96% - 100%'
+    ];
+    const safeGradeAvg = Array.isArray(body.grade_avg)
+      ? body.grade_avg.map(String).filter(g => validGradeAvg.includes(g))
+      : [];
+
+    const validCurriculums = ['IB', 'IGCSE', 'CBSE', 'ICSE', 'Nordic'];
+    const safeCurriculum = Array.isArray(body.curriculum)
+      ? body.curriculum.map(String).filter(c => validCurriculums.includes(c))
+      : [];
+
+    const validStreams = ['MPC', 'BIPC', 'CEC', 'MEC', 'HEC'];
+    const safeStream = Array.isArray(body.stream)
+      ? body.stream.map(String).filter(s => validStreams.includes(s))
+      : [];
+
+    const validFinances = ['0-25L', '25L-75L', '75L-3CR', '3CR+', 'Other'];
+    const safeFinance = Array.isArray(body.financialSituation)
+      ? body.financialSituation.map(String).filter(f => validFinances.includes(f))
+      : [];
+
+    const safeTheIds = validSteps.map(step => {
+      const stepObj = {
+        step_id: new mongoose.Types.ObjectId(step.step_id),
+        stepName: step.stepName || "",
+        stepDescription: step.stepDescription || "",
         backupPathName: step.backupPathName || "",
         backupPathDescription: step.backupPathDescription || ""
-      })) || [],
+      };
+      if (step.backup_pathId && mongoose.Types.ObjectId.isValid(step.backup_pathId)) {
+        stepObj.backup_pathId = new mongoose.Types.ObjectId(step.backup_pathId);
+      } else {
+        stepObj.backup_pathId = null;
+      }
+      return stepObj;
+    });
+
+    const personalityStr = Array.isArray(body.personality)
+      ? body.personality.join(', ')
+      : (typeof body.personality === 'string' ? body.personality : '');
+
+    const currentCoords = { ...(body.current_coordinates || {}) };
+    if (Array.isArray(currentCoords.personality)) {
+      currentCoords.personality = currentCoords.personality.join(', ');
+    } else if (!currentCoords.personality && personalityStr) {
+      currentCoords.personality = personalityStr;
+    }
+
+    const newPath = {
+      email: body.email,
+      nameOfPath: trimmedName,
+      name: trimmedName,
+      description: body.description || "",
+      current_coordinates: currentCoords,
+      feature_coordinates: {
+        ...(body.feature_coordinates || {}),
+        path_type: pathType,
+        path_cat: pathCat,
+      },
+      path_type: pathType,
+      path_cat: pathCat,
+      destination_institution: body.destination_institution || "",
+      destination_degree: body.destination_degree || "unknown",
+      length: Number(body.length) || 0,
+      total_steps: Number(body.total_steps) || 5,
+      city: body.city || "",
+      country: body.country || "",
+      program: body.program || "",
+      grade: safeGrade,
+      grade_avg: safeGradeAvg,
+      curriculum: safeCurriculum,
+      stream: safeStream,
+      financialSituation: safeFinance,
+      personality: personalityStr,
+      the_ids: safeTheIds,
       status: "draft"
     };
 
     const saved = await pathModel.create(newPath);
 
-    // [OK] Log path created (draft) activity
+    // Log path created (draft) activity safely in background
     if (body.email) {
-      const { displayName, partnerType } = await getPartnerInfo(body.email);
-      logEvent({
-        role:        "partner",
-        email:       body.email,
-        displayName,
-        partnerType,
-        eventType:   "publish",
-        title:       `Path Created: ${body.nameOfPath || "New Path"}`,
-        desc:        `Draft path "${body.nameOfPath || "New Path"}" created`,
-      }).catch(err => console.error("logEvent addPath error:", err));
+      getPartnerInfo(body.email).then(({ displayName, partnerType }) => {
+        logEvent({
+          role:        "partner",
+          email:       body.email,
+          displayName,
+          partnerType,
+          eventType:   "publish",
+          title:       `Path Created: ${trimmedName}`,
+          desc:        `Draft path "${trimmedName}" created`,
+        }).catch(err => console.error("logEvent addPath error:", err));
+      }).catch(err => console.error("getPartnerInfo error:", err));
     }
 
     return res.status(200).json({ status: true, message: "Path created successfully", data: saved });
   } catch (error) {
     console.error("Add Path Error:", error);
-    return res.status(500).json({ status: false, message: "Internal server error", error: error.message });
+    return res.status(error.name === "ValidationError" ? 400 : 500).json({
+      status: false,
+      message: error.message || "Failed to create path",
+      error: error.message
+    });
   }
 };
 
@@ -129,6 +211,13 @@ const updatePath = async (req, res) => {
     }
 
     delete updateData.status;
+
+    if (Array.isArray(updateData.personality)) {
+      updateData.personality = updateData.personality.join(', ');
+    }
+    if (updateData.current_coordinates && Array.isArray(updateData.current_coordinates.personality)) {
+      updateData.current_coordinates.personality = updateData.current_coordinates.personality.join(', ');
+    }
 
     const updatedPath = await pathModel.findByIdAndUpdate(pathId, { $set: updateData }, { new: true, runValidators: true });
 

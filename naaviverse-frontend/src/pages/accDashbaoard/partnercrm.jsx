@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import './partnercrm.scss';
-import { SvgClose } from "../../utils/SvgIcons";
+import { SvgClose, SvgCheck } from "../../utils/SvgIcons";
 
 // ─── AVATAR COLOR PALETTE ───────────────────────────────────
 const AVATAR_COLORS = [
@@ -115,11 +117,55 @@ const CRMPage = ({
   isClientLoading = false,
   isPurchaseLoading = false,
 }) => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [viewMode, setViewMode] = useState('board');
   const [selectedClient, setSelectedClient] = useState(null);
   const [purchaseFilter, setPurchaseFilter] = useState('All');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
+  const [msgSubject, setMsgSubject] = useState('');
+  const [msgBody, setMsgBody] = useState('');
+
+  useEffect(() => {
+    const handleOutside = () => setFilterDropdownOpen(false);
+    if (filterDropdownOpen) {
+      window.addEventListener('click', handleOutside);
+    }
+    return () => window.removeEventListener('click', handleOutside);
+  }, [filterDropdownOpen]);
+
+  const handleViewPath = (client = selectedClient) => {
+    if (!client) return;
+    const paths = client.selectedPaths || [];
+    if (paths.length > 0) {
+      const primary = paths[0];
+      const pid = primary.pathId || primary._id || primary.id;
+      if (pid) {
+        navigate(`/dashboard/accountants/path/${pid}`);
+        return;
+      }
+    }
+    // Fallback if no specific path ID is found
+    navigate('/dashboard/accountants/paths');
+  };
+
+  const handleMessageClient = () => {
+    if (!selectedClient) return;
+    setMsgSubject(`Naaviverse - Career Path Update for ${selectedClient.name || 'Client'}`);
+    setMsgBody(`Hello ${selectedClient.name || 'there'}, reaching out regarding your career path on Naaviverse.`);
+    setEmailCopied(false);
+    setMessageModalOpen(true);
+  };
+
+  const handleCopyEmail = (email) => {
+    if (!email) return;
+    navigator.clipboard.writeText(email);
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2000);
+  };
 
   // ── Normalize Clients ─────────────────────────────────────
   useEffect(() => {
@@ -332,16 +378,46 @@ const CRMPage = ({
         </div>
         <div className="pcrm-header__right">
           {crmMenu === 'Purchases' && (
-            <div className="pcrm-filter-wrap">
-              <select
-                className="pcrm-filter-select"
-                value={purchaseFilter}
-                onChange={(e) => setPurchaseFilter(e.target.value)}
+            <div className="pcrm-filter-wrap" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="pcrm-filter-btn"
+                onClick={() => setFilterDropdownOpen((prev) => !prev)}
               >
-                {purchaseFilterTabs.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+                <span>{purchaseFilter}</span>
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    transform: filterDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.15s ease',
+                  }}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {filterDropdownOpen && (
+                <div className="pcrm-filter-menu">
+                  {purchaseFilterTabs.map((t) => (
+                    <div
+                      key={t}
+                      className={`pcrm-filter-item ${purchaseFilter === t ? 'pcrm-filter-item--active' : ''}`}
+                      onClick={() => {
+                        setPurchaseFilter(t);
+                        setFilterDropdownOpen(false);
+                      }}
+                    >
+                      {t}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
           <div className="pcrm-view-toggle">
@@ -633,13 +709,18 @@ const CRMPage = ({
 
               {/* Actions */}
               <div className="pcrm-detail__actions">
-                <a
+                <button
+                  type="button"
                   className="pcrm-detail__btn pcrm-detail__btn--primary"
-                  href={`mailto:${selectedClient.email}`}
+                  onClick={handleMessageClient}
                 >
-                  Message client
-                </a>
-                <button className="pcrm-detail__btn pcrm-detail__btn--outline">
+                  Message Client
+                </button>
+                <button
+                  type="button"
+                  className="pcrm-detail__btn pcrm-detail__btn--outline"
+                  onClick={() => handleViewPath(selectedClient)}
+                >
                   View path
                 </button>
               </div>
@@ -795,6 +876,396 @@ const CRMPage = ({
             </div>
           )}
         </div>
+      )}
+
+      {/* ══ MESSAGE CLIENT MODAL ══════════════════════════════════════════ */}
+      {messageModalOpen && selectedClient && typeof document !== 'undefined' && createPortal(
+        <div
+          className="pcrm-modal-overlay"
+          onClick={() => setMessageModalOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            background: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            boxSizing: 'border-box',
+            animation: 'fadeIn 0.2s ease-out',
+          }}
+        >
+          <div
+            className="pcrm-modal-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#ffffff',
+              borderRadius: '20px',
+              maxWidth: '520px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '1.75rem',
+              boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+              border: '1px solid #e2e8f0',
+              position: 'relative',
+              boxSizing: 'border-box',
+            }}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setMessageModalOpen(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: '#64748b',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e2e8f0';
+                e.currentTarget.style.color = '#0f172a';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f1f5f9';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
+              <SvgClose size={15} />
+            </button>
+
+            {/* Title & Description */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: '#0f172a', margin: '0 0 4px 0' }}>
+                Message Client
+              </h3>
+              <p style={{ fontSize: '0.84rem', color: '#64748b', margin: 0 }}>
+                Reach out to {selectedClient.name} via your preferred communication channel
+              </p>
+            </div>
+
+            {/* Client Info Banner */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                padding: '10px 14px',
+                marginBottom: '1.25rem',
+              }}
+            >
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  background: selectedClient.avatarColor?.bg || '#dbeafe',
+                  color: selectedClient.avatarColor?.text || '#1e40af',
+                  border: `1.5px solid ${selectedClient.avatarColor?.border || '#93c5fd'}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  flexShrink: 0,
+                }}
+              >
+                {selectedClient.avatar || 'CL'}
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem', color: '#0f172a' }}>
+                  {selectedClient.name}
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {selectedClient.email || 'No email provided'} {selectedClient.phone ? `· ${selectedClient.phone}` : ''}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Action Channels Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '1.25rem' }}>
+              {/* Option 1: Gmail Web */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedClient.email) return;
+                  const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedClient.email)}&su=${encodeURIComponent(msgSubject)}&body=${encodeURIComponent(msgBody)}`;
+                  window.open(url, '_blank');
+                }}
+                disabled={!selectedClient.email}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  background: '#ffffff',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
+                  cursor: selectedClient.email ? 'pointer' : 'not-allowed',
+                  opacity: selectedClient.email ? 1 : 0.5,
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedClient.email) {
+                    e.currentTarget.style.borderColor = '#ea4335';
+                    e.currentTarget.style.background = '#fef2f2';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+              >
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>Gmail (Web)</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Open compose</div>
+                </div>
+              </button>
+
+              {/* Option 2: Default Mail App */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedClient.email) return;
+                  const mailto = `mailto:${selectedClient.email}?subject=${encodeURIComponent(msgSubject)}&body=${encodeURIComponent(msgBody)}`;
+                  window.location.href = mailto;
+                }}
+                disabled={!selectedClient.email}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  background: '#ffffff',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
+                  cursor: selectedClient.email ? 'pointer' : 'not-allowed',
+                  opacity: selectedClient.email ? 1 : 0.5,
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedClient.email) {
+                    e.currentTarget.style.borderColor = '#0284c7';
+                    e.currentTarget.style.background = '#f0f9ff';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+              >
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>Mail Client</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Outlook / App</div>
+                </div>
+              </button>
+
+              {/* Option 3: WhatsApp */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedClient.phone || selectedClient.phone === '—') return;
+                  const cleanPhone = String(selectedClient.phone).replace(/[^0-9]/g, '');
+                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Hello ${selectedClient.name}, reaching out from Naaviverse regarding your career path.`)}`;
+                  window.open(waUrl, '_blank');
+                }}
+                disabled={!selectedClient.phone || selectedClient.phone === '—'}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  background: '#ffffff',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
+                  cursor: (selectedClient.phone && selectedClient.phone !== '—') ? 'pointer' : 'not-allowed',
+                  opacity: (selectedClient.phone && selectedClient.phone !== '—') ? 1 : 0.45,
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedClient.phone && selectedClient.phone !== '—') {
+                    e.currentTarget.style.borderColor = '#16a34a';
+                    e.currentTarget.style.background = '#f0fdf4';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+              >
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: '#dcfce7', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>WhatsApp</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                    {selectedClient.phone && selectedClient.phone !== '—' ? 'Direct chat' : 'No phone'}
+                  </div>
+                </div>
+              </button>
+
+              {/* Option 4: Copy Email */}
+              <button
+                type="button"
+                onClick={() => handleCopyEmail(selectedClient.email)}
+                disabled={!selectedClient.email}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px 12px',
+                  background: '#ffffff',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
+                  cursor: selectedClient.email ? 'pointer' : 'not-allowed',
+                  opacity: selectedClient.email ? 1 : 0.5,
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedClient.email) {
+                    e.currentTarget.style.borderColor = '#0d6b6e';
+                    e.currentTarget.style.background = '#f0fdfa';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+              >
+                <div style={{ width: 34, height: 34, borderRadius: 8, background: emailCopied ? '#dcfce7' : '#f1f5f9', color: emailCopied ? '#16a34a' : '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {emailCopied ? (
+                    <SvgCheck size={18} color="#16a34a" />
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: emailCopied ? '#16a34a' : '#0f172a' }}>
+                    {emailCopied ? 'Copied!' : 'Copy Email'}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>To clipboard</div>
+                </div>
+              </button>
+            </div>
+
+            {/* Compose Message Box */}
+            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.3px', margin: 0 }}>
+                Subject
+              </label>
+              <input
+                type="text"
+                className="pcrm-msg-input"
+                value={msgSubject}
+                onChange={(e) => setMsgSubject(e.target.value)}
+              />
+
+              <label style={{ fontSize: '0.72rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.3px', marginTop: '3px', margin: 0 }}>
+                Message
+              </label>
+              <textarea
+                rows={2}
+                className="pcrm-msg-textarea"
+                value={msgBody}
+                onChange={(e) => setMsgBody(e.target.value)}
+              />
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setMessageModalOpen(false)}
+                  style={{
+                    flex: 1,
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#64748b',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!selectedClient.email) return;
+                    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedClient.email)}&su=${encodeURIComponent(msgSubject)}&body=${encodeURIComponent(msgBody)}`;
+                    window.open(url, '_blank');
+                    setMessageModalOpen(false);
+                  }}
+                  disabled={!selectedClient.email}
+                  style={{
+                    flex: 1.5,
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: '#0ea5e9',
+                    color: '#ffffff',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: selectedClient.email ? 'pointer' : 'not-allowed',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                  Send via Gmail
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

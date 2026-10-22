@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import {
   FiCompass,
@@ -52,6 +52,91 @@ const TIMELINES = [
   "4 Years",
   "Flexible / Self-Paced",
 ];
+
+// Clean, compact and responsive in-DOM dropdown for desktop & mobile
+const CustomSelect = ({ value, onChange, options = [], placeholder = "Select" }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className={`upr-custom-select-wrapper ${isOpen ? "is-open" : ""}`} ref={dropdownRef}>
+      <button
+        type="button"
+        className={`upr-custom-select-trigger ${isOpen ? "active" : ""}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+      >
+        <span className="upr-trigger-text">{value || placeholder}</span>
+        <svg
+          className={`upr-select-arrow ${isOpen ? "open" : ""}`}
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="upr-custom-select-menu" role="listbox">
+          {options.map((opt) => {
+            const isSelected = String(opt) === String(value);
+            return (
+              <div
+                key={opt}
+                className={`upr-custom-select-option ${isSelected ? "selected" : ""}`}
+                role="option"
+                aria-selected={isSelected}
+                onClick={() => {
+                  onChange(opt);
+                  setIsOpen(false);
+                }}
+              >
+                <span>{opt}</span>
+                {isSelected && (
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#4f46e5"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Helper to format step title cleanly without duplicate "Step 1: Step 1:"
 const formatStepTitle = (rawName, idx) => {
@@ -661,13 +746,12 @@ export default function UserPathRequestModal({
                         Domain / Sector <span className="required-star">*</span>
                       </span>
                     </label>
-                    <select value={sector} onChange={(e) => setSector(e.target.value)}>
-                      {SECTORS.map((sec) => (
-                        <option key={sec} value={sec}>
-                          {sec}
-                        </option>
-                      ))}
-                    </select>
+                    <CustomSelect
+                      value={sector}
+                      onChange={(val) => setSector(val)}
+                      options={SECTORS}
+                      placeholder="Select sector"
+                    />
                   </div>
 
                   {/* 4. Education Stage (Col 1) */}
@@ -675,16 +759,12 @@ export default function UserPathRequestModal({
                     <label>
                       <span className="label-title">Current / Target Stage</span>
                     </label>
-                    <select
+                    <CustomSelect
                       value={educationLevel}
-                      onChange={(e) => setEducationLevel(e.target.value)}
-                    >
-                      {EDUCATION_LEVELS.map((lvl) => (
-                        <option key={lvl} value={lvl}>
-                          {lvl}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setEducationLevel(val)}
+                      options={EDUCATION_LEVELS}
+                      placeholder="Select stage"
+                    />
                   </div>
 
                   {/* 5. Target Timeline (Col 2) */}
@@ -692,16 +772,12 @@ export default function UserPathRequestModal({
                     <label>
                       <span className="label-title">Expected Timeline / Duration</span>
                     </label>
-                    <select
+                    <CustomSelect
                       value={targetTimeline}
-                      onChange={(e) => setTargetTimeline(e.target.value)}
-                    >
-                      {TIMELINES.map((tl) => (
-                        <option key={tl} value={tl}>
-                          {tl}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setTargetTimeline(val)}
+                      options={TIMELINES}
+                      placeholder="Select timeline"
+                    />
                   </div>
 
                   {/* 6. Goal Details & Focus Areas (Full Width) */}
@@ -737,7 +813,7 @@ export default function UserPathRequestModal({
                   {/* 8. Special Instructions / Preferences (Full Width) */}
                   <div className="upr-field upr-col-full">
                     <label>
-                      Special Instructions / Preferences
+                      <span className="label-title">Special Instructions / Preferences</span>
                       <span className="hint-text">(Optional: accreditation, budget preferences, timeline flexibility)</span>
                     </label>
                     <input

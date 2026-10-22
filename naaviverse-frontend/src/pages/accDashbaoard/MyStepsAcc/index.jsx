@@ -68,7 +68,7 @@ const LayerCard = ({ type, name, description, length, access }) => {
             {(length || access) && (
                 <div className="layer-meta">
                     {length && (
-                        <span className="meta-chip duration"><SvgClock size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{length}</span>
+                        <span className="meta-chip duration"><SvgClock size={14} style={{ marginRight: 4, verticalAlign: "middle" }} />{length}</span>
                     )}
                     {access && (
                         <span className={`meta-chip ${isFree ? "free" : "paid"}`}>

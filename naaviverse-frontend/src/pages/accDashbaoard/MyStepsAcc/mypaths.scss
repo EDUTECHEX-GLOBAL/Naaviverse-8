@@ -408,11 +408,11 @@
 
 .meta-chip {
   border-radius: 30px;
-  padding: 3px 10px;
-  font-size: 0.75rem;
+  padding: 5px 12px;
+  font-size: 0.82rem;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
 
   &.duration {
@@ -989,6 +989,7 @@
     > div:first-child {
       display: flex !important;
       gap: 6px !important;
+      margin-left: 40px !important;
       overflow-x: auto !important;
       -webkit-overflow-scrolling: touch !important;
       scrollbar-width: none !important;
@@ -1010,7 +1011,7 @@
     min-height: 100% !important;
     background: #e9f2fa !important;
     background-color: #e9f2fa !important;
-    padding-top: 0 !important;
+    padding-top: 50px !important;
     padding-bottom: 2.5rem !important;
   }
 

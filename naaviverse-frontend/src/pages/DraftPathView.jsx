@@ -1,10 +1,18 @@
 // src/pages/DraftPathView.jsx
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../components/Pathview/journey.scss";
 import EditPathForm from "./MyPaths/paths";
 import { SvgClose, SvgMessageCircle, SvgCheck } from "../utils/SvgIcons";
+
+const renderInBody = (element) => {
+  if (typeof document !== "undefined" && document.body) {
+    return createPortal(element, document.body);
+  }
+  return element;
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -40,6 +48,45 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
+const ROLE_OPTIONS = [
+  { value: "", label: "Select Role" },
+  { value: "vendor", label: "Vendor" },
+  { value: "mentor", label: "Mentor" },
+  { value: "institution", label: "Institution" },
+  { value: "distributor", label: "Distributor" },
+];
+
+const ACCESS_OPTIONS = [
+  { value: "Free", label: "Free" },
+  { value: "Covered under Subscription", label: "Covered under Subscription" },
+  { value: "Paid", label: "Paid" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const ITERATIONS_OPTIONS = [
+  { value: "", label: "Select" },
+  { value: "1", label: "1" },
+  { value: "3", label: "3" },
+  { value: "Unlimited", label: "Unlimited" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const DURATION_OPTIONS = [
+  { value: "", label: "Select Duration" },
+  { value: "1 Day", label: "1 Day" },
+  { value: "1 Week", label: "1 Week" },
+  { value: "1 Month", label: "1 Month" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const DISCOUNT_OPTIONS = [
+  { value: "", label: "Select" },
+  { value: "0%", label: "0%" },
+  { value: "10%", label: "10%" },
+  { value: "20%", label: "20%" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
 // [check] Filter out unpopulated DB refs (objects missing a name)
 const normalizeMarketplace = (arr) => {
   if (!Array.isArray(arr)) return [];
@@ -60,7 +107,7 @@ const normalizeStep = (raw) => {
   if (raw.macro && typeof raw.macro === "object") {
     return {
       ...raw,
-      macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: normalizeMarketplace(raw.macro.marketplace) },
+      macro: { ...EMPTY_LAYER, ...raw.macro, paid: false, free: raw.macro.free !== undefined ? raw.macro.free : true, marketplace: normalizeMarketplace(raw.macro.marketplace) },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: normalizeMarketplace(raw.micro?.marketplace) },
       nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: normalizeMarketplace(raw.nano?.marketplace) },
     };
@@ -73,8 +120,8 @@ const normalizeStep = (raw) => {
       name: raw.macro_name || "",
       desc: raw.macro_description || "",
       duration: parseDuration(raw.macro_length),
-      paid: raw.macro_access === "paid",
-      free: raw.macro_access === "free",
+      paid: false,
+      free: true,
       instructions: raw.macro_instructions || "",
       marketplace: normalizeMarketplace(raw.macro_marketplace || raw.macro?.marketplace),
     },
@@ -103,56 +150,309 @@ const normalizeStep = (raw) => {
 
 // ─── Small reusable components ────────────────────────────────────────────────
 
-const MarketplaceItemCard = ({ item, compact = false }) => {
+const MarketplaceItemCard = ({ item, compact = false, onEdit, onRemove }) => {
   if (!item?.name) return null;
   return (
-    <div style={{
-      background: "#f4f9fd",
-      borderRadius: compact ? 12 : 16,
-      padding: compact ? "0.8rem" : "1rem",
-      marginBottom: "0.5rem",
-      border: "1px solid #ccdae5",
-      fontSize: compact ? "0.85rem" : "0.9rem",
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
-        <span>{item.name} ({item.role || "unknown"})</span>
-        <span>{item.cost}</span>
+    <div
+      className="marketplace-item-card"
+      style={{
+        background: "#f4f9fd",
+        borderRadius: compact ? 12 : 16,
+        padding: compact ? "0.8rem" : "1rem",
+        marginBottom: "0.5rem",
+        border: "1px solid #ccdae5",
+        fontSize: compact ? "0.85rem" : "0.9rem",
+      }}
+    >
+      <div className="mic-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 600 }}>
+        <div className="mic-title-wrap" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <span className="mic-title">{item.name}</span>
+          <span className="mic-role-badge">({item.role || "unknown"})</span>
+        </div>
+        <div className="mic-actions" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {item.cost ? <span className="mic-cost-badge">{item.cost}</span> : null}
+          {onEdit && (
+            <button
+              type="button"
+              className="mic-edit-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              style={{
+                background: "#e6f3f4",
+                border: "1px solid #0d6b6e",
+                color: "#0d6b6e",
+                borderRadius: "20px",
+                padding: "2px 10px",
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                transition: "all 0.2s ease",
+              }}
+              title="Edit Marketplace Item"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              Edit
+            </button>
+          )}
+          {onRemove && (
+            <button
+              type="button"
+              className="mic-remove-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove();
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#94a3b8",
+                cursor: "pointer",
+                padding: "2px 4px",
+                display: "inline-flex",
+                alignItems: "center",
+              }}
+              title="Remove Marketplace Item"
+            >
+              <SvgClose size={13} />
+            </button>
+          )}
+        </div>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
-        {item.goal && <span><strong>Goal:</strong>       {item.goal}</span>}
-        {item.outcomes && <span><strong>Outcomes:</strong>   {item.outcomes}</span>}
-        {item.access && <span><strong>Access:</strong>     {item.access}</span>}
-        {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-        {item.duration && <span><strong>Duration:</strong>   {item.duration}</span>}
-        {item.discount && <span><strong>Discount:</strong>   {item.discount}</span>}
+      <div className="mic-meta-grid" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.3rem", color: "#2c3e50" }}>
+        {item.goal && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Goal:</strong> </span><span className="mic-meta-value">{item.goal}</span></div>}
+        {item.outcomes && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Outcomes:</strong> </span><span className="mic-meta-value">{item.outcomes}</span></div>}
+        {item.access && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Access:</strong> </span><span className="mic-meta-value">{item.access}</span></div>}
+        {item.iterations && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Iterations:</strong> </span><span className="mic-meta-value">{item.iterations}</span></div>}
+        {item.duration && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Duration:</strong> </span><span className="mic-meta-value">{item.duration}</span></div>}
+        {item.discount && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Discount:</strong> </span><span className="mic-meta-value">{item.discount}</span></div>}
       </div>
       {item.features && (
-        <div style={{ marginTop: "0.4rem" }}><strong>Features:</strong> {item.features}</div>
+        <div className="mic-features-row" style={{ marginTop: "0.4rem" }}><strong className="mic-features-label">Features:</strong> <span className="mic-features-value">{item.features}</span></div>
       )}
     </div>
   );
 };
 
 const DurationSelect = ({ value, onChange, type }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const configs = {
     years: { label: "Years", count: 11 },
     months: { label: "Months", count: 12 },
     days: { label: "Days", count: 31 },
   };
   const { label, count } = configs[type];
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const hasValue = value !== "" && value !== undefined && value !== null;
+  const numVal = Number(value);
+  const displayLabel = hasValue
+    ? `${numVal} ${numVal === 1 ? label.slice(0, -1) : label}`
+    : label;
+
   return (
-    <select className="duration-select" value={value || ""} onChange={(e) => onChange(e.target.value)}>
-      <option value="">{label}</option>
-      {[...Array(count)].map((_, i) => (
-        <option key={i} value={i}>
-          {i} {i === 1 ? label.slice(0, -1) : label}
-        </option>
-      ))}
-    </select>
+    <div className={`duration-select-wrapper ${isOpen ? "is-open" : ""}`} ref={dropdownRef}>
+      <button
+        type="button"
+        className={`duration-select-trigger ${isOpen ? "active" : ""}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsOpen((prev) => !prev);
+        }}
+      >
+        <span className={`duration-select-text ${!hasValue ? "is-placeholder" : ""}`}>
+          {displayLabel}
+        </span>
+        <svg
+          className={`duration-select-arrow ${isOpen ? "open" : ""}`}
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="duration-select-menu" onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`duration-select-option ${!hasValue ? "selected" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onChange("");
+              setIsOpen(false);
+            }}
+          >
+            {label}
+          </div>
+          {[...Array(count)].map((_, i) => {
+            const isSelected = hasValue && String(value) === String(i);
+            const optText = `${i} ${i === 1 ? label.slice(0, -1) : label}`;
+            return (
+              <div
+                key={i}
+                className={`duration-select-option ${isSelected ? "selected" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChange(String(i));
+                  setIsOpen(false);
+                }}
+              >
+                {optText}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 };
 
-const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => {
+const ResponsiveSelect = ({ value, onChange, options, placeholder = "Select..." }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find((o) => String(o.value) === String(value));
+  const displayLabel = selectedOption ? selectedOption.label : (options[0]?.label || placeholder);
+  const isPlaceholder = !value || (selectedOption && selectedOption.value === "");
+
+  return (
+    <div className={`responsive-select-container ${isOpen ? "is-open" : ""}`} ref={wrapperRef}>
+      {/* DESKTOP SELECT: Untouched native select for desktop versions */}
+      <select
+        className="responsive-select-desktop"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((opt, idx) => (
+          <option key={idx} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+
+      {/* MOBILE SELECT: Bounded dropdown that never overflows mobile view */}
+      <div className={`responsive-select-mobile ${isOpen ? "open" : ""}`}>
+        <button
+          type="button"
+          className={`responsive-select-trigger ${isOpen ? "active" : ""}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+        >
+          <span className={`responsive-select-text ${isPlaceholder ? "is-placeholder" : ""}`}>
+            {displayLabel}
+          </span>
+          <svg
+            className={`responsive-select-arrow ${isOpen ? "open" : ""}`}
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <div className="responsive-select-menu" onClick={(e) => e.stopPropagation()}>
+            {options.map((opt, idx) => {
+              const isSelected = String(value) === String(opt.value);
+              return (
+                <div
+                  key={idx}
+                  className={`responsive-select-option ${isSelected ? "selected" : ""}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace, onEditMarketplace, onRemoveMarketplace }) => {
   const colorMap = { macro: "#0d6b6e", micro: "#3b82f6", nano: "#a855f7" };
   const safeData = data || { ...EMPTY_LAYER, duration: { years: "", months: "", days: "" }, marketplace: [] };
 
@@ -196,10 +496,12 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
           <DurationSelect type="days" value={safeData.duration?.days} onChange={(v) => updateDuration("days", v)} />
         </div>
         <div className="checkbox-group">
-          <label className="checkbox-label">
-            <input type="checkbox" checked={!!safeData.paid} onChange={(e) => update("paid", e.target.checked)} />
-            Paid
-          </label>
+          {layerKey !== "macro" && (
+            <label className="checkbox-label">
+              <input type="checkbox" checked={!!safeData.paid} onChange={(e) => update("paid", e.target.checked)} />
+              Paid
+            </label>
+          )}
           <label className="checkbox-label">
             <input type="checkbox" checked={!!safeData.free} onChange={(e) => update("free", e.target.checked)} />
             Free
@@ -224,7 +526,13 @@ const LayerBuilder = ({ layer, layerKey, data, onChange, onAddMarketplace }) => 
             <p className="no-items">No Marketplace Items Added.</p>
           ) : (
             (safeData.marketplace || []).map((item, i) => (
-              <MarketplaceItemCard key={i} item={item} compact />
+              <MarketplaceItemCard
+                key={i}
+                item={item}
+                compact
+                onEdit={() => onEditMarketplace && onEditMarketplace(layerKey, i, item)}
+                onRemove={() => onRemoveMarketplace && onRemoveMarketplace(layerKey, i)}
+              />
             ))
           )}
         </div>
@@ -284,14 +592,6 @@ const DraftPathView = () => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const stopClick = (e) => e.stopPropagation();
-    el.addEventListener("click", stopClick, true);
-    return () => el.removeEventListener("click", stopClick, true);
-  }, []);
-
   const [pathData, setPathData] = useState(null);
   const [steps, setSteps] = useState([]);
   const [totalSteps, setTotalSteps] = useState(5);
@@ -304,12 +604,15 @@ const DraftPathView = () => {
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
   const [editPathOpen, setEditPathOpen] = useState(false);
   const [reviewPanelOpen, setReviewPanelOpen] = useState(false);
+  const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
+  const [submitSuccessMsg, setSubmitSuccessMsg] = useState("");
 
   const [currentStep, setCurrentStep] = useState(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(null);
   const [currentLayer, setCurrentLayer] = useState("macro");
   const [selectedRole, setSelectedRole] = useState("");
   const [marketForm, setMarketForm] = useState(EMPTY_MARKET_FORM);
+  const [editingMarketIndex, setEditingMarketIndex] = useState(null);
   const [replyTexts, setReplyTexts] = useState({});
   const [replyLoading, setReplyLoading] = useState({});
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -435,7 +738,7 @@ const DraftPathView = () => {
         macro_name: currentStep.macro?.name || "",
         macro_description: currentStep.macro?.desc || "",
         macro_length: JSON.stringify(currentStep.macro?.duration || {}),
-        macro_access: currentStep.macro?.paid ? "paid" : "free",
+        macro_access: "free",
         macro_instructions: currentStep.macro?.instructions || "",
         macro_marketplace: currentStep.macro?.marketplace || [],
 
@@ -502,13 +805,43 @@ const DraftPathView = () => {
 
   const openMarketplace = (layerKey) => {
     setCurrentLayer(layerKey);
+    setEditingMarketIndex(null);
     setSelectedRole("");
     setMarketForm(EMPTY_MARKET_FORM);
     setMarketplaceOpen(true);
   };
 
+  const openEditMarketplace = (layerKey, index, item) => {
+    setCurrentLayer(layerKey);
+    setEditingMarketIndex(index);
+    setSelectedRole(item.role || item.category || "");
+    setMarketForm({
+      name: item.name || "",
+      access: item.access || "Free",
+      cost: item.cost !== undefined && item.cost !== null ? String(item.cost) : "",
+      goal: item.goal || "",
+      outcomes: item.outcomes || "",
+      iterations: item.iterations || "",
+      durationDays: item.duration || "",
+      discount: item.discount || "",
+      features: item.features || "",
+    });
+    setMarketplaceOpen(true);
+  };
+
+  const removeMarketplaceItem = (layerKey, index) => {
+    setCurrentStep((prev) => ({
+      ...prev,
+      [layerKey]: {
+        ...prev[layerKey],
+        marketplace: (prev[layerKey]?.marketplace || []).filter((_, i) => i !== index),
+      },
+    }));
+  };
+
   const closeMarketplace = () => {
     setMarketplaceOpen(false);
+    setEditingMarketIndex(null);
     setSelectedRole("");
     setMarketForm(EMPTY_MARKET_FORM);
   };
@@ -528,6 +861,38 @@ const DraftPathView = () => {
       discount: marketForm.discount,
       features: marketForm.features,
     };
+
+    if (editingMarketIndex !== null) {
+      const existingList = currentStep[currentLayer]?.marketplace || [];
+      const existingItem = existingList[editingMarketIndex] || {};
+      const updatedItem = {
+        ...existingItem,
+        ...newItem,
+      };
+
+      if (updatedItem._id) {
+        try {
+          await axios.put(`${BASE_URL}/api/marketplace/admin/update/${updatedItem._id}`, updatedItem);
+        } catch (err) {
+          console.warn("Could not update marketplace item by id:", err);
+        }
+      }
+
+      setCurrentStep((prev) => {
+        const list = [...(prev[currentLayer]?.marketplace || [])];
+        list[editingMarketIndex] = updatedItem;
+        return {
+          ...prev,
+          [currentLayer]: {
+            ...prev[currentLayer],
+            marketplace: list,
+          },
+        };
+      });
+
+      closeMarketplace();
+      return;
+    }
 
     const stepId = currentStepIndex !== null ? steps[currentStepIndex]?._id : null;
 
@@ -567,7 +932,9 @@ const DraftPathView = () => {
       setSubmitting(true);
       setError(null);
       const res = await axios.put(`${BASE_URL}/api/paths/submit`, { pathId: id });
-      alert(res.data?.message || "Path submitted for approval successfully!");
+      const msg = res.data?.message || "Path submitted for approval successfully!";
+      setSubmitSuccessMsg(msg);
+      setSubmitSuccessOpen(true);
       const updated = await axios.get(`${BASE_URL}/api/paths/viewpath/${id}`);
       setPathData(updated.data.data);
     } catch (err) {
@@ -760,7 +1127,13 @@ const DraftPathView = () => {
                       {step.macro?.name || step.macro_name || step.name || "Untitled Step"}
                     </span>
                   </div>
-                  <button className="edit-btn" onClick={() => openBuilder(index)}>Edit</button>
+                  <button className="edit-btn" onClick={() => openBuilder(index)}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit
+                  </button>
                 </div>
               ))
             )}
@@ -832,6 +1205,8 @@ const DraftPathView = () => {
                   data={currentStep[layerKey]}
                   onChange={(newData) => updateLayer(layerKey, newData)}
                   onAddMarketplace={openMarketplace}
+                  onEditMarketplace={openEditMarketplace}
+                  onRemoveMarketplace={removeMarketplaceItem}
                 />
               ))}
               <div className="builder-actions">
@@ -846,54 +1221,98 @@ const DraftPathView = () => {
       </div>
 
       {/* ══ VIEW ALL STEPS MODAL ════════════════════════════════════════════ */}
-      {viewAllOpen && (
-        <div className="modal active" onClick={() => setViewAllOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>All Steps</h2>
-            <ul className="step-list-modal">
-              {steps.length === 0 ? (
-                <li className="empty-item">No steps yet.</li>
-              ) : (
-                steps.map((step, index) => (
-                  <li key={step._id || index} onClick={() => openDetail(index)}>
-                    <span className="step-num">Step {index + 1}</span>
-                    {step.macro?.name || step.macro_name || step.name || "Untitled"}
-                  </li>
-                ))
-              )}
-            </ul>
-            <div className="modal-footer">
-              <button className="btn-outline" onClick={() => setViewAllOpen(false)}>Close</button>
+      {viewAllOpen &&
+        renderInBody(
+          <div
+            className="modal active"
+            onClick={() => setViewAllOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 99999,
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ margin: "auto", boxSizing: "border-box" }}
+            >
+              <h2>All Steps</h2>
+              <ul className="step-list-modal">
+                {steps.length === 0 ? (
+                  <li className="empty-item">No steps yet.</li>
+                ) : (
+                  steps.map((step, index) => (
+                    <li key={step._id || index} onClick={() => openDetail(index)}>
+                      <span className="step-num">Step {index + 1}</span>
+                      {step.macro?.name || step.macro_name || step.name || "Untitled"}
+                    </li>
+                  ))
+                )}
+              </ul>
+              <div className="modal-footer">
+                <button className="btn-outline" onClick={() => setViewAllOpen(false)}>Close</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* ══ MARKETPLACE MODAL ═══════════════════════════════════════════════ */}
-      {marketplaceOpen && (
-        <div className="modal active" onClick={closeMarketplace}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {marketplaceOpen &&
+        renderInBody(
+          <div
+            className="modal active"
+            onClick={closeMarketplace}
+            style={{
+              position: "fixed",
+              inset: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 99999,
+              boxSizing: "border-box",
+            }}
+          >
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ margin: "auto", boxSizing: "border-box" }}
+            >
 
             <div className="marketplace-context">
-              Adding to{" "}
+              {editingMarketIndex !== null ? "Editing in " : "Adding to "}
               <strong>{currentLayer.charAt(0).toUpperCase() + currentLayer.slice(1)}</strong>
             </div>
 
             <div className="marketplace-form">
-              <h3>Marketplace Listing</h3>
+              <h3>{editingMarketIndex !== null ? "Edit Marketplace Listing" : "Marketplace Listing"}</h3>
 
               <div className="form-section">
                 <h4>Basic Information</h4>
 
                 <div className="form-group">
                   <label>Marketplace Role *</label>
-                  <select value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
-                    <option value="">Select Role</option>
-                    <option value="vendor">Vendor</option>
-                    <option value="mentor">Mentor</option>
-                    <option value="institution">Institution</option>
-                    <option value="distributor">Distributor</option>
-                  </select>
+                  <ResponsiveSelect
+                    value={selectedRole}
+                    onChange={(val) => setSelectedRole(val)}
+                    options={ROLE_OPTIONS}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -908,15 +1327,11 @@ const DraftPathView = () => {
 
                 <div className="form-group">
                   <label>Access</label>
-                  <select
+                  <ResponsiveSelect
                     value={marketForm.access}
-                    onChange={(e) => setMarketForm((f) => ({ ...f, access: e.target.value }))}
-                  >
-                    <option value="Free">Free</option>
-                    <option value="Covered under Subscription">Covered under Subscription</option>
-                    <option value="Paid">Paid</option>
-                    <option value="Not Applicable">Not Applicable</option>
-                  </select>
+                    onChange={(val) => setMarketForm((f) => ({ ...f, access: val }))}
+                    options={ACCESS_OPTIONS}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -951,44 +1366,29 @@ const DraftPathView = () => {
 
                 <div className="form-group">
                   <label>Iterations</label>
-                  <select
+                  <ResponsiveSelect
                     value={marketForm.iterations}
-                    onChange={(e) => setMarketForm((f) => ({ ...f, iterations: e.target.value }))}
-                  >
-                    <option value="">Select</option>
-                    <option value="1">1</option>
-                    <option value="3">3</option>
-                    <option value="Unlimited">Unlimited</option>
-                    <option value="Not Applicable">Not Applicable</option>
-                  </select>
+                    onChange={(val) => setMarketForm((f) => ({ ...f, iterations: val }))}
+                    options={ITERATIONS_OPTIONS}
+                  />
                 </div>
 
                 <div className="form-group">
                   <label>Duration</label>
-                  <select
+                  <ResponsiveSelect
                     value={marketForm.durationDays}
-                    onChange={(e) => setMarketForm((f) => ({ ...f, durationDays: e.target.value }))}
-                  >
-                    <option value="">Select Duration</option>
-                    <option value="1 Day">1 Day</option>
-                    <option value="1 Week">1 Week</option>
-                    <option value="1 Month">1 Month</option>
-                    <option value="Not Applicable">Not Applicable</option>
-                  </select>
+                    onChange={(val) => setMarketForm((f) => ({ ...f, durationDays: val }))}
+                    options={DURATION_OPTIONS}
+                  />
                 </div>
 
                 <div className="form-group">
                   <label>Discount</label>
-                  <select
+                  <ResponsiveSelect
                     value={marketForm.discount}
-                    onChange={(e) => setMarketForm((f) => ({ ...f, discount: e.target.value }))}
-                  >
-                    <option value="">Select</option>
-                    <option value="0%">0%</option>
-                    <option value="10%">10%</option>
-                    <option value="20%">20%</option>
-                    <option value="Not Applicable">Not Applicable</option>
-                  </select>
+                    onChange={(val) => setMarketForm((f) => ({ ...f, discount: val }))}
+                    options={DISCOUNT_OPTIONS}
+                  />
                 </div>
 
                 <div className="form-group">
@@ -1002,14 +1402,54 @@ const DraftPathView = () => {
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button className="btn-outline" onClick={closeMarketplace}>Cancel</button>
+              <div
+                className="modal-footer"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "nowrap",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: "0.65rem",
+                  marginTop: "1.25rem",
+                  padding: "0.5rem 0 0 0",
+                  borderTop: "none",
+                }}
+              >
                 <button
+                  type="button"
+                  className="btn-outline"
+                  onClick={closeMarketplace}
+                  style={{
+                    flex: "0 0 auto",
+                    width: "auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.4rem 1.15rem",
+                    fontSize: "0.82rem",
+                    borderRadius: "30px",
+                    lineHeight: "1.3",
+                    margin: 0,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
                   className="btn-primary"
                   onClick={addMarketplaceItem}
                   disabled={!marketForm.name || !selectedRole}
+                  style={{
+                    flex: "0 0 auto",
+                    width: "auto",
+                    whiteSpace: "nowrap",
+                    padding: "0.4rem 1.15rem",
+                    fontSize: "0.82rem",
+                    borderRadius: "30px",
+                    lineHeight: "1.3",
+                    margin: 0,
+                  }}
                 >
-                  Add to Step
+                  {editingMarketIndex !== null ? "Update Item" : "Add to Step"}
                 </button>
               </div>
             </div>
@@ -1466,6 +1906,191 @@ const DraftPathView = () => {
           </div>
         </>
       )}
+
+      {/* ══ SUBMIT FOR APPROVAL SUCCESS POPUP MODAL ═════════════════════════ */}
+      {submitSuccessOpen &&
+        renderInBody(
+          <div
+            className="modal active"
+            onClick={() => setSubmitSuccessOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 99999,
+              background: "rgba(10, 28, 42, 0.6)",
+              backdropFilter: "blur(5px)",
+              WebkitBackdropFilter: "blur(5px)",
+              padding: "1rem",
+              boxSizing: "border-box",
+              animation: "fadeIn 0.2s ease-out",
+            }}
+          >
+            <div
+              className="modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: "#ffffff",
+                borderRadius: "22px",
+                maxWidth: "420px",
+                width: "100%",
+                padding: "2rem 1.75rem 1.75rem",
+                textAlign: "center",
+                boxShadow: "0 20px 45px -10px rgba(10, 28, 42, 0.25), 0 0 0 1px rgba(226, 234, 242, 0.8)",
+                border: "none",
+                position: "relative",
+                boxSizing: "border-box",
+              }}
+            >
+              {/* Top Close Button */}
+              <button
+                type="button"
+                onClick={() => setSubmitSuccessOpen(false)}
+                aria-label="Close"
+                style={{
+                  position: "absolute",
+                  top: "14px",
+                  right: "14px",
+                  background: "#f1f5f9",
+                  border: "none",
+                  borderRadius: "50%",
+                  width: "32px",
+                  height: "32px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "#64748b",
+                  transition: "all 0.15s ease",
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e2e8f0";
+                  e.currentTarget.style.color = "#0f172a";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#f1f5f9";
+                  e.currentTarget.style.color = "#64748b";
+                }}
+              >
+                <SvgClose size={15} />
+              </button>
+
+              {/* Glowing Success Badge */}
+              <div
+                style={{
+                  width: "68px",
+                  height: "68px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #e6f7f7 0%, #ccf0f1 100%)",
+                  border: "2px solid #99e2e4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 1.2rem",
+                  color: "#0d6b6e",
+                  boxShadow: "0 8px 20px rgba(13, 107, 110, 0.18)",
+                }}
+              >
+                <SvgCheck size={32} color="#0d6b6e" />
+              </div>
+
+              {/* Title */}
+              <h3
+                style={{
+                  fontSize: "1.28rem",
+                  fontWeight: 700,
+                  color: "#0a1c2a",
+                  marginBottom: "0.55rem",
+                  letterSpacing: "-0.2px",
+                }}
+              >
+                Path Submitted!
+              </h3>
+
+              {/* Message */}
+              <p
+                style={{
+                  fontSize: "0.92rem",
+                  color: "#475569",
+                  lineHeight: "1.55",
+                  marginBottom: "1.25rem",
+                  wordBreak: "break-word",
+                }}
+              >
+                {submitSuccessMsg || "Path submitted for approval successfully!"}
+              </p>
+
+              {/* Status Pill */}
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  background: "#fef3c7",
+                  border: "1px solid #fde68a",
+                  color: "#92400e",
+                  padding: "5px 14px",
+                  borderRadius: "20px",
+                  fontSize: "0.82rem",
+                  fontWeight: 600,
+                  marginBottom: "1.5rem",
+                }}
+              >
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#f59e0b",
+                    display: "inline-block",
+                  }}
+                />
+                Status: Waiting for Approval
+              </div>
+
+              {/* Action Button */}
+              <div>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setSubmitSuccessOpen(false)}
+                  style={{
+                    width: "100%",
+                    padding: "0.75rem 1.5rem",
+                    borderRadius: "30px",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    background: "#0d6b6e",
+                    color: "#ffffff",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 14px rgba(13, 107, 110, 0.25)",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#094e50";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#0d6b6e";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  Okay, Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

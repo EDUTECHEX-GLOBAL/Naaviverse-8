@@ -68,7 +68,10 @@ function hasOverlap(userVal, pathList) {
  */
 function evaluateGoalAlignment(userProfile, path, steps = []) {
   const userPersonality = (userProfile?.personality || '').trim().toLowerCase();
-  const pathPersonality = (path?.personality || path?.current_coordinates?.personality || '').trim().toLowerCase();
+  const rawPathPersonality = path?.personality || path?.current_coordinates?.personality;
+  const pathPersonalities = Array.isArray(rawPathPersonality)
+    ? rawPathPersonality.map(p => String(p).trim().toLowerCase()).filter(Boolean)
+    : (rawPathPersonality ? [String(rawPathPersonality).trim().toLowerCase()] : []);
   const pathTitle = (path?.nameOfPath || path?.name || '').toLowerCase();
   const pathProgram = (path?.program || path?.feature_coordinates?.program || '').toLowerCase();
   const pathDesc = (path?.description || '').toLowerCase();
@@ -93,15 +96,15 @@ function evaluateGoalAlignment(userProfile, path, steps = []) {
   let status = 'partial';
 
   // Direct personality match
-  if (pathPersonality && pathPersonality === userPersonality) {
+  if (pathPersonalities.includes(userPersonality)) {
     score = 100;
     status = 'matched';
     evidence = `Direct match with your ${userPersonality.toUpperCase()} personality orientation and career inclinations.`;
-  } else if (pathPersonality) {
+  } else if (pathPersonalities.length > 0) {
     // Both specified but different
     score = 60;
     status = 'partial';
-    evidence = `Path is oriented toward ${pathPersonality.toUpperCase()}, while your profile is ${userPersonality.toUpperCase()}. May require cross-disciplinary adaptability.`;
+    evidence = `Path is oriented toward ${pathPersonalities.map(p => p.toUpperCase()).join(' / ')}, while your profile is ${userPersonality.toUpperCase()}. May require cross-disciplinary adaptability.`;
   } else {
     // Check keyword alignment based on user's personality domains
     const targetKeywords = PERSONALITY_DOMAIN_MAP[userPersonality] || [];

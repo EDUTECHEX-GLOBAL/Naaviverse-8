@@ -527,7 +527,7 @@ const updatePartnerProfile = async (req, res) => {
 
     let cleanPhone = req.body.phone !== undefined ? req.body.phone : req.body.phoneNumber;
     if (typeof cleanPhone === "string") {
-      cleanPhone = cleanPhone.replace(/\D/g, "").slice(0, 10);
+      cleanPhone = cleanPhone.replace(/[^0-9\s\-()+]/g, "").trim();
     }
 
     if (req.body.firstName !== undefined) {

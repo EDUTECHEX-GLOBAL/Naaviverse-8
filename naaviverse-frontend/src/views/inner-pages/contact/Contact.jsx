@@ -1,11 +1,18 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { Icon } from "@iconify/react";
 import { Helmet } from "react-helmet-async";
 import "./contact.scss";
 import Footer from '../../../components/footernew/index';
-import { validateEmail, validatePersonName } from "../../../utils/emailValidator";
+import {
+  validateEmail,
+  validatePersonName,
+  getDialCodeOptions,
+  sanitizePhoneInput,
+  isPhoneKeyAllowed,
+  validatePhoneDigits,
+} from "../../../utils/emailValidator";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -25,9 +32,44 @@ const INQUIRY_OPTIONS = [
 export default function Contact() {
   const formRef = useRef(null);
   const dropdownRef = useRef(null);
+  const phoneDropdownRef = useRef(null);
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Phone / country calling code state
+  const [selectedPhoneIso, setSelectedPhoneIso] = useState("IN");
+  const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
+  const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
+  const dialCodeOptions = useMemo(() => getDialCodeOptions(), []);
+
+  const currentPhoneCountry = useMemo(() => {
+    return (
+      dialCodeOptions.find((c) => c.isoCode === selectedPhoneIso) ||
+      dialCodeOptions.find((c) => c.isoCode === "IN") ||
+      dialCodeOptions[0] ||
+      {
+        code: "+91",
+        isoCode: "IN",
+        name: "India",
+        lengths: [10],
+        minLength: 10,
+        maxLength: 10,
+        placeholder: "98765-43210",
+      }
+    );
+  }, [dialCodeOptions, selectedPhoneIso]);
+
+  const filteredDialCodes = useMemo(() => {
+    if (!phoneCodeSearch.trim()) return dialCodeOptions;
+    const q = phoneCodeSearch.toLowerCase();
+    return dialCodeOptions.filter(
+      (opt) =>
+        opt.name.toLowerCase().includes(q) ||
+        opt.code.includes(q) ||
+        opt.isoCode.toLowerCase().includes(q)
+    );
+  }, [dialCodeOptions, phoneCodeSearch]);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -42,6 +84,10 @@ export default function Contact() {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
+      }
+      if (phoneDropdownRef.current && !phoneDropdownRef.current.contains(e.target)) {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -105,9 +151,9 @@ export default function Contact() {
     }
     const cleanEmail = validation.cleanEmail;
 
-    const trimmedMobile = mobile.trim();
-    if (!trimmedMobile || !/^\d{10}$/.test(trimmedMobile)) {
-      setStatus("Please enter a valid 10-digit mobile number.");
+    const phoneVal = validatePhoneDigits(mobile, currentPhoneCountry, currentPhoneCountry.name, true);
+    if (!phoneVal.isValid) {
+      setStatus(phoneVal.message);
       setStatusType("error");
       setToastVisible(true);
       setTimeout(() => {
@@ -120,7 +166,8 @@ export default function Contact() {
       return;
     }
 
-    const contactData = { fullName: fullName.trim(), email: cleanEmail, product, mobile: trimmedMobile, message: message.trim() };
+    const formattedMobile = `${currentPhoneCountry.code} ${mobile.trim()}`;
+    const contactData = { fullName: fullName.trim(), email: cleanEmail, product, mobile: formattedMobile, message: message.trim() };
 
     try {
       await axios.post(`${BASE_URL}/api/admin-contact`, contactData);
@@ -138,6 +185,7 @@ export default function Contact() {
     }
 
     setToastVisible(true);
+
 
     setTimeout(() => {
       setToastVisible(false);
@@ -276,17 +324,108 @@ export default function Contact() {
                 <div className="contact-form-row">
                   <div className="contact-form-group">
                     <label>Mobile Number *</label>
-                    <input
-                      type="tel"
-                      value={mobile}
-                      onChange={(e) => {
-                        const input = e.target.value;
-                        if (/^\d{0,10}$/.test(input)) setMobile(input);
-                      }}
-                      required
-                      maxLength="10"
-                      placeholder="9876543210"
-                    />
+                    <div
+                      className={`contact-phone-input-group ${phoneCodeDropdownOpen ? "focused" : ""}`}
+                      ref={phoneDropdownRef}
+                    >
+                      <div
+                        className="contact-phone-trigger"
+                        onClick={() => setPhoneCodeDropdownOpen((p) => !p)}
+                        role="button"
+                        tabIndex={0}
+                        title="Click to select country calling code"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setPhoneCodeDropdownOpen((p) => !p);
+                          }
+                        }}
+                      >
+                        <img
+                          src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
+                          alt={currentPhoneCountry.name}
+                          className="contact-phone-flag"
+                          onError={(e) => { e.target.style.display = "none"; }}
+                        />
+                        <span className="contact-phone-code">{currentPhoneCountry.code}</span>
+                        <span className={`contact-phone-arrow ${phoneCodeDropdownOpen ? "open" : ""}`}>▼</span>
+                      </div>
+                      <input
+                        type="tel"
+                        value={mobile}
+                        onChange={(e) => {
+                          const val = sanitizePhoneInput(e.target.value, currentPhoneCountry.maxLength);
+                          setMobile(val);
+                        }}
+                        onKeyDown={(e) => {
+                          if (!isPhoneKeyAllowed(e, mobile, currentPhoneCountry.maxLength)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+                          const target = e.target;
+                          const start = target.selectionStart || 0;
+                          const end = target.selectionEnd || 0;
+                          const current = mobile || "";
+                          const merged = current.slice(0, start) + pasted + current.slice(end);
+                          setMobile(sanitizePhoneInput(merged, currentPhoneCountry.maxLength));
+                        }}
+                        required
+                        maxLength={currentPhoneCountry.maxLength + 8}
+                        placeholder={currentPhoneCountry.placeholder}
+                        className="contact-phone-input"
+                      />
+                      {phoneCodeDropdownOpen && (
+                        <div className="contact-phone-dropdown" onClick={(e) => e.stopPropagation()}>
+                          <div className="contact-phone-search-wrap">
+                            <input
+                              type="text"
+                              className="contact-phone-search-input"
+                              placeholder="Search country or code..."
+                              value={phoneCodeSearch}
+                              onChange={(e) => setPhoneCodeSearch(e.target.value)}
+                              autoFocus
+                            />
+                            {phoneCodeSearch && (
+                              <button
+                                type="button"
+                                className="contact-phone-search-clear"
+                                onClick={() => setPhoneCodeSearch("")}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                          <div className="contact-phone-list" role="listbox">
+                            {filteredDialCodes.map((item) => (
+                              <div
+                                key={`${item.isoCode}-${item.code}`}
+                                className={`contact-phone-item ${item.isoCode === selectedPhoneIso ? "active" : ""}`}
+                                onClick={() => {
+                                  setSelectedPhoneIso(item.isoCode);
+                                  setMobile((prev) => sanitizePhoneInput(prev, item.maxLength));
+                                  setPhoneCodeDropdownOpen(false);
+                                  setPhoneCodeSearch("");
+                                }}
+                                role="option"
+                                aria-selected={item.isoCode === selectedPhoneIso}
+                              >
+                                <img
+                                  src={`https://flagcdn.com/w40/${item.isoCode.toLowerCase()}.png`}
+                                  alt={item.name}
+                                  className="contact-phone-item-flag"
+                                  onError={(e) => { e.target.style.display = "none"; }}
+                                />
+                                <span className="contact-phone-item-name">{item.name}</span>
+                                <span className="contact-phone-item-code">{item.code}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="contact-form-group">
                     <label>Inquiry Type *</label>

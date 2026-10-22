@@ -23,10 +23,6 @@ const NOTIF_CFG = {
 
 const urgencyOrder = { high: 0, medium: 1, low: 2 };
 
-const WEEKLY_RETENTION = {
-  days: ["M", "T", "W", "T", "F", "S", "S"],
-  data: [[68, 74, 88, 82, 95, 42, 28], [55, 70, 83, 90, 92, 50, 22], [72, 78, 91, 85, 88, 55, 35], [65, 82, 87, 93, 90, 48, 30]],
-};
 
 const PLAN_BADGE = {
   Micro: { bg: "#e0e7ff", color: "#4338ca" },
@@ -218,6 +214,52 @@ export default function PartnerHome({ setispopular }) {
     : LIVE_ACTIVITY.filter(a => (a.type || "").toLowerCase() === activityTab.toLowerCase());
   const displayedActivity = showAllActivity ? actFiltered : actFiltered.slice(0, 4);
 
+  const weeklyRetention = dashStats?.weeklyRetention || (() => {
+    const dayLabels = ["M", "T", "W", "T", "F", "S", "S"];
+    const dayIndices = [1, 2, 3, 4, 5, 6, 0];
+    const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    const events = (notifications || []).concat(LIVE_ACTIVITY || []);
+    const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    let hasEvents = false;
+
+    events.forEach(e => {
+      const dt = e.rawDate || e.date;
+      if (dt) {
+        const d = new Date(dt);
+        if (!isNaN(d.getTime())) {
+          counts[d.getDay()] = (counts[d.getDay()] || 0) + 1;
+          hasEvents = true;
+        }
+      }
+    });
+
+    const totalStudents = totalSelected || 0;
+    let peakDay = null;
+    let peakRate = 0;
+
+    const rates = dayIndices.map((idx, di) => {
+      const cnt = counts[idx] || 0;
+      let r = 0;
+      if (totalStudents > 0) {
+        r = Math.min(100, Math.round((cnt / totalStudents) * 100));
+      } else if (hasEvents && cnt > 0) {
+        r = 100;
+      }
+      if (r > peakRate) {
+        peakRate = r;
+        peakDay = dayNames[di];
+      }
+      return r;
+    });
+
+    return {
+      days: dayLabels,
+      rates,
+      peakDay: peakRate > 0 ? peakDay : null,
+      peakRate,
+    };
+  })();
+
   // ── NOTIFICATIONS PAGE ──────────────────────────────────────────────────
   if (view === "notifications") {
     const FILTERS = [
@@ -237,7 +279,7 @@ export default function PartnerHome({ setispopular }) {
               Back to Dashboard
             </button>
             <div className="ph-notif-page-title">Notifications</div>
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="ph-notif-topbar-actions" style={{ display: "flex", gap: 8 }}>
               <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
               <button className="ph-clear-btn" onClick={() => { markAllRead(); setNotifications([]); }}>Clear all</button>
             </div>
@@ -1162,16 +1204,37 @@ export default function PartnerHome({ setispopular }) {
           <div className="ph-card">
             <div className="ph-card-header">
               <span className="ph-card-title">Weekly Retention</span>
-              <span className="ph-peak-tag">↑ Peak: Friday</span>
+              <span className="ph-peak-tag">
+                {weeklyRetention.peakDay && weeklyRetention.peakRate > 0
+                  ? `↑ Peak: ${weeklyRetention.peakDay}`
+                  : "No activity yet"}
+              </span>
             </div>
             <div className="ph-retention-bars">
-              {WEEKLY_RETENTION.days.map((day, di) => {
-                const avg = Math.round(WEEKLY_RETENTION.data.reduce((s, w) => s + w[di], 0) / WEEKLY_RETENTION.data.length);
+              {weeklyRetention.days.map((day, di) => {
+                const rate = weeklyRetention.rates?.[di] ?? 0;
                 return (
                   <div key={di} className="ph-ret-col">
                     <div className="ph-ret-bar-wrap">
-                      <div className="ph-ret-tooltip">{avg}%</div>
-                      <div className="ph-ret-bar-fill" style={{ height: `${avg}%`, background: avg > 85 ? "#0d9488" : avg > 65 ? "#14b8a6" : avg > 40 ? "#5eead4" : "#99f6e4" }} />
+                      <div className="ph-ret-tooltip">{rate}%</div>
+                      <div
+                        className="ph-ret-bar-fill"
+                        style={{
+                          height: `${rate}%`,
+                          minHeight: rate > 0 ? "4px" : "2px",
+                          background:
+                            rate >= 75
+                              ? "#0d9488"
+                              : rate >= 50
+                              ? "#14b8a6"
+                              : rate >= 25
+                              ? "#5eead4"
+                              : rate > 0
+                              ? "#99f6e4"
+                              : "#e2e8f0",
+                          opacity: rate === 0 ? 0.6 : 1,
+                        }}
+                      />
                     </div>
                     <span className="ph-ret-day">{day}</span>
                   </div>

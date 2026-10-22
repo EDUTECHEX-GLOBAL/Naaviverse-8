@@ -18,7 +18,7 @@ const pathSchema = new mongoose.Schema(
   stream: [String],
   grade_avg: [String],
   financialSituation: [String],
-  personality: String,
+  personality: mongoose.Schema.Types.Mixed,
   city: String,
   country: String,
 },
@@ -61,13 +61,9 @@ feature_coordinates: {
       default: 'K12'
     },
 
-    // [HOT] Filters
+    // [HOT] Filters - supports string or array of personalities (up to 2)
     personality: {
-      type: String,
-      enum: [
-        'realistic', 'investigative', 'artistic',
-        'social', 'enterprising', 'conventional'
-      ]
+      type: mongoose.Schema.Types.Mixed,
     },
 
     destination_degree: { type: String },

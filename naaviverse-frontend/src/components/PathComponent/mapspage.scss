@@ -98,14 +98,21 @@ $sidebar-width: 240px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  text-transform: none !important;
 
   p {
     margin-top: 0 !important;
+    text-transform: none !important;
   }
 
   &--wide {
     max-width: 560px;
     width: 92%;
+    padding: 20px 24px 22px;
+
+    @media (max-width: 768px) {
+      padding: 16px 16px 18px;
+    }
   }
 
   &--fit {
@@ -220,14 +227,58 @@ $sidebar-width: 240px;
 &--success { display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, $success, #55efc4); }
 }
 
-.pfm-explore-header {
+.pfm-top-bar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+
+  .pfm-back-btn {
+    position: static;
+    top: auto;
+    left: auto;
+    padding: 6px 12px;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .pfm-close {
+    position: static;
+    top: auto;
+    right: auto;
+    margin-left: auto;
+  }
+}
+
+.pfm-explore-header {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
   margin-bottom: 14px;
   text-align: left;
-  padding-top: 10px;
+  padding-top: 0;
   flex-shrink: 0;
+  width: 100%;
+
+  .pfm-icon--sm {
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .pfm-title {
@@ -236,11 +287,16 @@ $sidebar-width: 240px;
   color: $text-dark;
   margin: 0 0 8px;
   line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: break-word;
 
   &--left {
     text-align: left;
-    margin: 0;
-    font-size: 0.9rem;
+    margin: 0 0 6px;
+    font-size: 0.95rem;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
   }
 
   &--success {
@@ -394,6 +450,10 @@ $sidebar-width: 240px;
 .pfm-step-body {
   flex: 1;
   min-width: 0;
+
+  @media (max-width: 1024px) {
+    text-align: left;
+  }
 }
 
 .pfm-step-name {
@@ -402,23 +462,43 @@ $sidebar-width: 240px;
   color: $text-dark;
   line-height: 1.35;
   margin-bottom: 3px;
+
+  @media (max-width: 1024px) {
+    text-align: left;
+  }
 }
 
 .pfm-step-desc {
   font-size: 0.74rem;
   color: $text-mid;
   line-height: 1.5;
+
+  @media (max-width: 1024px) {
+    text-align: left;
+  }
 }
 
 .pfm-step-dur {
-  display: inline-block;
-  margin-top: 5px;
-  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 0.8rem;
   font-weight: 600;
   color: $brand;
   background: $brand-soft;
-  border-radius: 6px;
-  padding: 2px 8px;
+  border-radius: 8px;
+  padding: 5px 12px;
+
+  @media (max-width: 1024px) {
+    text-align: left;
+  }
+}
+
+@media (max-width: 1024px) {
+  .pfm-step-card {
+    text-align: left;
+  }
 }
 
 .pfm-btns {

@@ -330,6 +330,95 @@ const getDashboardStats = async (req, res) => {
     const liveActivity = await fetchPartnerLiveActivity({ email });
     const notifications = await fetchPartnerNotificationsList({ email });
 
+    // ── 12. Calculate real weekly retention (Mon - Sun) ─────────────────────
+    const MON_FIRST_DAYS = [
+      { index: 1, label: "M", name: "Monday" },
+      { index: 2, label: "T", name: "Tuesday" },
+      { index: 3, label: "W", name: "Wednesday" },
+      { index: 4, label: "T", name: "Thursday" },
+      { index: 5, label: "F", name: "Friday" },
+      { index: 6, label: "S", name: "Saturday" },
+      { index: 0, label: "S", name: "Sunday" },
+    ];
+
+    const userPathDocs = pathIds.length > 0 ? await UserPath.find({
+      pathId: { $in: pathIds },
+      status: "active",
+    }).select("email createdAt updatedAt completedSteps").lean() : [];
+
+    const uniqueStudents = new Set(userPathDocs.map(u => (u.email || "").toLowerCase()).filter(Boolean));
+    allPartnerPayments.forEach(p => { if (p.userEmail) uniqueStudents.add(p.userEmail.toLowerCase()); });
+    allPartnerPurchases.forEach(p => { if (p.clientEmail) uniqueStudents.add(p.clientEmail.toLowerCase()); });
+
+    const totalStudentBase = uniqueStudents.size;
+
+    const usersByDay = { 0: new Set(), 1: new Set(), 2: new Set(), 3: new Set(), 4: new Set(), 5: new Set(), 6: new Set() };
+    const eventCountsByDay = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+    const recordActivityEvent = (userEmail, timestamp) => {
+      if (!timestamp) return;
+      const d = new Date(timestamp);
+      if (isNaN(d.getTime())) return;
+      const dayOfWeek = d.getDay(); // 0 = Sun, 1 = Mon ...
+      eventCountsByDay[dayOfWeek]++;
+      if (userEmail) {
+        usersByDay[dayOfWeek].add(userEmail.toLowerCase());
+      }
+    };
+
+    userPathDocs.forEach(up => {
+      const uEmail = (up.email || "").toLowerCase();
+      if (up.createdAt) recordActivityEvent(uEmail, up.createdAt);
+      if (up.updatedAt && String(up.updatedAt) !== String(up.createdAt)) {
+        recordActivityEvent(uEmail, up.updatedAt);
+      }
+    });
+
+    allPartnerPayments.forEach(p => recordActivityEvent(p.userEmail, p.createdAt));
+    allPartnerPurchases.forEach(p => recordActivityEvent(p.clientEmail, p.date || p.createdAt));
+
+    let peakDayName = null;
+    let peakRate = 0;
+    let maxDayUsers = 0;
+
+    const days = MON_FIRST_DAYS.map(d => d.label);
+    const rates = MON_FIRST_DAYS.map(d => {
+      const activeOnDay = usersByDay[d.index].size;
+      let rate = 0;
+      if (totalStudentBase > 0) {
+        rate = Math.min(100, Math.round((activeOnDay / totalStudentBase) * 100));
+      } else if (eventCountsByDay[d.index] > 0) {
+        rate = 100;
+      }
+      if (rate > peakRate) {
+        peakRate = rate;
+        peakDayName = d.name;
+      }
+      if (activeOnDay > maxDayUsers) {
+        maxDayUsers = activeOnDay;
+        if (!peakDayName) peakDayName = d.name;
+      }
+      return rate;
+    });
+
+    if (!peakDayName && peakRate === 0) {
+      let maxEv = 0;
+      MON_FIRST_DAYS.forEach(d => {
+        if (eventCountsByDay[d.index] > maxEv) {
+          maxEv = eventCountsByDay[d.index];
+          peakDayName = d.name;
+        }
+      });
+    }
+
+    const weeklyRetention = {
+      days,
+      rates,
+      peakDay: (peakRate > 0 || maxDayUsers > 0) ? peakDayName : null,
+      peakRate,
+      totalBase: totalStudentBase,
+    };
+
     return res.status(200).json({
       status: true,
       data: {
@@ -343,6 +432,7 @@ const getDashboardStats = async (req, res) => {
         totalMarketplaceRevenue,
         liveActivity,
         notifications,
+        weeklyRetention,
       },
     });
   } catch (err) {
@@ -822,6 +912,8 @@ const fetchPartnerLiveActivity = async ({ email, partnerId }) => {
         color,
         action: item.actionText,
         time: item.date ? new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Recently",
+        rawDate: item.date || new Date(),
+        userEmail: item.userEmail,
         type: item.type,
         typeBg: item.typeBg,
         typeColor: item.typeColor,
