@@ -3,8 +3,8 @@ import axios from "axios";
 import "./InternalPartners.scss";
 import { toast } from "react-toastify";
 import { Country } from "country-state-city";
-import { getCountryPhoneRules } from "../../UserProfile/LevelOneModal";
-import { validatePersonName } from "../../../utils/emailValidator";
+import { getCountryPhoneRules, sanitizePhoneInput, validatePhoneDigits, isPhoneKeyAllowed } from "../../UserProfile/LevelOneModal";
+import { validatePersonName, sanitizePostalCode, validatePostalCode } from "../../../utils/emailValidator";
 import { SvgClose } from "../../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
@@ -186,41 +186,18 @@ const InternalPartners = () => {
     if (countryObj) {
       setFormData((prev) => ({
         ...prev,
-        phone: (prev.phone || "").slice(0, countryObj.maxLength),
+        phone: sanitizePhoneInput(prev.phone || "", countryObj.maxLength),
       }));
     }
   };
 
   const handlePartnerPhoneChange = (val) => {
     const max = currentPhoneCountry.maxLength;
-    const cleanDigits = (val || "").replace(/\D/g, "").slice(0, max);
-    setFormData((prev) => ({ ...prev, phone: cleanDigits }));
+    setFormData((prev) => ({ ...prev, phone: sanitizePhoneInput(val, max) }));
   };
 
   const handlePhoneKeyDown = (e) => {
-    if (
-      e.key === "Backspace" ||
-      e.key === "Delete" ||
-      e.key === "Tab" ||
-      e.key === "ArrowLeft" ||
-      e.key === "ArrowRight" ||
-      e.key === "ArrowUp" ||
-      e.key === "ArrowDown" ||
-      e.key === "Enter" ||
-      e.ctrlKey ||
-      e.metaKey
-    ) {
-      return;
-    }
-    // Block non-digits
-    if (!/^\d$/.test(e.key)) {
-      e.preventDefault();
-      return;
-    }
-    // Block if current digit length has reached the country's max limit
-    const max = currentPhoneCountry.maxLength;
-    const hasSelection = e.target.selectionStart !== e.target.selectionEnd;
-    if ((formData.phone || "").length >= max && !hasSelection) {
+    if (!isPhoneKeyAllowed(e, formData.phone, currentPhoneCountry.maxLength)) {
       e.preventDefault();
     }
   };
@@ -228,14 +205,13 @@ const InternalPartners = () => {
   const handlePhonePaste = (e) => {
     e.preventDefault();
     const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
-    const cleanPasted = pasted.replace(/\D/g, "");
     const max = currentPhoneCountry.maxLength;
     const target = e.target;
     const start = target.selectionStart || 0;
     const end = target.selectionEnd || 0;
     const current = formData.phone || "";
-    const merged = current.slice(0, start) + cleanPasted + current.slice(end);
-    setFormData((prev) => ({ ...prev, phone: merged.slice(0, max) }));
+    const merged = current.slice(0, start) + pasted + current.slice(end);
+    setFormData((prev) => ({ ...prev, phone: sanitizePhoneInput(merged, max) }));
   };
 
   // Fetch partners from real backend
@@ -443,9 +419,10 @@ const InternalPartners = () => {
   };
 
   const handlePincodeChange = (val) => {
-    setFormData((prev) => ({ ...prev, pincode: val }));
+    const sanitized = sanitizePostalCode(val);
+    setFormData((prev) => ({ ...prev, pincode: sanitized }));
     clearTimeout(internalPostalTimerRef.current);
-    const trimmed = (val || "").trim();
+    const trimmed = sanitized.trim();
     if (trimmed.length >= 3) {
       internalPostalTimerRef.current = setTimeout(() => {
         lookupInternalPartnerPostal(trimmed, formData.country);
@@ -474,16 +451,18 @@ const InternalPartners = () => {
       }
     }
 
-    if (formData.phone) {
-      const phoneDigits = (formData.phone || "").replace(/\D/g, "");
-      const isPhoneValid = currentPhoneCountry.lengths
-        ? currentPhoneCountry.lengths.includes(phoneDigits.length)
-        : phoneDigits.length === currentPhoneCountry.maxLength;
+    if (formData.pincode && formData.pincode.trim()) {
+      const pinVal = validatePostalCode(formData.pincode, false, "Pincode");
+      if (!pinVal.isValid) {
+        toast.error(pinVal.message);
+        return;
+      }
+    }
 
-      if (!isPhoneValid) {
-        toast.error(
-          `Phone number for ${currentPhoneCountry.name} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.maxLength} digits`}`
-        );
+    if (formData.phone) {
+      const phoneVal = validatePhoneDigits(formData.phone, currentPhoneCountry, currentPhoneCountry.name, true);
+      if (!phoneVal.isValid) {
+        toast.error(phoneVal.message);
         return;
       }
     }
@@ -1143,10 +1122,9 @@ const InternalPartners = () => {
                       {/* Phone Number Input */}
                       <input
                         type="tel"
-                        inputMode="numeric"
                         placeholder="Phone Number"
                         value={formData.phone}
-                        maxLength={currentPhoneCountry.maxLength}
+                        maxLength={currentPhoneCountry.maxLength + 8}
                         onChange={(e) => handlePartnerPhoneChange(e.target.value)}
                         onKeyDown={handlePhoneKeyDown}
                         onPaste={handlePhonePaste}
@@ -1361,6 +1339,7 @@ const InternalPartners = () => {
                       />
                       <input
                         type="text"
+                        maxLength={10}
                         placeholder="Pincode"
                         value={formData.pincode}
                         onChange={(e) => handlePincodeChange(e.target.value)}

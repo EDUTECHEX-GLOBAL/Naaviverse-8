@@ -384,9 +384,6 @@ const PathComponent = () => {
           </div>
           <h3 className="pfm-title">{modalPath.nameOfPath || modalPath.name}</h3>
 
-          {modalPath.program && modalPath.program !== "-" && (
-            <span className="pfm-tag">{modalPath.program}</span>
-          )}
 
           {modalPath.description && modalPath.description !== "-" && (
             <p className="pfm-desc" style={{ marginTop: 0 }}>{modalPath.description}</p>
@@ -412,16 +409,17 @@ const PathComponent = () => {
       {/* ── EXPLORE STEPS MODAL ── */}
       {modalStep === "explore" && modalPath && (
         <div className="path-flow-modal path-flow-modal--wide">
-          <button className="pfm-close" onClick={closeModal} title="Close"><SvgClose size={14} /></button>
-          <button className="pfm-back-btn" onClick={() => setModalStep("view")}>← Back</button>
+          <div className="pfm-top-bar">
+            <button className="pfm-back-btn" onClick={() => setModalStep("view")}>← Back</button>
+            <button className="pfm-close" onClick={closeModal} title="Close" aria-label="Close"><SvgClose size={14} /></button>
+          </div>
 
           <div className="pfm-explore-header">
             <div className="pfm-icon pfm-icon--sm">
               {(modalPath.nameOfPath || "P").charAt(0).toUpperCase()}
             </div>
-            <div>
+            <div className="pfm-explore-header__text">
               <h3 className="pfm-title pfm-title--left">{modalPath.nameOfPath}</h3>
-              <span className="pfm-tag">{modalPath.program}</span>
             </div>
           </div>
 
@@ -445,7 +443,7 @@ const PathComponent = () => {
                         {step.macro_description && (
                           <div className="pfm-step-desc">{step.macro_description}</div>
                         )}
-                        {dur && <div className="pfm-step-dur"><SvgClock size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />{dur}</div>}
+                        {dur && <div className="pfm-step-dur"><SvgClock size={14} style={{ marginRight: 2, verticalAlign: "middle" }} />{dur}</div>}
                       </div>
                     </div>
                   );

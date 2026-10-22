@@ -1162,53 +1162,66 @@ export default function UserHome({ initialView = "home" }) {
     const filteredNotifs = notifications.filter(n => filterNotification(n, notifFilter));
 
     return (
-      <div className="uh-root">
-        <div className="approvals-card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 620 }}>
-          <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--slate-100, #f1f5f9)", display: "flex", alignItems: "center", gap: 14 }}>
-            <button className="back-btn" style={{ margin: 0 }} onClick={() => { setView("home"); if (window.location.pathname.includes("notifications")) navigate("/dashboard/users/home"); }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Back to Dashboard
-            </button>
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 700, color: "var(--slate-800, #1e293b)", margin: 0 }}>
+      <div className="uh-root uh-notif-page-root">
+        <div className="approvals-card uh-notif-page-card">
+          <div className="uh-notif-page-header">
+            <div className="uh-notif-page-header-left">
+              <button
+                className="back-btn uh-notif-back-btn"
+                onClick={() => {
+                  setView("home");
+                  if (window.location.pathname.includes("notifications")) navigate("/dashboard/users/home");
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Back
+              </button>
+              <h2 className="uh-notif-page-title">
                 Notifications
               </h2>
             </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ fontSize: 12, fontWeight: 600, background: "var(--slate-100, #f1f5f9)", color: "var(--slate-600, #475569)", border: "none", padding: "6px 14px", borderRadius: "var(--radius-full, 9999px)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={markAllRead}>
+            <div className="uh-notif-page-actions">
+              <button className="uh-notif-btn-read" onClick={markAllRead}>
                 Mark all read
               </button>
-              <button style={{ fontSize: 12, fontWeight: 600, background: "var(--rose-50, #fff1f2)", color: "var(--rose-600, #e11d48)", border: "1px solid var(--rose-100, #ffe4e6)", padding: "6px 14px", borderRadius: "var(--radius-full, 9999px)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={() => { markAllRead(); setNotifications([]); }}>
+              <button className="uh-notif-btn-clear" onClick={() => { markAllRead(); setNotifications([]); }}>
                 Clear all
               </button>
             </div>
           </div>
-          <div style={{ display: "flex", flex: 1 }}>
-            <div style={{ width: 210, flexShrink: 0, borderRight: "1px solid var(--slate-100, #f1f5f9)", padding: "16px 12px", background: "var(--slate-50, #f8fafc)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "var(--slate-400, #94a3b8)", marginBottom: 10, padding: "0 6px" }}>
+          <div className="uh-notif-page-body">
+            <div className="uh-notif-sidebar">
+              <div className="uh-notif-sidebar-title">
                 FILTER
               </div>
-              {FILTERS.map((f) => {
-                const count = f.key === "all" ? notifications.length : notifications.filter((n) => filterNotification(n, f.key)).length;
-                const isActive = notifFilter === f.key;
-                return (
-                  <button key={f.key} onClick={() => setNotifFilter(f.key)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "9px 10px", borderRadius: "var(--radius-md, 8px)", marginBottom: 2, border: "none", cursor: "pointer", fontFamily: "var(--font)", fontSize: 13, fontWeight: 600, textAlign: "left", background: isActive ? "var(--violet-100, #ede9fe)" : "transparent", color: isActive ? "var(--violet-700, #6d28d9)" : "var(--slate-600, #475569)", transition: "all .15s" }}
-                  >
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: f.dot, flexShrink: 0 }} />
-                    {f.label}
-                    <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: "var(--radius-full, 9999px)", background: f.countBg, color: f.countColor }}>
-                      {count}
-                    </span>
-                  </button>
-                );
-              })}
+              <div className="uh-notif-filter-list">
+                {FILTERS.map((f) => {
+                  const count = f.key === "all" ? notifications.length : notifications.filter((n) => filterNotification(n, f.key)).length;
+                  const isActive = notifFilter === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      onClick={() => setNotifFilter(f.key)}
+                      className={`uh-notif-filter-btn ${isActive ? "active" : ""}`}
+                    >
+                      <span className="uh-notif-dot" style={{ background: f.dot }} />
+                      <span className="uh-notif-label">{f.label}</span>
+                      <span
+                        className="uh-notif-badge"
+                        style={{ background: f.countBg, color: f.countColor }}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div style={{ flex: 1, overflowY: "auto" }}>
+            <div className="uh-notif-list-container">
               {filteredNotifs.length === 0 ? (
-                <div style={{ padding: "60px", textAlign: "center", color: "var(--slate-400, #94a3b8)" }}>
+                <div className="uh-notif-empty-state">
                   <div style={{ marginBottom: 8, opacity: 0.3, display: "flex", justifyContent: "center" }}>
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" /></svg>
                   </div>

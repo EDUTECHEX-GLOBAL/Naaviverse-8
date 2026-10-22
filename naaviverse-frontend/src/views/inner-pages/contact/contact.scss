@@ -293,6 +293,181 @@ $success: #27ae60;
   box-sizing: border-box !important;
 }
 
+// ── Mobile Phone Number Input Group with ISD Calling Code ──
+.contact-phone-input-group {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  height: 44px !important;
+  background: $white !important;
+  border: 1px solid $border-light !important;
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+
+  &.focused {
+    border-color: $green !important;
+    box-shadow: 0 0 0 3px rgba(45, 182, 125, 0.1) !important;
+  }
+
+  .contact-phone-trigger {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 0 10px 0 12px !important;
+    height: 100% !important;
+    border-right: 1px solid $border-light !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    user-select: none !important;
+    background: transparent !important;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .contact-phone-flag {
+      width: 18px !important;
+      height: 12px !important;
+      object-fit: cover !important;
+      border-radius: 2px !important;
+      box-shadow: 0 0 1px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .contact-phone-code {
+      font-size: 13.5px !important;
+      font-weight: 600 !important;
+      color: $navy !important;
+      font-family: 'Poppins', sans-serif !important;
+    }
+
+    .contact-phone-arrow {
+      font-size: 8px !important;
+      color: $muted !important;
+      transition: transform 0.2s ease !important;
+      display: inline-block !important;
+
+      &.open {
+        transform: rotate(180deg) !important;
+      }
+    }
+  }
+
+  .contact-phone-input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    height: 100% !important;
+    padding: 0 12px !important;
+    background: transparent !important;
+    flex: 1 !important;
+    font-size: 14px !important;
+    color: $text-dark !important;
+    font-family: 'Poppins', sans-serif !important;
+
+    &:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+  }
+
+  .contact-phone-dropdown {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: $white !important;
+    border: 1px solid $border-light !important;
+    border-radius: 10px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+    z-index: 100 !important;
+    max-height: 240px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+
+    .contact-phone-search-wrap {
+      display: flex !important;
+      align-items: center !important;
+      padding: 8px 10px !important;
+      border-bottom: 1px solid $border-light !important;
+      background: $soft-bg !important;
+
+      .contact-phone-search-input {
+        height: 32px !important;
+        padding: 0 8px !important;
+        font-size: 12.5px !important;
+        border: 1px solid $border-light !important;
+        border-radius: 6px !important;
+        width: 100% !important;
+        background: $white !important;
+
+        &:focus {
+          border-color: $green !important;
+          box-shadow: none !important;
+        }
+      }
+
+      .contact-phone-search-clear {
+        background: transparent !important;
+        border: none !important;
+        color: $muted !important;
+        cursor: pointer !important;
+        padding: 0 6px !important;
+        font-size: 12px !important;
+      }
+    }
+
+    .contact-phone-list {
+      overflow-y: auto !important;
+      max-height: 190px !important;
+
+      .contact-phone-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 8px 12px !important;
+        cursor: pointer !important;
+        font-size: 13px !important;
+        color: $text-dark !important;
+        transition: background 0.15s ease !important;
+
+        &:hover,
+        &.active {
+          background: rgba(45, 182, 125, 0.08) !important;
+          color: $green !important;
+          font-weight: 600 !important;
+        }
+
+        .contact-phone-item-flag {
+          width: 18px !important;
+          height: 12px !important;
+          object-fit: cover !important;
+          border-radius: 2px !important;
+          flex-shrink: 0 !important;
+        }
+
+        .contact-phone-item-name {
+          flex: 1 !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          white-space: nowrap !important;
+        }
+
+        .contact-phone-item-code {
+          font-weight: 600 !important;
+          font-size: 12px !important;
+          color: $muted !important;
+          flex-shrink: 0 !important;
+        }
+      }
+    }
+  }
+}
+
 .contact-form-group textarea {
   padding: 12px 14px !important;
   background: $white !important;

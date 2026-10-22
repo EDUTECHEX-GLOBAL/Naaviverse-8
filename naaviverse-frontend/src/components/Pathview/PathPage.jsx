@@ -133,15 +133,17 @@ const PathPage = () => {
                     <div style={{
                       marginTop: "auto",
                       paddingTop: 12,
-                      fontSize: "0.74rem",
+                      fontSize: "0.82rem",
                       fontWeight: 600,
                       color: "#6c5ce7",
                       background: "rgba(108,92,231,0.07)",
                       borderRadius: 8,
-                      display: "inline-block",
-                      padding: "4px 10px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      padding: "5px 12px",
                     }}>
-                      <SvgClock size={14} /> {duration}
+                      <SvgClock size={15} /> {duration}
                     </div>
                   )}
                 </motion.div>

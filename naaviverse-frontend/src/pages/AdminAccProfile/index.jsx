@@ -24,7 +24,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar.jsx";
-import { validatePersonName } from "../../utils/emailValidator";
+import { validatePersonName, getCountryPhoneRules, sanitizePhoneInput, isPhoneKeyAllowed, validatePhoneDigits } from "../../utils/emailValidator";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -3288,13 +3288,32 @@ const AdminAccProfile = () => {
               <div className="linee"></div>
             </div>
             <div className="each-action1">
-              <input
-                type="number"
-                placeholder="New Phone Number.."
-                onChange={(e) => {
-                  setNewPhoneNo(e.target.value);
-                }}
-              />
+              {(() => {
+                const phoneRules = getCountryPhoneRules(profileData?.country || profileData?.countryCode || "+91");
+                return (
+                  <input
+                    type="tel"
+                    placeholder={phoneRules.placeholder || "New Phone Number.."}
+                    value={newPhoneNo || ""}
+                    maxLength={phoneRules.maxLength + 8}
+                    onChange={(e) => {
+                      setNewPhoneNo(sanitizePhoneInput(e.target.value, phoneRules.maxLength));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && newPhoneNo) {
+                        const phoneVal = validatePhoneDigits(newPhoneNo, phoneRules, profileData?.country || "the selected country", true);
+                        if (!phoneVal.isValid) {
+                          toast.error(phoneVal.message);
+                          return;
+                        }
+                        editData("phone", newPhoneNo);
+                      } else if (!isPhoneKeyAllowed(e, newPhoneNo || "", phoneRules.maxLength)) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                );
+              })()}
             </div>
           </div>
 
@@ -3307,6 +3326,12 @@ const AdminAccProfile = () => {
               }}
               onClick={() => {
                 if (newPhoneNo) {
+                  const phoneRules = getCountryPhoneRules(profileData?.country || profileData?.countryCode || "+91");
+                  const phoneVal = validatePhoneDigits(newPhoneNo, phoneRules, profileData?.country || "the selected country", true);
+                  if (!phoneVal.isValid) {
+                    toast.error(phoneVal.message);
+                    return;
+                  }
                   editData("phone", newPhoneNo);
                 }
               }}

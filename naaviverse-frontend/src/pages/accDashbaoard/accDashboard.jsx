@@ -339,7 +339,7 @@ const AccDashboard = () => {
   const [curriculum, setCurriculum] = useState([]);
   const [stream, setStream] = useState([]);
   const [finance, setFinance] = useState([]);
-  const [personality, setPersonality] = useState("");
+  const [personality, setPersonality] = useState([]);
   const streamList = ["MPC", "BIPC", "CEC", "MEC", "HEC"];
   const curriculumList = ["IB", "IGCSE", "CBSE", "ICSE", "Nordic"];
   const gradeList = ["9", "10", "11", "12"];
@@ -495,14 +495,16 @@ const AccDashboard = () => {
   };
 
   const handlePersonality = (item) => {
-    setPersonality(item);
-    // if (personality.includes(item)) {
-    //   // If the personality is already selected, remove it
-    //   setPersonality(personality.filter((o) => o !== item));
-    // } else {
-    //   // If the personality is not selected, add it
-    //   setPersonality([...personality, item]);
-    // }
+    const current = Array.isArray(personality) ? personality : (personality ? [personality] : []);
+    if (current.includes(item)) {
+      setPersonality(current.filter((o) => o !== item));
+    } else {
+      if (current.length >= 2) {
+        toast.info("You can select up to 2 personalities");
+      } else {
+        setPersonality([...current, item]);
+      }
+    }
   };
 
   // useEffect(() => {
@@ -701,7 +703,7 @@ const AccDashboard = () => {
     setCurriculum([]);
     setStream([]);
     setFinance([]);
-    setPersonality("");
+    setPersonality([]);
     setSearchCurrency("");
     setSelectedServiceCurrency(null)
     setServicePrice(null)
@@ -1440,7 +1442,7 @@ const AccDashboard = () => {
       });
   }, []);
 
-  const pathSubmission = (totalStepsOverride) => {
+  const pathSubmission = (totalStepsOverride, pathStepsOverride) => {
     console.log("[rocket] ---- PATH SUBMISSION TRIGGERED ----");
 
     // [check] FIX: Use partner email from localStorage (same source as MyPaths, Marketplace, MyStepsAcc)
@@ -1448,7 +1450,8 @@ const AccDashboard = () => {
     const finalEmail =
       currentPartner?.email ||
       currentPartner?.user?.email ||
-      localStorage.getItem("loginEmail");
+      localStorage.getItem("loginEmail") ||
+      user?.email;
 
     console.log("[fire] FINAL EMAIL USED:", finalEmail);
 
@@ -1458,55 +1461,71 @@ const AccDashboard = () => {
       return;
     }
 
+    const currentPathSteps = pathStepsOverride || pathSteps || {};
+    const finalTotalSteps = Number(totalStepsOverride ?? stepCount ?? 5);
+    const totalDays = Number(
+      currentPathSteps.length ||
+      currentPathSteps.duration?.totalDays ||
+      0
+    );
+
+    const personalityStr = Array.isArray(personality)
+      ? personality.join(', ')
+      : (typeof personality === 'string' ? personality : '');
+
     // Build the payload
     const payload = {
       email: finalEmail,
-      nameOfPath: pathSteps.nameOfPath,
-      description: pathSteps.description,
-      total_steps: Number(totalStepsOverride ?? stepCount),
+      nameOfPath: currentPathSteps.nameOfPath,
+      description: currentPathSteps.description || "",
+      total_steps: finalTotalSteps,
       current_coordinates: {
         grade: grade,
         curriculum: curriculum,
         stream: stream,
         grade_avg: gradeAvg,
         financialSituation: finance,
-        personality: personality,
+        personality: personalityStr,
+        city: currentPathSteps.preferredLocation?.city || currentPathSteps.city || "",
+        country: currentPathSteps.preferredLocation?.country || currentPathSteps.country || "",
       },
 
       feature_coordinates: {
-        program: pathSteps.program,
-        destination_degree: pathSteps.destination_degree || "unknown",
-        destination_institution: pathSteps.destination_institution,
-        path_type: pathSteps.path_type || "education",
-        path_cat: pathSteps.path_cat || "K12",
-        city: pathSteps.city,
-        country: pathSteps.country,
+        program: currentPathSteps.program,
+        destination_degree: currentPathSteps.destination_degree || "unknown",
+        destination_institution: currentPathSteps.destination_institution,
+        path_type: currentPathSteps.path_type || "education",
+        path_cat: currentPathSteps.path_cat || "K12",
+        city: currentPathSteps.city || "",
+        country: currentPathSteps.country || "",
       },
 
-      program: pathSteps.program,
+      program: currentPathSteps.program,
       university: [],
-      the_ids: pathSteps.the_ids.map((step) => ({
-        step_id: step.step_id,
-        stepName: step.stepName || "",
-        stepDescription: step.stepDescription || "",
-        backup_pathId: step.backup_pathId || null,
-        backupPathName: step.backupPathName || "",
-        backupPathDescription: step.backupPathDescription || ""
-      })),
-      path_type: pathSteps.path_type || "education",
-      path_cat: pathSteps.path_cat || "K12",
-      personality: personality,
-      destination_degree: pathSteps.destination_degree || "unknown",
-      destination_institution: pathSteps.destination_institution,
-      length: Number(pathSteps.length),
-      city: pathSteps.city,
-      country: pathSteps.country,
+      the_ids: (currentPathSteps.the_ids || currentPathSteps.step_ids || [])
+        .filter((step) => step && (step.step_id || step._id))
+        .map((step) => ({
+          step_id: step.step_id || step._id,
+          stepName: step.stepName || step.name || "",
+          stepDescription: step.stepDescription || step.description || "",
+          backup_pathId: (step.backup_pathId && step.backup_pathId !== "") ? step.backup_pathId : null,
+          backupPathName: step.backupPathName || "",
+          backupPathDescription: step.backupPathDescription || ""
+        })),
+      path_type: currentPathSteps.path_type || "education",
+      path_cat: currentPathSteps.path_cat || "K12",
+      personality: personalityStr,
+      destination_degree: currentPathSteps.destination_degree || "unknown",
+      destination_institution: currentPathSteps.destination_institution,
+      length: totalDays,
+      city: currentPathSteps.city || "",
+      country: currentPathSteps.country || "",
       financialSituation: finance,
       curriculum: curriculum,
       grade: grade,
       stream: stream,
       grade_avg: gradeAvg,
-      performance: gradeAvg[0],
+      performance: Array.isArray(gradeAvg) && gradeAvg.length > 0 ? gradeAvg[0] : "",
     };
 
     // 9️ Log the payload before sending
@@ -1533,6 +1552,7 @@ const AccDashboard = () => {
           resetpop();
 
           // 4️ Set viewPathMode to true to show the path view
+          setaccsideNav("Paths");
           setViewPathMode(true);
 
           // 5️ Navigate to view path
@@ -1541,11 +1561,18 @@ const AccDashboard = () => {
               replace: true,
             });
           }, 0);
+        } else {
+          setCreatingPath(false);
+          alert(response.data?.message || "Failed to create path. Please try again.");
         }
       })
       .catch((err) => {
         console.log("[error] API ERROR:", err.response?.data || err);
         setCreatingPath(false);
+        const errMsg = (err.response?.data?.message && err.response?.data?.message !== "Internal server error")
+          ? err.response.data.message
+          : (err.response?.data?.error || err.message || "Failed to create path. Please try again.");
+        alert(errMsg);
       });
   };
 
@@ -1775,27 +1802,29 @@ const AccDashboard = () => {
     >
 
 
-      {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS ── */}
-      <div className="mobile-topbar">
-        <div className="mobile-topbar-left">
-          <button
-            className="hamburger-btn"
-            onClick={() => setSidebarOpen(prev => !prev)}
-            aria-label="Open menu"
-          >
-            {/* Hamburger icon */}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          </button>
-          <img className="mobile-topbar-logo" src={logo} alt="Naavi" />
+      {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS when sidebar is closed and no sub-sections are opened ── */}
+      {!sidebarOpen && !viewPathMode && !createStepForPathId && accsideNav !== "CREATE_PATH" && accsideNav !== "CREATE_STEP" && accsideNav !== "CREATE_SERVICE" && (
+        <div className="mobile-topbar">
+          <div className="mobile-topbar-left">
+            <button
+              className="hamburger-btn"
+              onClick={() => setSidebarOpen(prev => !prev)}
+              aria-label="Open menu"
+            >
+              {/* Hamburger icon */}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+            <img className="mobile-topbar-logo" src={logo} alt="Naavi" />
+          </div>
+          <div className="mobile-topbar-right">
+            {/* Optional: user avatar or notification icon */}
+          </div>
         </div>
-        <div className="mobile-topbar-right">
-          {/* Optional: user avatar or notification icon */}
-        </div>
-      </div>
+      )}
 
 
       <div

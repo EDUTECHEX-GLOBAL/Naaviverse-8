@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./userHome.scss";
@@ -15,20 +15,28 @@ const getUserFromStorage = () => {
   } catch { return null; }
 };
 
-const Icon = ({ type, size = 16, color = "currentColor" }) => {
-  const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round" };
-  switch (type) {
-    case "arrow-l": return <svg {...p}><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>;
-    default: return null;
-  }
-};
-
 export default function UserPurchasesPage() {
   const navigate = useNavigate();
   const user = getUserFromStorage();
   const [purchases, setPurchases] = useState([]);
   const [purchasesLoading, setPurchasesLoading] = useState(true);
   const [filterType, setFilterType] = useState("paid");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user?.email) return;
@@ -176,28 +184,45 @@ export default function UserPurchasesPage() {
     <div className="uh-root uh-purchases-page-root">
       <div className="uh-card uh-purchases-page-card">
         <div className="uh-view-all-header">
-          <div className="uh-view-all-back-wrap">
-            <button
-              className="uh-view-all-back-btn"
-              onClick={() => navigate("/dashboard/users/home")}
-            >
-              <Icon type="arrow-l" size={10} color="var(--uh-blue-mid)" /> Back to Dashboard
-            </button>
-          </div>
-
           <h3 className="uh-view-all-title">
             Marketplace Purchases
           </h3>
 
-          <div className="uh-view-all-filter-wrap">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="uh-filter-select"
+          {/* Marketplace Purchases Filter Dropdown (Right-aligned to stay inside card on all screens) */}
+          <div className="uh-view-all-filter-wrap" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`uh-filter-select uh-filter-btn ${dropdownOpen ? "is-open" : ""}`}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label="Filter purchases"
             >
-              <option value="free">Free</option>
-              <option value="paid">Paid</option>
-            </select>
+              <span>{filterType === "free" ? "Free" : "Paid"}</span>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {dropdownOpen && (
+              <div className="uh-dropdown-menu">
+                <div
+                  className={`uh-dropdown-item ${filterType === "free" ? "active" : ""}`}
+                  onClick={() => {
+                    setFilterType("free");
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Free
+                </div>
+                <div
+                  className={`uh-dropdown-item ${filterType === "paid" ? "active" : ""}`}
+                  onClick={() => {
+                    setFilterType("paid");
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Paid
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

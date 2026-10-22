@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 import { SvgClose } from "../../../utils/SvgIcons";
+import "./steps.css";
+
+const renderInBody = (element) => {
+  if (typeof document !== "undefined" && document.body) {
+    return createPortal(element, document.body);
+  }
+  return element;
+};
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
@@ -36,6 +45,45 @@ const EMPTY_MARKET_FORM = {
   features: "",
 };
 
+const ROLE_OPTIONS = [
+  { value: "", label: "Select Role" },
+  { value: "vendor", label: "Vendor" },
+  { value: "mentor", label: "Mentor" },
+  { value: "institution", label: "Institution" },
+  { value: "distributor", label: "Distributor" },
+];
+
+const ACCESS_OPTIONS = [
+  { value: "Free", label: "Free" },
+  { value: "Covered under Subscription", label: "Covered under Subscription" },
+  { value: "Paid", label: "Paid" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const ITERATIONS_OPTIONS = [
+  { value: "", label: "Select" },
+  { value: "1", label: "1" },
+  { value: "3", label: "3" },
+  { value: "Unlimited", label: "Unlimited" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const DURATION_OPTIONS = [
+  { value: "", label: "Select Duration" },
+  { value: "1 Day", label: "1 Day" },
+  { value: "1 Week", label: "1 Week" },
+  { value: "1 Month", label: "1 Month" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
+const DISCOUNT_OPTIONS = [
+  { value: "", label: "Select" },
+  { value: "0%", label: "0%" },
+  { value: "10%", label: "10%" },
+  { value: "20%", label: "20%" },
+  { value: "Not Applicable", label: "Not Applicable" },
+];
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const parseDuration = (val) => {
@@ -54,7 +102,7 @@ const normalizeStep = (raw) => {
   // Already in new shape
   if (raw.macro && typeof raw.macro === "object" && raw.macro.name !== undefined) {
     return {
-      macro: { ...EMPTY_LAYER, ...raw.macro, marketplace: raw.macro.marketplace || [] },
+      macro: { ...EMPTY_LAYER, ...raw.macro, paid: false, free: raw.macro.free !== undefined ? raw.macro.free : true, marketplace: raw.macro.marketplace || [] },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: raw.micro?.marketplace || [] },
       nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: raw.nano?.marketplace || [] },
     };
@@ -67,8 +115,8 @@ const normalizeStep = (raw) => {
       name: raw.macro_name || raw.name || "",
       desc: raw.macro_description || raw.description || "",
       duration: parseDuration(raw.macro_length || raw.length),
-      paid: raw.macro_access === "paid" || raw.cost === "paid",
-      free: raw.macro_access === "free" || raw.cost === "free",
+      paid: false,
+      free: true,
       instructions: raw.macro_instructions || "",
       marketplace: raw.macro_marketplace || [],
     },
@@ -98,56 +146,321 @@ const normalizeStep = (raw) => {
 // ─── DurationSelect ───────────────────────────────────────────────────────────
 
 const DurationSelect = ({ value, onChange, type }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
   const configs = {
     years:  { label: "Years",  count: 11 },
     months: { label: "Months", count: 12 },
     days:   { label: "Days",   count: 31 },
   };
   const { label, count } = configs[type];
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const hasValue = value !== "" && value !== undefined && value !== null;
+  const numVal = Number(value);
+  const displayLabel = hasValue
+    ? `${numVal} ${numVal === 1 ? label.slice(0, -1) : label}`
+    : label;
+
   return (
-    <select style={styles.durationSelect} value={value ?? ""} onChange={(e) => onChange(e.target.value)}>
-      <option value="">{label}</option>
-      {[...Array(count)].map((_, i) => (
-        <option key={i} value={i}>
-          {i} {i === 1 ? label.slice(0, -1) : label}
-        </option>
-      ))}
-    </select>
+    <div style={{ flex: 1, minWidth: 90, position: "relative", zIndex: isOpen ? 60 : "auto" }} ref={dropdownRef}>
+      <button
+        type="button"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 6,
+          padding: "0.45rem 0.65rem",
+          borderRadius: 8,
+          border: isOpen ? "1px solid #0d6b6e" : "1px solid #d1dce8",
+          fontSize: "0.85rem",
+          background: "#fff",
+          color: hasValue ? "#1e3a4a" : "#64748b",
+          cursor: "pointer",
+          boxSizing: "border-box",
+          boxShadow: isOpen ? "0 0 0 3px rgba(13, 107, 110, 0.1)" : "none",
+        }}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {displayLabel}
+        </span>
+        <svg
+          style={{
+            flexShrink: 0,
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease",
+            color: isOpen ? "#0d6b6e" : "#5a7085",
+          }}
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 4px)",
+            left: 0,
+            right: 0,
+            minWidth: 100,
+            maxHeight: 160,
+            overflowY: "auto",
+            background: "#fff",
+            border: "1px solid #dbe5ee",
+            borderRadius: 8,
+            boxShadow: "0 8px 24px rgba(10, 28, 42, 0.12)",
+            zIndex: 100,
+            padding: 4,
+          }}
+        >
+          <div
+            style={{
+              padding: "6px 8px",
+              fontSize: "0.82rem",
+              borderRadius: 6,
+              cursor: "pointer",
+              background: !hasValue ? "#e6f3f4" : "transparent",
+              color: !hasValue ? "#0d6b6e" : "#1e3a4a",
+              fontWeight: !hasValue ? 600 : 400,
+            }}
+            onClick={() => {
+              onChange("");
+              setIsOpen(false);
+            }}
+          >
+            {label}
+          </div>
+          {[...Array(count)].map((_, i) => {
+            const isSelected = hasValue && String(value) === String(i);
+            const optText = `${i} ${i === 1 ? label.slice(0, -1) : label}`;
+            return (
+              <div
+                key={i}
+                style={{
+                  padding: "6px 8px",
+                  fontSize: "0.82rem",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                  background: isSelected ? "#e6f3f4" : "transparent",
+                  color: isSelected ? "#0d6b6e" : "#1e3a4a",
+                  fontWeight: isSelected ? 600 : 400,
+                }}
+                onClick={() => {
+                  onChange(String(i));
+                  setIsOpen(false);
+                }}
+              >
+                {optText}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ResponsiveSelect = ({ value, onChange, options, placeholder = "Select..." }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const selectedOption = options.find((o) => String(o.value) === String(value));
+  const displayLabel = selectedOption ? selectedOption.label : (options[0]?.label || placeholder);
+  const isPlaceholder = !value || (selectedOption && selectedOption.value === "");
+
+  return (
+    <div className={`responsive-select-container ${isOpen ? "is-open" : ""}`} ref={wrapperRef}>
+      {/* DESKTOP SELECT: Standard select for desktop view */}
+      <select
+        className="responsive-select-desktop"
+        style={styles.input}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((opt, idx) => (
+          <option key={idx} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+
+      {/* MOBILE SELECT: Dropdown bounded inside container */}
+      <div className={`responsive-select-mobile ${isOpen ? "open" : ""}`}>
+        <button
+          type="button"
+          className={`responsive-select-trigger ${isOpen ? "active" : ""}`}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen((prev) => !prev);
+          }}
+        >
+          <span className={`responsive-select-text ${isPlaceholder ? "is-placeholder" : ""}`}>
+            {displayLabel}
+          </span>
+          <svg
+            className={`responsive-select-arrow ${isOpen ? "open" : ""}`}
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <div className="responsive-select-menu" onClick={(e) => e.stopPropagation()}>
+            {options.map((opt, idx) => {
+              const isSelected = String(value) === String(opt.value);
+              return (
+                <div
+                  key={idx}
+                  className={`responsive-select-option ${isSelected ? "selected" : ""}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
 // ─── MarketplaceItemCard ──────────────────────────────────────────────────────
 
-const MarketplaceItemCard = ({ item, onRemove }) => (
-  <div style={styles.marketCard}>
-    <div style={styles.marketCardHeader}>
-      <span style={styles.marketCardTitle}>
-        {item.name || "Unnamed"}{item.role ? ` (${item.role})` : ""}
-      </span>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-        {item.cost && <span style={styles.marketCardCost}>{item.cost}</span>}
+const MarketplaceItemCard = ({ item, onRemove, onEdit }) => (
+  <div className="marketplace-item-card" style={styles.marketCard}>
+    <div className="mic-header" style={styles.marketCardHeader}>
+      <div className="mic-title-wrap" style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <span className="mic-title" style={styles.marketCardTitle}>
+          {item.name || "Unnamed"}
+        </span>
+        <span className="mic-role-badge">({item.role || "unknown"})</span>
+      </div>
+      <div className="mic-actions" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        {item.cost ? <span className="mic-cost-badge" style={styles.marketCardCost}>{item.cost}</span> : null}
+        {onEdit && (
+          <button
+            type="button"
+            className="mic-edit-btn"
+            onClick={(e) => { e.preventDefault(); onEdit(); }}
+            style={{
+              background: "#e6f3f4",
+              border: "1px solid #0d6b6e",
+              color: "#0d6b6e",
+              borderRadius: "20px",
+              padding: "2px 10px",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+            title="Edit Marketplace Item"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            Edit
+          </button>
+        )}
         {onRemove && (
-          <button onClick={onRemove} style={styles.removeBtn} title="Remove" aria-label="Remove"><SvgClose size={13} /></button>
+          <button className="mic-remove-btn" onClick={onRemove} style={styles.removeBtn} title="Remove" aria-label="Remove"><SvgClose size={13} /></button>
         )}
       </div>
     </div>
-    <div style={styles.marketCardMeta}>
-      {item.goal      && <span><strong>Goal:</strong> {item.goal}</span>}
-      {item.outcomes  && <span><strong>Outcomes:</strong> {item.outcomes}</span>}
-      {item.access    && <span><strong>Access:</strong> {item.access}</span>}
-      {item.iterations && <span><strong>Iterations:</strong> {item.iterations}</span>}
-      {item.duration  && <span><strong>Duration:</strong> {item.duration}</span>}
-      {item.discount  && <span><strong>Discount:</strong> {item.discount}</span>}
+    <div className="mic-meta-grid" style={styles.marketCardMeta}>
+      {item.goal      && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Goal:</strong> </span><span className="mic-meta-value">{item.goal}</span></div>}
+      {item.outcomes  && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Outcomes:</strong> </span><span className="mic-meta-value">{item.outcomes}</span></div>}
+      {item.access    && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Access:</strong> </span><span className="mic-meta-value">{item.access}</span></div>}
+      {item.iterations && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Iterations:</strong> </span><span className="mic-meta-value">{item.iterations}</span></div>}
+      {item.duration  && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Duration:</strong> </span><span className="mic-meta-value">{item.duration}</span></div>}
+      {item.discount  && <div className="mic-meta-item"><span className="mic-meta-label"><strong>Discount:</strong> </span><span className="mic-meta-value">{item.discount}</span></div>}
     </div>
     {item.features && (
-      <div style={styles.marketCardFeatures}><strong>Features:</strong> {item.features}</div>
+      <div className="mic-features-row" style={styles.marketCardFeatures}><strong className="mic-features-label">Features:</strong> <span className="mic-features-value">{item.features}</span></div>
     )}
   </div>
 );
 
 // ─── LayerSection ─────────────────────────────────────────────────────────────
 
-const LayerSection = ({ layerKey, data, onChange, onAddMarketplace }) => {
+const LayerSection = ({ layerKey, data, onChange, onAddMarketplace, onEditMarketplace }) => {
   const colorMap = { macro: "#0d6b6e", micro: "#3b82f6", nano: "#a855f7" };
   const color = colorMap[layerKey];
 
@@ -197,14 +510,16 @@ const LayerSection = ({ layerKey, data, onChange, onAddMarketplace }) => {
           <DurationSelect type="days"   value={data.duration?.days}   onChange={(v) => updateDuration("days", v)} />
         </div>
         <div style={styles.checkboxRow}>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={!!data.paid}
-              onChange={(e) => update("paid", e.target.checked)}
-            />
-            Paid
-          </label>
+          {layerKey !== "macro" && (
+            <label style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={!!data.paid}
+                onChange={(e) => update("paid", e.target.checked)}
+              />
+              Paid
+            </label>
+          )}
           <label style={styles.checkboxLabel}>
             <input
               type="checkbox"
@@ -239,6 +554,7 @@ const LayerSection = ({ layerKey, data, onChange, onAddMarketplace }) => {
               <MarketplaceItemCard
                 key={i}
                 item={item}
+                onEdit={() => onEditMarketplace && onEditMarketplace(layerKey, i, item)}
                 onRemove={() => removeMarketplaceItem(i)}
               />
             ))
@@ -257,15 +573,29 @@ const LayerSection = ({ layerKey, data, onChange, onAddMarketplace }) => {
 
 // ─── MarketplaceModal ─────────────────────────────────────────────────────────
 
-const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
-  const [selectedRole, setSelectedRole] = useState("");
-  const [form, setForm] = useState(EMPTY_MARKET_FORM);
+const MarketplaceModal = ({ layerKey, onAdd, onClose, editItem, onSaveEdit }) => {
+  const [selectedRole, setSelectedRole] = useState(editItem?.role || editItem?.category || "");
+  const [form, setForm] = useState(
+    editItem
+      ? {
+          name: editItem.name || "",
+          access: editItem.access || "Free",
+          cost: editItem.cost !== undefined && editItem.cost !== null ? String(editItem.cost) : "",
+          goal: editItem.goal || "",
+          outcomes: editItem.outcomes || "",
+          iterations: editItem.iterations || "",
+          durationDays: editItem.duration || "",
+          discount: editItem.discount || "",
+          features: editItem.features || "",
+        }
+      : EMPTY_MARKET_FORM
+  );
 
   const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
 
   const handleAdd = () => {
     if (!form.name || !selectedRole) return;
-    onAdd({
+    const itemData = {
       role: selectedRole,
       category: selectedRole,
       layer: layerKey,
@@ -278,26 +608,43 @@ const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
       duration: form.durationDays,
       discount: form.discount,
       features: form.features,
-    });
+    };
+    if (editItem && onSaveEdit) {
+      onSaveEdit(itemData);
+    } else {
+      onAdd(itemData);
+    }
   };
 
-  return (
-    <div style={styles.modalOverlay} onClick={onClose}>
-      <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+  return renderInBody(
+    <div
+      style={{
+        ...styles.modalOverlay,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          ...styles.modalContent,
+          margin: "auto",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div style={styles.modalContext}>
-          Adding to <strong>{layerKey.charAt(0).toUpperCase() + layerKey.slice(1)}</strong>
+          {editItem ? "Editing in " : "Adding to "}<strong>{layerKey.charAt(0).toUpperCase() + layerKey.slice(1)}</strong>
         </div>
-        <h3 style={styles.modalTitle}>Marketplace Listing</h3>
+        <h3 style={styles.modalTitle}>{editItem ? "Edit Marketplace Listing" : "Marketplace Listing"}</h3>
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Marketplace Role *</label>
-          <select style={styles.input} value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
-            <option value="">Select Role</option>
-            <option value="vendor">Vendor</option>
-            <option value="mentor">Mentor</option>
-            <option value="institution">Institution</option>
-            <option value="distributor">Distributor</option>
-          </select>
+          <ResponsiveSelect
+            value={selectedRole}
+            onChange={(val) => setSelectedRole(val)}
+            options={ROLE_OPTIONS}
+          />
         </div>
 
         <div style={styles.formGroup}>
@@ -307,12 +654,11 @@ const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Access</label>
-          <select style={styles.input} value={form.access} onChange={(e) => set("access", e.target.value)}>
-            <option value="Free">Free</option>
-            <option value="Covered under Subscription">Covered under Subscription</option>
-            <option value="Paid">Paid</option>
-            <option value="Not Applicable">Not Applicable</option>
-          </select>
+          <ResponsiveSelect
+            value={form.access}
+            onChange={(val) => set("access", val)}
+            options={ACCESS_OPTIONS}
+          />
         </div>
 
         <div style={styles.formGroup}>
@@ -332,35 +678,29 @@ const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Iterations</label>
-          <select style={styles.input} value={form.iterations} onChange={(e) => set("iterations", e.target.value)}>
-            <option value="">Select</option>
-            <option value="1">1</option>
-            <option value="3">3</option>
-            <option value="Unlimited">Unlimited</option>
-            <option value="Not Applicable">Not Applicable</option>
-          </select>
+          <ResponsiveSelect
+            value={form.iterations}
+            onChange={(val) => set("iterations", val)}
+            options={ITERATIONS_OPTIONS}
+          />
         </div>
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Duration</label>
-          <select style={styles.input} value={form.durationDays} onChange={(e) => set("durationDays", e.target.value)}>
-            <option value="">Select Duration</option>
-            <option value="1 Day">1 Day</option>
-            <option value="1 Week">1 Week</option>
-            <option value="1 Month">1 Month</option>
-            <option value="Not Applicable">Not Applicable</option>
-          </select>
+          <ResponsiveSelect
+            value={form.durationDays}
+            onChange={(val) => set("durationDays", val)}
+            options={DURATION_OPTIONS}
+          />
         </div>
 
         <div style={styles.formGroup}>
           <label style={styles.label}>Discount</label>
-          <select style={styles.input} value={form.discount} onChange={(e) => set("discount", e.target.value)}>
-            <option value="">Select</option>
-            <option value="0%">0%</option>
-            <option value="10%">10%</option>
-            <option value="20%">20%</option>
-            <option value="Not Applicable">Not Applicable</option>
-          </select>
+          <ResponsiveSelect
+            value={form.discount}
+            onChange={(val) => set("discount", val)}
+            options={DISCOUNT_OPTIONS}
+          />
         </div>
 
         <div style={styles.formGroup}>
@@ -368,14 +708,15 @@ const MarketplaceModal = ({ layerKey, onAdd, onClose }) => {
           <textarea rows={3} style={styles.textarea} placeholder="Features or description" value={form.features} onChange={(e) => set("features", e.target.value)} />
         </div>
 
-        <div style={styles.modalFooter}>
-          <button style={styles.cancelBtn} onClick={onClose}>Cancel</button>
+        <div style={styles.modalFooter} className="modal-footer">
+          <button style={styles.cancelBtn} className="btn-outline modal-cancel-btn" onClick={onClose}>Cancel</button>
           <button
             style={{ ...styles.saveBtn, opacity: (!form.name || !selectedRole) ? 0.5 : 1 }}
+            className="btn-primary modal-save-btn"
             disabled={!form.name || !selectedRole}
             onClick={handleAdd}
           >
-            Add to Step
+            {editItem ? "Update Item" : "Add to Step"}
           </button>
         </div>
       </div>
@@ -393,6 +734,9 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
   const [marketplaceOpen, setMarketplaceOpen] = useState(false);
   const [currentLayer, setCurrentLayer] = useState("macro");
 
+  const [editingMarketIndex, setEditingMarketIndex] = useState(null);
+  const [editingMarketItem, setEditingMarketItem] = useState(null);
+
   // ── Prefill from selectedStep ──────────────────────────────────────────────
   useEffect(() => {
     if (!selectedStep) return;
@@ -407,7 +751,33 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
   // ── Marketplace ────────────────────────────────────────────────────────────
   const openMarketplace = (layerKey) => {
     setCurrentLayer(layerKey);
+    setEditingMarketIndex(null);
+    setEditingMarketItem(null);
     setMarketplaceOpen(true);
+  };
+
+  const openEditMarketplace = (layerKey, index, item) => {
+    setCurrentLayer(layerKey);
+    setEditingMarketIndex(index);
+    setEditingMarketItem(item);
+    setMarketplaceOpen(true);
+  };
+
+  const saveEditMarketplaceItem = (updatedItem) => {
+    setFormData((prev) => {
+      const list = [...(prev[currentLayer]?.marketplace || [])];
+      list[editingMarketIndex] = { ...list[editingMarketIndex], ...updatedItem };
+      return {
+        ...prev,
+        [currentLayer]: {
+          ...prev[currentLayer],
+          marketplace: list,
+        },
+      };
+    });
+    setMarketplaceOpen(false);
+    setEditingMarketIndex(null);
+    setEditingMarketItem(null);
   };
 
   const addMarketplaceItem = (newItem) => {
@@ -437,7 +807,7 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
         macro_name:         formData.macro?.name || "",
         macro_description:  formData.macro?.desc || "",
         macro_length:       JSON.stringify(formData.macro?.duration || {}),
-        macro_access:       formData.macro?.paid ? "paid" : "free",
+        macro_access:       "free",
         macro_instructions: formData.macro?.instructions || "",
         macro_marketplace:  formData.macro?.marketplace || [],
 
@@ -505,6 +875,7 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
           data={formData[layerKey]}
           onChange={(newData) => updateLayer(layerKey, newData)}
           onAddMarketplace={openMarketplace}
+          onEditMarketplace={openEditMarketplace}
         />
       ))}
 
@@ -520,8 +891,14 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
       {marketplaceOpen && (
         <MarketplaceModal
           layerKey={currentLayer}
+          editItem={editingMarketItem}
           onAdd={addMarketplaceItem}
-          onClose={() => setMarketplaceOpen(false)}
+          onSaveEdit={saveEditMarketplaceItem}
+          onClose={() => {
+            setMarketplaceOpen(false);
+            setEditingMarketIndex(null);
+            setEditingMarketItem(null);
+          }}
         />
       )}
     </div>
@@ -575,10 +952,12 @@ const styles = {
   },
   textarea: {
     width: "100%",
-    padding: "0.5rem 0.75rem",
+    padding: "0.45rem 0.75rem",
     borderRadius: 8,
     border: "1px solid #d1dce8",
-    fontSize: "0.9rem",
+    fontSize: "0.85rem",
+    lineHeight: "1.35",
+    minHeight: 52,
     outline: "none",
     resize: "vertical",
     fontFamily: "inherit",
@@ -682,24 +1061,34 @@ const styles = {
     paddingTop: "0.5rem",
   },
   cancelBtn: {
-    padding: "0.55rem 1.4rem",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
+    padding: "0.4rem 1.15rem",
+    borderRadius: 30,
+    border: "1px solid #cbd5e1",
     background: "#fff",
-    color: "#1f304f",
-    fontSize: "0.9rem",
+    color: "#2c3e50",
+    fontSize: "0.82rem",
     cursor: "pointer",
     fontWeight: 500,
+    flex: "0 0 auto",
+    width: "auto",
+    whiteSpace: "nowrap",
+    lineHeight: "1.3",
+    margin: 0,
   },
   saveBtn: {
-    padding: "0.55rem 1.4rem",
-    borderRadius: 8,
+    padding: "0.4rem 1.15rem",
+    borderRadius: 30,
     border: "none",
     background: "linear-gradient(90deg, #47b4d5 0%, #29449d 100%)",
     color: "#fff",
-    fontSize: "0.9rem",
+    fontSize: "0.82rem",
     cursor: "pointer",
     fontWeight: 600,
+    flex: "0 0 auto",
+    width: "auto",
+    whiteSpace: "nowrap",
+    lineHeight: "1.3",
+    margin: 0,
   },
   errorMsg: {
     background: "#fff5f5",
@@ -755,9 +1144,15 @@ const styles = {
   },
   modalFooter: {
     display: "flex",
-    gap: "0.75rem",
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    alignItems: "center",
     justifyContent: "flex-end",
-    marginTop: "1rem",
+    gap: "0.65rem",
+    marginTop: "1.25rem",
+    padding: "0.5rem 0 0 0",
+    borderTop: "none",
+    width: "100%",
   },
 };
 

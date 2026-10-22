@@ -188,7 +188,9 @@ const PathFitAnalysis = ({ path, userProfile, compact = false }) => {
                     : "pfa-pill--success"
                 }`}
               >
-                {eligibilityStatus}
+                {eligibilityStatus === "Check Academic Prerequisites" && fitCategory?.toLowerCase().includes("prerequisite")
+                  ? "Prerequisites Required"
+                  : eligibilityStatus}
               </span>
             )}
           </div>
@@ -209,7 +211,10 @@ const PathFitAnalysis = ({ path, userProfile, compact = false }) => {
             <ul className="pfa-tile__list">
               {matchedFactors.slice(0, 3).map((item, idx) => (
                 <li key={idx} className="pfa-tile__item">
-                  <strong>{item.title}:</strong> {item.evidence}
+                  <div className="pfa-tile__item-header">
+                    <strong className="pfa-tile__item-title">{item.title}</strong>
+                  </div>
+                  <p className="pfa-tile__item-desc">{item.evidence}</p>
                 </li>
               ))}
             </ul>
@@ -228,9 +233,15 @@ const PathFitAnalysis = ({ path, userProfile, compact = false }) => {
             <ul className="pfa-tile__list">
               {gapsToAddress.slice(0, 3).map((item, idx) => (
                 <li key={idx} className="pfa-tile__item pfa-tile__item--gap">
-                  <strong>{item.title}:</strong> {item.evidence}
+                  <div className="pfa-tile__item-header">
+                    <strong className="pfa-tile__item-title">{item.title}</strong>
+                  </div>
+                  <p className="pfa-tile__item-desc">{item.evidence}</p>
                   {item.recommendation && (
-                    <span className="pfa-tile__action"> • {item.recommendation}</span>
+                    <div className="pfa-tile__action-callout">
+                      <span className="pfa-tile__action-icon">💡</span>
+                      <span className="pfa-tile__action-text">{item.recommendation}</span>
+                    </div>
                   )}
                 </li>
               ))}

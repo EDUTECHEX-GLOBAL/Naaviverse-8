@@ -26,7 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import AccDashsidebar from "../../components/accDashsidebar/accDashsidebar";
-import { validatePersonName } from "../../utils/emailValidator";
+import { validatePersonName, sanitizePostalCode, validatePostalCode } from "../../utils/emailValidator";
 import {
   GetFollowersPerAccount,
   GetCategoriesAcc,
@@ -64,7 +64,7 @@ import classNames from "../../components/createAccountant/components.module.scss
 import trash from "../accDashbaoard/trash.svg";
 import { Country, State } from "country-state-city";
 import MenuNav from "../../components/MenuNav/index.jsx";
-import { getCountryPhoneRules } from "../UserProfile/LevelOneModal";
+import { getCountryPhoneRules, sanitizePhoneInput, validatePhoneDigits, isPhoneKeyAllowed } from "../UserProfile/LevelOneModal";
 import { SvgCheck, SvgCheckCircle, SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -192,6 +192,7 @@ const AccProfile = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   // Loading state while we check approval / fetch profile
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // create brand profile
   const [createBrandProfile, setCreateBrandProfile] = useState(false);
@@ -457,9 +458,10 @@ const AccProfile = () => {
   };
 
   const handlePartnerPinCodeChange = (val) => {
-    setPinCode(val);
+    const sanitized = sanitizePostalCode(val);
+    setPinCode(sanitized);
     clearTimeout(partnerPostalTimerRef.current);
-    const trimmed = (val || "").trim();
+    const trimmed = sanitized.trim();
     if (trimmed.length >= 3) {
       partnerPostalTimerRef.current = setTimeout(() => {
         lookupPartnerPostalCode(trimmed, businessCountry);
@@ -553,40 +555,17 @@ const AccProfile = () => {
     setSelectedPhoneIso(isoCode);
     const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
     if (countryObj) {
-      setPhone((prev) => prev.slice(0, countryObj.maxLength));
+      setPhone((prev) => sanitizePhoneInput(prev, countryObj.maxLength));
     }
   };
 
   const handlePartnerPhoneChange = (val) => {
     const max = currentPhoneCountry.maxLength;
-    const cleanDigits = (val || "").replace(/\D/g, "").slice(0, max);
-    setPhone(cleanDigits);
+    setPhone(sanitizePhoneInput(val, max));
   };
 
   const handlePhoneKeyDown = (e) => {
-    if (
-      e.key === "Backspace" ||
-      e.key === "Delete" ||
-      e.key === "Tab" ||
-      e.key === "ArrowLeft" ||
-      e.key === "ArrowRight" ||
-      e.key === "ArrowUp" ||
-      e.key === "ArrowDown" ||
-      e.key === "Enter" ||
-      e.ctrlKey ||
-      e.metaKey
-    ) {
-      return;
-    }
-    // Block non-digits
-    if (!/^\d$/.test(e.key)) {
-      e.preventDefault();
-      return;
-    }
-    // Block if current digit length has reached the country's max limit
-    const max = currentPhoneCountry.maxLength;
-    const hasSelection = e.target.selectionStart !== e.target.selectionEnd;
-    if (phone.length >= max && !hasSelection) {
+    if (!isPhoneKeyAllowed(e, phone, currentPhoneCountry.maxLength)) {
       e.preventDefault();
     }
   };
@@ -594,14 +573,13 @@ const AccProfile = () => {
   const handlePhonePaste = (e) => {
     e.preventDefault();
     const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
-    const cleanPasted = pasted.replace(/\D/g, "");
     const max = currentPhoneCountry.maxLength;
     const target = e.target;
     const start = target.selectionStart || 0;
     const end = target.selectionEnd || 0;
     const current = phone || "";
-    const merged = current.slice(0, start) + cleanPasted + current.slice(end);
-    setPhone(merged.slice(0, max));
+    const merged = current.slice(0, start) + pasted + current.slice(end);
+    setPhone(sanitizePhoneInput(merged, max));
   };
 
   // ── Custom Dropdowns for Country, Phone Code, and Business Type (top box size only, strictly downward) ──
@@ -672,18 +650,14 @@ const AccProfile = () => {
     );
   }, [dialCodeOptions, phoneCodeSearch]);
 
-  const isPhoneValid = Boolean(
-    phone &&
-    (currentPhoneCountry.lengths
-      ? currentPhoneCountry.lengths.includes(phone.length)
-      : phone.length === currentPhoneCountry.maxLength)
-  );
+  const isPhoneValid = validatePhoneDigits(phone, currentPhoneCountry, currentPhoneCountry.name, true).isValid;
 
   const isFirstNameValid = validatePersonName(firstName, "First Name").isValid;
   const isLastNameValid = validatePersonName(lastName, "Last Name").isValid;
+  const isPostalCodeValid = validatePostalCode(pinCode, true, "Pincode").isValid;
 
   const allSelected = businessName && businessDesc && website &&
-    businessType && businessLogo && street && city && pinCode &&
+    businessType && businessLogo && street && city && pinCode && isPostalCodeValid &&
     businessState && businessCountry && isFirstNameValid && isLastNameValid && position &&
     isPhoneValid;
 
@@ -1500,7 +1474,8 @@ const AccProfile = () => {
       .post(`${BASE_URL}/api/paths/add`, {
         ...pathSteps,
         performance: gradeAvg, curriculum, grade, stream,
-        financialSituation: finance, personality,
+        financialSituation: finance,
+        personality: Array.isArray(personality) ? personality.join(', ') : (personality || ''),
         the_ids: pathSteps.the_ids.map(step => ({
           step_id: step.step_id, stepName: step.stepName,
           stepDescription: step.stepDescription, backup_pathId: step.backup_pathId,
@@ -1524,12 +1499,48 @@ const AccProfile = () => {
 
   return (
     <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* ── MOBILE TOPBAR ── only visible on ≤768px via CSS when sidebar is closed ── */}
+      {!sidebarOpen && (
+        <div className="mobile-topbar">
+          <div className="mobile-topbar-left">
+            <button
+              className="hamburger-btn"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Open menu"
+              title="Open menu"
+              type="button"
+            >
+              {/* Hamburger icon */}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-main" style={{ flex: 1, display: "flex", minHeight: 0 }}>
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0, 0, 0, 0.3)",
+              zIndex: 1000,
+              pointerEvents: "all",
+            }}
+          />
+        )}
         <div className="dashboard-body">
           <div>
             <AccDashsidebar
               handleChangeAccDashsidebar={handleChangeAccDashsidebar}
               accStatus={accStatus}
+              isOpen={sidebarOpen}
+              onClose={() => setSidebarOpen(false)}
             />
           </div>
           <div className="dashboard-screens" onClick={() => resetpop()} style={{ background: "#F8FAFC" }}>
@@ -2320,10 +2331,13 @@ const AccProfile = () => {
                     if (!allSelected) {
                       const fnRes = validatePersonName(firstName, "First name");
                       const lnRes = validatePersonName(lastName, "Last name");
+                      const pcRes = validatePostalCode(pinCode, true, "Pincode");
                       if (!fnRes.isValid) {
                         toast.error(fnRes.message);
                       } else if (!lnRes.isValid) {
                         toast.error(lnRes.message);
+                      } else if (!pcRes.isValid) {
+                        toast.error(pcRes.message);
                       } else if (!phone) {
                         toast.error("Please enter your mobile number");
                       } else if (!isPhoneValid) {
@@ -2516,7 +2530,7 @@ const AccProfile = () => {
 
                     <div className="partner-modal-grid-row">
                       <InputDivsCreatePartner placeholderText="City..." setFunc={setCity} funcValue={city} />
-                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
+                      <InputDivsCreatePartner placeholderText="Pincode / Postal Code..." maxLength={10} setFunc={handlePartnerPinCodeChange} onBlur={() => lookupPartnerPostalCode(pinCode, businessCountry)} funcValue={pinCode} />
                     </div>
 
                     <div className="partner-modal-grid-row">
@@ -2785,10 +2799,9 @@ const AccProfile = () => {
                         {/* Local Mobile Number Input */}
                         <input
                           type="tel"
-                          inputMode="numeric"
                           placeholder="Phone Number"
                           value={phone}
-                          maxLength={currentPhoneCountry.maxLength}
+                          maxLength={currentPhoneCountry.maxLength + 8}
                           onChange={(e) => handlePartnerPhoneChange(e.target.value)}
                           onKeyDown={handlePhoneKeyDown}
                           onPaste={handlePhonePaste}
@@ -3092,9 +3105,45 @@ const AccProfile = () => {
           <div className="overall-div" style={{ height: "calc(100% - 10.5rem)" }}>
             <div className="each-action1"><div>{profileData?.phone}</div></div>
             <div className="line-container"><div className="linee"></div><div className="new-txt">New</div><div className="linee"></div></div>
-            <div className="each-action1"><input type="number" placeholder="New Phone Number.." value={newPhoneNo} onChange={(e) => setNewPhoneNo(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newPhoneNo) editData("phone", newPhoneNo); }} /></div>
+            <div className="each-action1">
+              <input
+                type="tel"
+                placeholder={currentPhoneCountry.placeholder || "New Phone Number.."}
+                value={newPhoneNo}
+                maxLength={currentPhoneCountry.maxLength + 8}
+                onChange={(e) => setNewPhoneNo(sanitizePhoneInput(e.target.value, currentPhoneCountry.maxLength))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newPhoneNo) {
+                    const phoneVal = validatePhoneDigits(newPhoneNo, currentPhoneCountry, currentPhoneCountry.name, true);
+                    if (!phoneVal.isValid) {
+                      toast.error(phoneVal.message);
+                      return;
+                    }
+                    editData("phone", newPhoneNo);
+                  } else if (!isPhoneKeyAllowed(e, newPhoneNo, currentPhoneCountry.maxLength)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </div>
           </div>
-          <div className="stepBtns" style={{ height: "4.5rem" }}><div style={{ opacity: newPhoneNo ? "1" : "0.25", cursor: newPhoneNo ? "pointer" : "not-allowed", background: "#59A2DD" }} onClick={() => { if (newPhoneNo) editData("phone", newPhoneNo); }}>Submit Edit</div></div>
+          <div className="stepBtns" style={{ height: "4.5rem" }}>
+            <div
+              style={{ opacity: newPhoneNo ? "1" : "0.25", cursor: newPhoneNo ? "pointer" : "not-allowed", background: "#59A2DD" }}
+              onClick={() => {
+                if (newPhoneNo) {
+                  const phoneVal = validatePhoneDigits(newPhoneNo, currentPhoneCountry, currentPhoneCountry.name, true);
+                  if (!phoneVal.isValid) {
+                    toast.error(phoneVal.message);
+                    return;
+                  }
+                  editData("phone", newPhoneNo);
+                }
+              }}
+            >
+              Submit Edit
+            </div>
+          </div>
           {loading && <div className="loading-component" style={{ top: "0", right: "0", width: "100%", height: "calc(100% - 70px)", position: "absolute", display: "flex" }}><LoadingAnimation1 icon={lg1} width={200} /></div>}
         </div>
       )}

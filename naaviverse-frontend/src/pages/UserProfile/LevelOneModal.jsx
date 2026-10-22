@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Country, State, City } from "country-state-city";
-import { validatePersonName } from "../../utils/emailValidator";
+import { validatePersonName, sanitizePostalCode, validatePostalCode } from "../../utils/emailValidator";
 import { SvgCheck, SvgClose } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -47,18 +47,104 @@ export const COUNTRY_MOBILE_RULES = {
   BJ: [8], BF: [8], BI: [8], CV: [7], CF: [8], TD: [8], CD: [9], CG: [9],
   DJ: [8], GQ: [9], ER: [7], GA: [7, 8], GM: [7], GN: [9], GW: [7], LR: [7, 8],
   LY: [9], MW: [9], ML: [8], MR: [8], NE: [8], SL: [8], SO: [8, 9], SS: [9],
-  SZ: [8], TG: [8]
+  SZ: [8], TG: [8], SC: [7], ST: [7], KM: [7], LS: [8], TL: [7, 8],
+  KI: [5, 8], FM: [7], PW: [7], MH: [7], NR: [7], TV: [5, 6], VA: [10], XK: [8],
+  BQ: [7, 8],
 };
 
-export const getCountryPhoneRules = (isoCode) => {
-  const custom = COUNTRY_MOBILE_RULES[isoCode];
-  const lengths = custom || [7, 8, 9, 10, 11, 12, 13, 14, 15];
+/**
+ * Resolves country phone digit rules by country ISO code, ISD calling code,
+ * country name, or a country object.
+ */
+export const getCountryPhoneRules = (identifier) => {
+  if (!identifier) {
+    return {
+      lengths: [10],
+      minLength: 10,
+      maxLength: 10,
+      formatDescription: "exactly 10 digits",
+      placeholder: "9876543210",
+      isoCode: "IN",
+      isdCode: "+91",
+    };
+  }
+
+  let isoCode = "";
+  let isdCode = "";
+  let countryName = "";
+
+  if (typeof identifier === "object" && identifier !== null) {
+    isoCode = (identifier.isoCode || identifier.countryIso || identifier.phoneIso || "").toUpperCase();
+    isdCode = identifier.code || identifier.phonecode || identifier.isdCode || "";
+    countryName = identifier.name || identifier.country || "";
+  } else if (typeof identifier === "string") {
+    const raw = identifier.trim();
+    if (COUNTRY_MOBILE_RULES[raw.toUpperCase()]) {
+      isoCode = raw.toUpperCase();
+    } else if (raw.startsWith("+") || /^\d+$/.test(raw)) {
+      isdCode = raw;
+    } else if (raw.length === 2 && /^[a-zA-Z]{2}$/.test(raw)) {
+      isoCode = raw.toUpperCase();
+    } else {
+      countryName = raw;
+    }
+  }
+
+  let allCountries = [];
+  try {
+    allCountries = Country.getAllCountries();
+  } catch (e) {
+    allCountries = [];
+  }
+
+  // If countryName given, find country by name
+  if (!isoCode && countryName && allCountries.length > 0) {
+    const match = allCountries.find(
+      (c) => c.name.toLowerCase() === countryName.toLowerCase()
+    );
+    if (match) {
+      isoCode = match.isoCode;
+      if (!isdCode) isdCode = match.phonecode;
+    }
+  }
+
+  // If isdCode given without isoCode, try finding matching countries
+  let matchedLengths = null;
+  if (isoCode && COUNTRY_MOBILE_RULES[isoCode]) {
+    matchedLengths = COUNTRY_MOBILE_RULES[isoCode];
+    if (!isdCode && allCountries.length > 0) {
+      const match = allCountries.find((c) => c.isoCode === isoCode);
+      if (match?.phonecode) isdCode = match.phonecode;
+    }
+  } else if (isdCode) {
+    const cleanIsd = isdCode.replace(/\D/g, "");
+    const matchingCountries = allCountries.filter(
+      (c) => (c.phonecode || "").replace(/\D/g, "") === cleanIsd
+    );
+    if (matchingCountries.length > 0) {
+      if (!isoCode) isoCode = matchingCountries[0].isoCode;
+      const combined = [];
+      matchingCountries.forEach((c) => {
+        if (COUNTRY_MOBILE_RULES[c.isoCode]) {
+          combined.push(...COUNTRY_MOBILE_RULES[c.isoCode]);
+        }
+      });
+      if (combined.length > 0) {
+        matchedLengths = [...new Set(combined)].sort((a, b) => a - b);
+      }
+    }
+  }
+
+  const lengths = matchedLengths && matchedLengths.length > 0
+    ? matchedLengths
+    : [7, 8, 9, 10, 11, 12, 13, 14, 15];
+
   const minLength = Math.min(...lengths);
   const maxLength = Math.max(...lengths);
 
   let formatDescription = "";
-  if (lengths.length === 1) {
-    formatDescription = `exactly ${lengths[0]} digits`;
+  if (lengths.length === 1 || minLength === maxLength) {
+    formatDescription = `exactly ${minLength} digits`;
   } else if (maxLength - minLength === lengths.length - 1) {
     formatDescription = `${minLength} to ${maxLength} digits`;
   } else {
@@ -66,15 +152,32 @@ export const getCountryPhoneRules = (isoCode) => {
   }
 
   let placeholder = "9876543210";
-  if (isoCode === "US" || isoCode === "CA") placeholder = "(555) 123-4567";
-  else if (isoCode === "GD") placeholder = "(473) 123-4567";
-  else if (isoCode === "GB") placeholder = "07123 456789";
-  else if (isoCode === "IN") placeholder = "98765-43210";
-  else if (lengths[0] === 8) placeholder = "9876-5432";
-  else if (lengths[0] === 9) placeholder = "987-654-321";
-  else if (lengths[0] === 10) placeholder = "98765-43210";
-  else if (lengths[0] === 11) placeholder = "98765-432100";
-  else if (lengths[0] === 7) placeholder = "987-6543";
+  const cleanIsdDigits = (isdCode || "").replace(/\D/g, "");
+  if (isoCode === "US" || isoCode === "CA" || cleanIsdDigits === "1") {
+    placeholder = "(555) 123-4567";
+  } else if (isoCode === "GB" || cleanIsdDigits === "44") {
+    placeholder = "07123 456789";
+  } else if (isoCode === "IN" || cleanIsdDigits === "91") {
+    placeholder = "98765-43210";
+  } else if (isoCode === "AU" || cleanIsdDigits === "61") {
+    placeholder = "412-345-678";
+  } else if (isoCode === "DE" || cleanIsdDigits === "49") {
+    placeholder = "151 23456789";
+  } else if (lengths[0] === 8) {
+    placeholder = "9876-5432";
+  } else if (lengths[0] === 9) {
+    placeholder = "987-654-321";
+  } else if (lengths[0] === 10) {
+    placeholder = "98765-43210";
+  } else if (lengths[0] === 11) {
+    placeholder = "98765-432100";
+  } else if (lengths[0] === 7) {
+    placeholder = "987-6543";
+  }
+
+  const formattedIsd = isdCode
+    ? (isdCode.startsWith("+") ? isdCode : `+${isdCode}`)
+    : "";
 
   return {
     lengths,
@@ -82,8 +185,185 @@ export const getCountryPhoneRules = (isoCode) => {
     maxLength,
     formatDescription,
     placeholder,
+    isoCode: isoCode || "",
+    isdCode: formattedIsd,
   };
 };
+
+/**
+ * Sanitizes phone number input:
+ * - Allows digits, spaces, hyphens (-), and parentheses ().
+ * - Caps the total count of actual digits to maxDigits (preserving formatting characters).
+ */
+export const sanitizePhoneInput = (val, maxDigits = 15) => {
+  if (!val || typeof val !== "string") return "";
+  const allowed = val.replace(/[^0-9\s\-()]/g, "");
+  let digitCount = 0;
+  let result = "";
+  for (const char of allowed) {
+    if (/\d/.test(char)) {
+      if (digitCount < maxDigits) {
+        result += char;
+        digitCount++;
+      }
+    } else {
+      result += char;
+    }
+  }
+  return result;
+};
+
+/**
+ * Checks if a keydown event should be permitted in a phone input.
+ * Allows control keys (Backspace, Delete, Tab, Arrow keys, Enter, etc.),
+ * allowed formatting characters (spaces, hyphens, parentheses),
+ * and digits (as long as max digit count hasn't been reached).
+ */
+export const isPhoneKeyAllowed = (e, currentVal = "", maxDigits = 15) => {
+  if (
+    e.key === "Backspace" ||
+    e.key === "Delete" ||
+    e.key === "Tab" ||
+    e.key === "ArrowLeft" ||
+    e.key === "ArrowRight" ||
+    e.key === "ArrowUp" ||
+    e.key === "ArrowDown" ||
+    e.key === "Enter" ||
+    e.key === "Home" ||
+    e.key === "End" ||
+    e.ctrlKey ||
+    e.metaKey
+  ) {
+    return true;
+  }
+
+  if (e.key === " " || e.key === "-" || e.key === "(" || e.key === ")") {
+    return true;
+  }
+
+  if (/^\d$/.test(e.key)) {
+    const target = e.target;
+    const hasSelection = target && target.selectionStart !== target.selectionEnd;
+    const currentDigits = (currentVal || "").replace(/\D/g, "");
+    if (currentDigits.length >= maxDigits && !hasSelection) {
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Dynamically validates maximum and minimum digit length based on country rules.
+ * Validates only the actual digits (stripping spaces, hyphens, parentheses).
+ */
+export const validatePhoneDigits = (
+  val,
+  countryRulesOrIsd,
+  countryName = "the selected country",
+  required = true
+) => {
+  const raw = (val || "").trim();
+  const digitsOnly = raw.replace(/\D/g, "");
+
+  if (!digitsOnly) {
+    if (required) {
+      return { isValid: false, message: "Please enter your phone number.", digitsOnly: "" };
+    }
+    return { isValid: true, cleanDigits: "", formattedPhone: "" };
+  }
+
+  let rules = countryRulesOrIsd;
+  if (!rules || typeof rules === "string" || !rules.minLength) {
+    rules = getCountryPhoneRules(rules);
+  }
+
+  const lengths = rules?.lengths || [7, 8, 9, 10, 11, 12, 13, 14, 15];
+  const minLength = rules?.minLength || Math.min(...lengths);
+  const maxLength = rules?.maxLength || Math.max(...lengths);
+  const desc = rules?.formatDescription || (minLength === maxLength ? `exactly ${minLength} digits` : `${minLength} to ${maxLength} digits`);
+
+  if (minLength === maxLength) {
+    if (digitsOnly.length !== minLength) {
+      return {
+        isValid: false,
+        message: `Phone number for ${countryName} must be ${desc}.`,
+        digitsOnly,
+        minLength,
+        maxLength,
+      };
+    }
+  } else {
+    if (digitsOnly.length < minLength) {
+      return {
+        isValid: false,
+        message: `Phone number for ${countryName} must be at least ${minLength} digits.`,
+        digitsOnly,
+        minLength,
+        maxLength,
+      };
+    }
+    if (digitsOnly.length > maxLength) {
+      return {
+        isValid: false,
+        message: `Phone number for ${countryName} cannot exceed ${maxLength} digits.`,
+        digitsOnly,
+        minLength,
+        maxLength,
+      };
+    }
+    if (lengths.length > 0 && !lengths.includes(digitsOnly.length)) {
+      return {
+        isValid: false,
+        message: `Phone number for ${countryName} must be ${desc}.`,
+        digitsOnly,
+        minLength,
+        maxLength,
+      };
+    }
+  }
+
+  return { isValid: true, digitsOnly, rawPhone: raw, minLength, maxLength };
+};
+
+export const buildDialCodeOptions = () => {
+  const allCountries = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  const seen = new Set();
+  const list = [];
+  allCountries.forEach((c) => {
+    if (c.phonecode) {
+      const formattedCode = c.phonecode.startsWith("+") ? c.phonecode : `+${c.phonecode}`;
+      const key = `${c.isoCode}-${formattedCode}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const rules = getCountryPhoneRules(c.isoCode);
+        list.push({
+          code: formattedCode,
+          isoCode: c.isoCode,
+          name: c.name,
+          flag: c.flag || "",
+          label: `${formattedCode} (${c.isoCode} - ${c.name})`,
+          lengths: rules.lengths,
+          minLength: rules.minLength,
+          maxLength: rules.maxLength,
+          formatDescription: rules.formatDescription,
+          placeholder: rules.placeholder,
+        });
+      }
+    }
+  });
+  return list.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+let _cachedDialCodeOptions = null;
+export const getDialCodeOptions = () => {
+  if (!_cachedDialCodeOptions) {
+    _cachedDialCodeOptions = buildDialCodeOptions();
+  }
+  return _cachedDialCodeOptions;
+};
+
 
 export const getCountryPostalRules = (isoCode) => {
   const code = (isoCode || "").toUpperCase();
@@ -440,10 +720,7 @@ const LevelOneModal = ({
     const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
     if (countryObj) {
       setCountryCode(countryObj.code);
-      const clean = phoneDigits.replace(/\D/g, "");
-      if (clean.length > countryObj.maxLength) {
-        setPhoneDigits(clean.slice(0, countryObj.maxLength));
-      }
+      setPhoneDigits((prev) => sanitizePhoneInput(prev, countryObj.maxLength));
     }
   };
 
@@ -896,11 +1173,12 @@ const LevelOneModal = ({
   };
 
   const handlePostalCodeChange = (e) => {
-    const val = e.target.value;
-    setFormData((p) => ({ ...p, postalCode: val }));
+    const raw = e.target.value;
+    const sanitized = sanitizePostalCode(raw);
+    setFormData((p) => ({ ...p, postalCode: sanitized }));
 
     clearTimeout(postalTimerRef.current);
-    const trimmed = val.trim();
+    const trimmed = sanitized.trim();
     if (trimmed.length >= 3) {
       postalTimerRef.current = setTimeout(() => {
         lookupPostalCode(trimmed, formData.country);
@@ -910,7 +1188,7 @@ const LevelOneModal = ({
 
   const handlePostalCodeBlur = (e) => {
     clearTimeout(postalTimerRef.current);
-    const trimmed = e.target.value.trim();
+    const trimmed = (e.target.value || "").trim();
     if (trimmed.length >= 3) {
       lookupPostalCode(trimmed, formData.country);
     }
@@ -938,18 +1216,21 @@ const LevelOneModal = ({
     }
   };
 
-  // ── Form validation — unchanged username is implicitly valid ──────────────
-  const isFormValid = () =>
-    nameValidation.isValid &&
-    formData.username &&
-    phoneDigits &&
-    (currentPhoneCountry.lengths ? currentPhoneCountry.lengths.includes(phoneDigits.length) : true) &&
-    formData.country &&
-    formData.state &&
-    formData.city &&
-    formData.postalCode &&
-    userNameAvailable !== false &&
-    (isUsernameUnchanged || userNameAvailable === true);
+  const isFormValid = () => {
+    const countryName = currentPhoneCountry?.name || "the selected country";
+    const phoneVal = validatePhoneDigits(phoneDigits, currentPhoneCountry, countryName, true);
+    return (
+      nameValidation.isValid &&
+      formData.username &&
+      phoneVal.isValid &&
+      formData.country &&
+      formData.state &&
+      formData.city &&
+      formData.postalCode &&
+      userNameAvailable !== false &&
+      (isUsernameUnchanged || userNameAvailable === true)
+    );
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -1017,23 +1298,16 @@ const LevelOneModal = ({
         return;
       }
     }
-    if (!phoneDigits) {
-      toast.error("Please fill in phone number");
+
+    const postalValidation = validatePostalCode(formData.postalCode, postalRules.required, "Postal code");
+    if (!postalValidation.isValid) {
+      toast.error(postalValidation.message);
       return;
     }
-
-    // Validate phone number length based on actual digit count
-    const digitsOnly = phoneDigits.replace(/\D/g, "");
-    const allowedLengths = currentPhoneCountry?.lengths || [];
-    if (allowedLengths.length > 0 && !allowedLengths.includes(digitsOnly.length)) {
-      const countryName = currentPhoneCountry?.name || "the selected country";
-      if (allowedLengths.length === 1) {
-        toast.error(`Phone number for ${countryName} must be exactly ${allowedLengths[0]} digits`);
-      } else {
-        toast.error(
-          `Phone number for ${countryName} must be ${currentPhoneCountry.formatDescription || `${currentPhoneCountry.minLength} to ${currentPhoneCountry.maxLength} digits`}`
-        );
-      }
+    const countryName = currentPhoneCountry?.name || "the selected country";
+    const phoneVal = validatePhoneDigits(phoneDigits, currentPhoneCountry, countryName, true);
+    if (!phoneVal.isValid) {
+      toast.error(phoneVal.message);
       return;
     }
 
@@ -1282,31 +1556,26 @@ const LevelOneModal = ({
             <input
               className="up-input up-phone-input"
               type="tel"
-              inputMode="numeric"
               value={phoneDigits}
-              maxLength={currentPhoneCountry.maxLength}
+              maxLength={currentPhoneCountry.maxLength + 8}
               onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "").slice(0, currentPhoneCountry.maxLength);
+                const val = sanitizePhoneInput(e.target.value, currentPhoneCountry.maxLength);
                 setPhoneDigits(val);
               }}
               onKeyDown={(e) => {
-                if (
-                  e.key === "Backspace" ||
-                  e.key === "Delete" ||
-                  e.key === "Tab" ||
-                  e.key === "ArrowLeft" ||
-                  e.key === "ArrowRight" ||
-                  e.key === "ArrowUp" ||
-                  e.key === "ArrowDown" ||
-                  e.key === "Enter" ||
-                  e.ctrlKey ||
-                  e.metaKey
-                ) {
-                  return;
-                }
-                if (!/^\d$/.test(e.key)) {
+                if (!isPhoneKeyAllowed(e, phoneDigits, currentPhoneCountry.maxLength)) {
                   e.preventDefault();
                 }
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+                const target = e.target;
+                const start = target.selectionStart || 0;
+                const end = target.selectionEnd || 0;
+                const current = phoneDigits || "";
+                const merged = current.slice(0, start) + pasted + current.slice(end);
+                setPhoneDigits(sanitizePhoneInput(merged, currentPhoneCountry.maxLength));
               }}
               placeholder={currentPhoneCountry.placeholder}
               required
@@ -1377,16 +1646,17 @@ const LevelOneModal = ({
           </div>
 
           <div className="up-form-group up-form-group--compact">
-            <label className="up-form-label">Postal Code *</label>
+            <label className="up-form-label">{postalRules?.label || "Postal Code *"}</label>
             <input
               className="up-input"
               type="text"
               name="postalCode"
+              maxLength={10}
               value={formData.postalCode}
               onChange={handlePostalCodeChange}
               onBlur={handlePostalCodeBlur}
-              placeholder="Enter postal code"
-              required
+              placeholder={postalRules?.placeholder || "Enter postal code"}
+              required={postalRules?.required}
             />
           </div>
         </div>

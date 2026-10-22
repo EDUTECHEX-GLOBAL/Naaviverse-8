@@ -8,8 +8,9 @@ import marketplaceReplacementService from "../services/marketplaceReplacementSer
 import FindBetterMatchModal from "../components/MarketplaceReplacement/FindBetterMatchModal";
 import AssistanceRequestModal from "../components/MarketplaceReplacement/AssistanceRequestModal";
 import AssistanceChatDrawer from "../components/MarketplaceReplacement/AssistanceChatDrawer";
-import { validatePersonName } from "../utils/emailValidator";
+import { validatePersonName, getDialCodeOptions, sanitizePhoneInput, isPhoneKeyAllowed, validatePhoneDigits } from "../utils/emailValidator";
 import { SvgClose, SvgCheck, SvgStarFilled, SvgStarEmpty } from "../utils/SvgIcons";
+import ResponsiveDatePicker from "../components/ResponsiveDatePicker/ResponsiveDatePicker";
 
 /* Helper: render N filled + (5-N) empty star SVGs */
 const RenderStars = ({ count = 5, size = 12 }) => {
@@ -920,7 +921,7 @@ const CartDrawer = ({ cart, onRemove, onClose, onCheckout }) => {
                       </div>
                     </div>
                     <div className="ci-price">{fmtPrice(itemPrice(s))}</div>
-                    <button className="ci-rm" onClick={() => onRemove(s._id)}><SvgClose size={14} /></button>
+                    <button className="ci-rm" onClick={() => onRemove(s._id || s.id)}><SvgClose size={14} /></button>
                   </div>
                 );
               })}
@@ -1011,6 +1012,57 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
   const [timeSlot, setTimeSlot] = useState("10:00 AM");
   const [submitting, setSubmitting] = useState(false);
   const [payError, setPayError] = useState("");
+
+  // Country dial code / ISD options
+  const dialCodeOptions = useMemo(() => getDialCodeOptions(), []);
+  const [selectedPhoneIso, setSelectedPhoneIso] = useState("IN");
+  const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
+  const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
+  const phoneDropdownRef = useRef(null);
+
+  const currentPhoneCountry = useMemo(() => {
+    return (
+      dialCodeOptions.find((c) => c.isoCode === selectedPhoneIso) ||
+      dialCodeOptions.find((c) => c.isoCode === "IN") ||
+      dialCodeOptions[0] ||
+      {
+        code: "+91",
+        isoCode: "IN",
+        name: "India",
+        lengths: [10],
+        minLength: 10,
+        maxLength: 10,
+        placeholder: "98765-43210",
+      }
+    );
+  }, [dialCodeOptions, selectedPhoneIso]);
+
+  const filteredDialCodes = useMemo(() => {
+    if (!phoneCodeSearch.trim()) return dialCodeOptions;
+    const q = phoneCodeSearch.toLowerCase();
+    return dialCodeOptions.filter(
+      (opt) =>
+        opt.name.toLowerCase().includes(q) ||
+        opt.code.includes(q) ||
+        opt.isoCode.toLowerCase().includes(q)
+    );
+  }, [dialCodeOptions, phoneCodeSearch]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (phoneDropdownRef.current && !phoneDropdownRef.current.contains(e.target)) {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
   const [fieldErrors, setFieldErrors] = useState(() => {
     if (initialName) {
       const res = validatePersonName(initialName, "Full name");
@@ -1036,8 +1088,26 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             if (uData.email) {
               setEmail(uData.email);
             }
-            if (uData.phoneNumber || uData.phone || uData.mobile) {
-              setPhone(uData.phoneNumber || uData.phone || uData.mobile);
+            if (uData.country) {
+              const match = dialCodeOptions.find(
+                (c) => c.name.toLowerCase() === uData.country.toLowerCase()
+              );
+              if (match) setSelectedPhoneIso(match.isoCode);
+            }
+            const rawPhone = uData.phoneNumber || uData.phone || uData.mobile;
+            if (rawPhone) {
+              const trimmed = String(rawPhone).trim();
+              if (trimmed.startsWith("+")) {
+                const matchDial = dialCodeOptions.find((d) => trimmed.startsWith(d.code));
+                if (matchDial) {
+                  setSelectedPhoneIso(matchDial.isoCode);
+                  setPhone(sanitizePhoneInput(trimmed.slice(matchDial.code.length), matchDial.maxLength));
+                } else {
+                  setPhone(sanitizePhoneInput(trimmed, 15));
+                }
+              } else {
+                setPhone(sanitizePhoneInput(trimmed, 15));
+              }
             }
           }
         })
@@ -1045,7 +1115,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
           console.warn("Could not fetch profile details for checkout:", err?.message);
         });
     }
-  }, [email, initialEmail]);
+  }, [email, initialEmail, dialCodeOptions]);
 
   const subtotal = cart.reduce((a, s) => a + itemPrice(s), 0);
   const tax = Math.round(subtotal * 0.18);
@@ -1057,16 +1127,21 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
     if (!nameVal.isValid) errors.fullName = nameVal.message;
     if (!email.trim()) errors.email = "Email address is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address";
-    if (!phone.trim()) errors.phone = "Phone number is required";
+    
+    const countryName = currentPhoneCountry?.name || "the selected country";
+    const phoneVal = validatePhoneDigits(phone, currentPhoneCountry, countryName, true);
+    if (!phoneVal.isValid) errors.phone = phoneVal.message;
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setPayError(errors.fullName || "Please fill in all required fields correctly before proceeding.");
+      setPayError(errors.fullName || errors.phone || "Please fill in all required fields correctly before proceeding.");
       return;
     }
 
     setFieldErrors({});
     setPayError("");
+
+    const fullPhoneNumber = phone.startsWith("+") ? phone : `${currentPhoneCountry.code} ${phone.trim()}`;
 
     const externalItem = cart.find(
       (item) =>
@@ -1084,7 +1159,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
         JSON.stringify({
           fullName,
           email,
-          phone,
+          phone: fullPhoneNumber,
         })
       );
       localStorage.setItem("naaviExclusiveItemId", externalItem._id);
@@ -1092,6 +1167,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
       onBack();
       return;
     }
+
 
     // FREE SERVICE ENROLLMENT (no payment required)
     if (total <= 0) {
@@ -1193,7 +1269,7 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
           prefill: {
             name: fullName,
             email: email,
-            contact: phone,
+            contact: phone ? (phone.startsWith("+") ? phone : `${currentPhoneCountry.code} ${phone.trim()}`) : "",
           },
           theme: { color: "#4f46e5" },
           handler: async (response) => {
@@ -1336,30 +1412,124 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
               <label>
                 Phone Number <span className="req-star">*</span>
               </label>
-              <input
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  setFieldErrors((p) => ({ ...p, phone: "" }));
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+              <div
+                className={`chk-phone-input-group ${fieldErrors.phone ? "input-err" : ""}`}
+                ref={phoneDropdownRef}
+              >
+                <div
+                  className="chk-phone-trigger"
+                  onClick={() => setPhoneCodeDropdownOpen((p) => !p)}
+                  role="button"
+                  tabIndex={0}
+                  title="Click to select country calling code"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setPhoneCodeDropdownOpen((p) => !p);
+                    }
+                  }}
+                >
+                  <img
+                    src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
+                    alt={currentPhoneCountry.name}
+                    className="chk-phone-flag"
+                    onError={(e) => { e.target.style.display = "none"; }}
+                  />
+                  <span className="chk-phone-code">{currentPhoneCountry.code}</span>
+                  <span className={`chk-phone-arrow ${phoneCodeDropdownOpen ? "open" : ""}`}>▼</span>
+                </div>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => {
+                    const val = sanitizePhoneInput(e.target.value, currentPhoneCountry.maxLength);
+                    setPhone(val);
+                    setFieldErrors((p) => ({ ...p, phone: "" }));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (!submitting) handlePayClick();
+                      return;
+                    }
+                    if (!isPhoneKeyAllowed(e, phone, currentPhoneCountry.maxLength)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
                     e.preventDefault();
-                    if (!submitting) handlePayClick();
-                  }
-                }}
-                placeholder="+91 98765 43210"
-                className={fieldErrors.phone ? "input-err" : ""}
-              />
+                    const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+                    const target = e.target;
+                    const start = target.selectionStart || 0;
+                    const end = target.selectionEnd || 0;
+                    const current = phone || "";
+                    const merged = current.slice(0, start) + pasted + current.slice(end);
+                    setPhone(sanitizePhoneInput(merged, currentPhoneCountry.maxLength));
+                    setFieldErrors((p) => ({ ...p, phone: "" }));
+                  }}
+                  placeholder={currentPhoneCountry.placeholder}
+                  className="chk-phone-input"
+                />
+                {phoneCodeDropdownOpen && (
+                  <div className="chk-phone-dropdown" onClick={(e) => e.stopPropagation()}>
+                    <div className="chk-phone-search-wrap">
+                      <input
+                        type="text"
+                        className="chk-phone-search-input"
+                        placeholder="Search country or code..."
+                        value={phoneCodeSearch}
+                        onChange={(e) => setPhoneCodeSearch(e.target.value)}
+                        autoFocus
+                      />
+                      {phoneCodeSearch && (
+                        <button
+                          type="button"
+                          className="chk-phone-search-clear"
+                          onClick={() => setPhoneCodeSearch("")}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    <div className="chk-phone-list" role="listbox">
+                      {filteredDialCodes.map((item) => (
+                        <div
+                          key={`${item.isoCode}-${item.code}`}
+                          className={`chk-phone-item ${item.isoCode === selectedPhoneIso ? "active" : ""}`}
+                          onClick={() => {
+                            setSelectedPhoneIso(item.isoCode);
+                            setPhone((prev) => sanitizePhoneInput(prev, item.maxLength));
+                            setPhoneCodeDropdownOpen(false);
+                            setPhoneCodeSearch("");
+                          }}
+                          role="option"
+                          aria-selected={item.isoCode === selectedPhoneIso}
+                        >
+                          <img
+                            src={`https://flagcdn.com/w40/${item.isoCode.toLowerCase()}.png`}
+                            alt={item.name}
+                            className="chk-phone-item-flag"
+                            onError={(e) => { e.target.style.display = "none"; }}
+                          />
+                          <span className="chk-phone-item-name">{item.name}</span>
+                          <span className="chk-phone-item-code">{item.code}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               {fieldErrors.phone && <span className="err-msg">{fieldErrors.phone}</span>}
             </div>
+
           </div>
           <div className="chk-section">
             <div className="chk-section-lbl">Schedule Session</div>
             <div className="chk-field">
               <label>Preferred Date</label>
-              <input
-                type="date"
+              <ResponsiveDatePicker
+                id="chk-pref-date"
+                name="prefDate"
                 value={prefDate}
                 onChange={(e) => setPrefDate(e.target.value)}
                 onKeyDown={(e) => {
@@ -1469,11 +1639,88 @@ const ConfirmedPage = ({ orderInfo, onBackToJourney }) => (
   </div>
 );
 
+const getMarketplaceUserEmail = () => {
+  try {
+    const rawUser = localStorage.getItem("user");
+    if (rawUser) {
+      const parsed = JSON.parse(rawUser);
+      const email = parsed?.user?.email || parsed?.email;
+      if (email && typeof email === "string" && email.trim()) return email.trim().toLowerCase();
+    }
+  } catch (e) {}
+
+  try {
+    const rawLoginData = localStorage.getItem("loginData");
+    if (rawLoginData) {
+      const parsed = JSON.parse(rawLoginData);
+      const email = parsed?.user?.email || parsed?.email;
+      if (email && typeof email === "string" && email.trim()) return email.trim().toLowerCase();
+    }
+  } catch (e) {}
+
+  try {
+    const rawRedux = localStorage.getItem("redux");
+    if (rawRedux) {
+      const parsed = JSON.parse(rawRedux);
+      const email = parsed?.loginData?.user?.email || parsed?.user?.email || parsed?.email;
+      if (email && typeof email === "string" && email.trim()) return email.trim().toLowerCase();
+    }
+  } catch (e) {}
+
+  const direct =
+    localStorage.getItem("loginEmail") ||
+    localStorage.getItem("userEmail") ||
+    localStorage.getItem("email");
+  if (direct && typeof direct === "string" && direct.trim()) {
+    return direct.trim().toLowerCase();
+  }
+
+  return "guest@naaviverse.com";
+};
+
+const getCartStorageKey = (email) => {
+  if (
+    email &&
+    typeof email === "string" &&
+    email.trim() &&
+    email.trim().toLowerCase() !== "guest@naaviverse.com"
+  ) {
+    return `naavi_marketplace_cart_${email.trim().toLowerCase()}`;
+  }
+  return "naavi_marketplace_cart_guest";
+};
+
+const loadCartForAccount = (email) => {
+  try {
+    const key = getCartStorageKey(email);
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    } else if (key !== "naavi_marketplace_cart_guest") {
+      // Legacy cart migration: assign to the active user and remove unkeyed legacy to avoid cross-user contamination
+      const legacyRaw = localStorage.getItem("naavi_marketplace_cart");
+      if (legacyRaw) {
+        localStorage.removeItem("naavi_marketplace_cart");
+        const parsed = JSON.parse(legacyRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem(key, JSON.stringify(parsed));
+          return parsed;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Could not load cart for account:", email, e);
+  }
+  return [];
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const UserMarketplace = ({ onStepChange }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const userEmail = getMarketplaceUserEmail();
   const userRaw = (() => {
     try {
       return JSON.parse(localStorage.getItem("user"));
@@ -1481,12 +1728,6 @@ const UserMarketplace = ({ onStepChange }) => {
       return null;
     }
   })();
-  const userEmail =
-    userRaw?.user?.email ||
-    userRaw?.email ||
-    localStorage.getItem("loginEmail") ||
-    localStorage.getItem("userEmail") ||
-    "guest@naaviverse.com";
   const userName =
     userRaw?.user?.displayName ||
     userRaw?.displayName ||
@@ -1565,8 +1806,56 @@ const UserMarketplace = ({ onStepChange }) => {
   const [searchQ, setSearchQ] = useState("");
 
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState(userEmail);
+  const [cart, setCart] = useState(() => loadCartForAccount(userEmail));
 
-  const [cart, setCart] = useState([]);
+  // If user account switches during session, re-synchronize cart state to that user's cart
+  if (userEmail !== currentUserEmail) {
+    setCurrentUserEmail(userEmail);
+    setCart(loadCartForAccount(userEmail));
+  }
+
+  // Persist cart items whenever cart updates for the active account
+  useEffect(() => {
+    if (userEmail !== currentUserEmail) return;
+    try {
+      const key = getCartStorageKey(userEmail);
+      localStorage.setItem(key, JSON.stringify(cart));
+      window.dispatchEvent(new Event("naavi:cart-updated"));
+    } catch (e) {
+      console.warn("Could not save cart to storage:", e);
+    }
+  }, [cart, userEmail, currentUserEmail]);
+
+  useEffect(() => {
+    const handleCartSync = () => {
+      try {
+        const freshEmail = getMarketplaceUserEmail();
+        const key = getCartStorageKey(freshEmail);
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            setCart((current) => {
+              if (JSON.stringify(current) !== JSON.stringify(parsed)) {
+                return parsed;
+              }
+              return current;
+            });
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+    window.addEventListener("storage", handleCartSync);
+    window.addEventListener("naavi:cart-updated", handleCartSync);
+    return () => {
+      window.removeEventListener("storage", handleCartSync);
+      window.removeEventListener("naavi:cart-updated", handleCartSync);
+    };
+  }, [userEmail]);
+
   const [showCart, setShowCart] = useState(false);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -2074,8 +2363,14 @@ const UserMarketplace = ({ onStepChange }) => {
     }
   };
 
-  const removeFromCart = (id) => setCart((prev) => prev.filter((s) => s._id !== id));
-  const inCart = (id) => cart.some((s) => s._id === id);
+  const removeFromCart = (id) => {
+    const targetId = String(id);
+    setCart((prev) => prev.filter((s) => String(s._id || s.id) !== targetId));
+  };
+  const inCart = (id) => {
+    const targetId = String(id);
+    return cart.some((s) => String(s._id || s.id) === targetId);
+  };
 
   const handleConfirm = (info) => {
     setPurchasedIds((prev) => {

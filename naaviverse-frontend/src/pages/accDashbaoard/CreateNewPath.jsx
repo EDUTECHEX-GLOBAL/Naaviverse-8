@@ -5,6 +5,154 @@ import { SvgArrowUp } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
+const CustomSelect = ({
+  placeholder = 'Select',
+  value,
+  onChange,
+  options = [],
+  disabled = false,
+  disabledPlaceholder = '',
+  searchable = false,
+  maxHeight = 220,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+        setSearchTerm('');
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const normalizedOptions = (options || []).map((opt) => {
+    if (typeof opt === 'object' && opt !== null) {
+      const lbl = opt.name?.common || opt.name || opt.label || String(opt.value ?? '');
+      const val = opt.name?.common || opt.name || opt.value || '';
+      return { label: lbl, value: val };
+    }
+    return { label: String(opt), value: opt };
+  });
+
+  const filteredOptions = searchable && searchTerm
+    ? normalizedOptions.filter((opt) => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    : normalizedOptions;
+
+  const currentSelected = normalizedOptions.find((o) => String(o.value) === String(value));
+  const displayLabel = disabled
+    ? (disabledPlaceholder || placeholder)
+    : (currentSelected?.label || (value ? String(value) : placeholder));
+
+  return (
+    <div className={`custom-select-wrapper ${disabled ? 'disabled' : ''}`} ref={dropdownRef}>
+      <button
+        type="button"
+        className={`custom-select-trigger ${isOpen ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+        onClick={() => {
+          if (!disabled) {
+            setIsOpen((prev) => !prev);
+            setSearchTerm('');
+          }
+        }}
+        disabled={disabled}
+      >
+        <span className={`trigger-text ${!value ? 'is-placeholder' : ''}`}>
+          {displayLabel}
+        </span>
+        <svg
+          className={`select-arrow ${isOpen ? 'open' : ''}`}
+          width="10"
+          height="10"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#5a7085"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {isOpen && !disabled && (
+        <div className="custom-select-menu" style={{ maxHeight }}>
+          {searchable && (
+            <div className="custom-select-search-box" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="text"
+                className="custom-select-search-input"
+                placeholder="Search..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
+              />
+            </div>
+          )}
+
+          <div className="custom-select-options-list">
+            <div
+              className={`custom-select-option ${!value ? 'selected' : ''}`}
+              onClick={() => {
+                onChange('');
+                setIsOpen(false);
+                setSearchTerm('');
+              }}
+            >
+              {placeholder}
+            </div>
+
+            {filteredOptions.length === 0 ? (
+              <div className="custom-select-no-results">No options found</div>
+            ) : (
+              filteredOptions.map((opt, i) => {
+                const isSelected = String(value) === String(opt.value);
+                return (
+                  <div
+                    key={`${opt.value}-${i}`}
+                    className={`custom-select-option ${isSelected ? 'selected' : ''}`}
+                    onClick={() => {
+                      onChange(opt.value);
+                      setIsOpen(false);
+                      setSearchTerm('');
+                    }}
+                  >
+                    {opt.label}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CustomDurationSelect = ({ label, value, onChange, count }) => {
+  const options = [...Array(count)].map((_, i) => ({ label: String(i), value: i }));
+  return (
+    <CustomSelect
+      placeholder="Select"
+      value={value}
+      onChange={onChange}
+      options={options}
+      searchable={false}
+      maxHeight={180}
+    />
+  );
+};
+
 const CreateNewPath = ({
   setpstep,
   setaccsideNav,
@@ -178,24 +326,36 @@ const CreateNewPath = ({
     if (!pathSteps?.nameOfPath || !pathSteps?.description || !pathSteps?.program || !pathSteps?.destination_institution) {
       alert('Please fill in all required fields'); return;
     }
-    if (grade.length === 0 || gradeAvg.length === 0 || curriculum.length === 0 || stream.length === 0 || finance.length === 0 || !personality) {
+    const hasPersonality = Array.isArray(personality) ? personality.length > 0 : Boolean(personality);
+    if (grade.length === 0 || gradeAvg.length === 0 || curriculum.length === 0 || stream.length === 0 || finance.length === 0 || !hasPersonality) {
       alert('Please select at least one option from each category'); return;
     }
     setShowPopup(true);
   };
 
-const handleContinue = () => {
-  if (!stepCount || parseInt(stepCount) < 1) { alert("Please enter a valid number of steps"); return; }
-  setShowPopup(false);
-  const years = parseInt(duration.years) || 0;
-  const months = parseInt(duration.months) || 0;
-  const days = parseInt(duration.days) || 0;
-  setPathSteps({ ...pathSteps, duration: { years, months, days, totalDays: (years * 365) + (months * 30) + days }, preferredLocation });
-  setStepCount(Number(stepCount));
-  pathSubmission(Number(stepCount));  // ← pass value directly, bypasses stale state
-};
+  const handleContinue = () => {
+    if (!stepCount || parseInt(stepCount) < 1) {
+      alert("Please enter a valid number of steps");
+      return;
+    }
+    setShowPopup(false);
+    const years = parseInt(duration.years) || 0;
+    const months = parseInt(duration.months) || 0;
+    const days = parseInt(duration.days) || 0;
+    const totalDays = (years * 365) + (months * 30) + days;
+    const updatedSteps = {
+      ...pathSteps,
+      duration: { years, months, days, totalDays },
+      length: totalDays,
+      preferredLocation,
+      the_ids: []
+    };
+    setPathSteps(updatedSteps);
+    setStepCount(Number(stepCount));
+    pathSubmission(Number(stepCount), updatedSteps);
+  };
 
-const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
+  const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
 
   const handleMultiSelect = (type, item) => {
     switch (type) {
@@ -228,24 +388,54 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
               <div className="duration-dropdown-group">
                 <div className="duration-select">
                   <label>Years</label>
-                  <select value={duration.years} onChange={(e) => setDuration({ ...duration, years: e.target.value })}>
+                  <select
+                    className="duration-native-select"
+                    value={duration.years}
+                    onChange={(e) => setDuration({ ...duration, years: e.target.value })}
+                  >
                     <option value="">Select</option>
                     {[...Array(11)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                   </select>
+                  <CustomDurationSelect
+                    label="Years"
+                    value={duration.years}
+                    count={11}
+                    onChange={(val) => setDuration({ ...duration, years: val })}
+                  />
                 </div>
                 <div className="duration-select">
                   <label>Months</label>
-                  <select value={duration.months} onChange={(e) => setDuration({ ...duration, months: e.target.value })}>
+                  <select
+                    className="duration-native-select"
+                    value={duration.months}
+                    onChange={(e) => setDuration({ ...duration, months: e.target.value })}
+                  >
                     <option value="">Select</option>
                     {[...Array(12)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                   </select>
+                  <CustomDurationSelect
+                    label="Months"
+                    value={duration.months}
+                    count={12}
+                    onChange={(val) => setDuration({ ...duration, months: val })}
+                  />
                 </div>
                 <div className="duration-select">
                   <label>Days</label>
-                  <select value={duration.days} onChange={(e) => setDuration({ ...duration, days: e.target.value })}>
+                  <select
+                    className="duration-native-select"
+                    value={duration.days}
+                    onChange={(e) => setDuration({ ...duration, days: e.target.value })}
+                  >
                     <option value="">Select</option>
                     {[...Array(31)].map((_, i) => <option key={i} value={i}>{i}</option>)}
                   </select>
+                  <CustomDurationSelect
+                    label="Days"
+                    value={duration.days}
+                    count={31}
+                    onChange={(val) => setDuration({ ...duration, days: val })}
+                  />
                 </div>
               </div>
             </div>
@@ -318,11 +508,21 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
             </div>
 
             <div className="form-field">
-              <label>What personality suits this path? <span className="required">*</span></label>
+              <label>What personality suits this path? <span className="required">*</span> <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "normal", marginLeft: "6px" }}>(Select up to 2)</span></label>
               <div className="personality-grid">
-                {personalityList.map((item) => (
-                  <button key={item} className={`personality-btn ${personality === item ? 'selected-green' : ''}`} onClick={() => handlePersonality(item)}>{item}</button>
-                ))}
+                {personalityList.map((item) => {
+                  const isSelected = Array.isArray(personality) ? personality.includes(item) : personality === item;
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={`personality-btn ${isSelected ? 'selected-green' : ''}`}
+                      onClick={() => handlePersonality(item)}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -336,8 +536,11 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, address: e.target.value })} />
 
                 {/* Country */}
-                <select value={preferredLocation.country}
-                  onChange={(e) => setPreferredLocation({ ...preferredLocation, country: e.target.value, state: '', city: '' })}>
+                <select
+                  className="native-select-desktop"
+                  value={preferredLocation.country}
+                  onChange={(e) => setPreferredLocation({ ...preferredLocation, country: e.target.value, state: '', city: '' })}
+                >
                   <option value="">Select Country</option>
                   {/* FIX: use index fallback so key is always defined */}
                   {countryApiValue?.map((item, idx) => (
@@ -346,29 +549,60 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
                     </option>
                   ))}
                 </select>
+                <CustomSelect
+                  placeholder="Select Country"
+                  searchable={true}
+                  value={preferredLocation.country}
+                  onChange={(val) => setPreferredLocation({ ...preferredLocation, country: val, state: '', city: '' })}
+                  options={countryApiValue || []}
+                />
 
                 {/* State */}
-                <select value={preferredLocation.state}
+                <select
+                  className="native-select-desktop"
+                  value={preferredLocation.state}
                   disabled={!preferredLocation.country || profileStates.length === 0}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, state: e.target.value, city: '' })}
-                  style={{ opacity: preferredLocation.country && profileStates.length > 0 ? 1 : 0.5 }}>
+                  style={{ opacity: preferredLocation.country && profileStates.length > 0 ? 1 : 0.5 }}
+                >
                   <option value="">
                     {!preferredLocation.country ? 'Select country first' : profileStates.length === 0 ? 'No states available' : 'Select State'}
                   </option>
                   {/* FIX: state strings are unique within a country */}
                   {profileStates.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
+                <CustomSelect
+                  placeholder="Select State"
+                  searchable={true}
+                  disabled={!preferredLocation.country || profileStates.length === 0}
+                  disabledPlaceholder={!preferredLocation.country ? 'Select country first' : 'No states available'}
+                  value={preferredLocation.state}
+                  onChange={(val) => setPreferredLocation({ ...preferredLocation, state: val, city: '' })}
+                  options={profileStates}
+                />
 
                 {/* City */}
-                <select value={preferredLocation.city}
+                <select
+                  className="native-select-desktop"
+                  value={preferredLocation.city}
                   disabled={!preferredLocation.state || profileCities.length === 0}
                   onChange={(e) => setPreferredLocation({ ...preferredLocation, city: e.target.value })}
-                  style={{ opacity: preferredLocation.state && profileCities.length > 0 ? 1 : 0.5 }}>
+                  style={{ opacity: preferredLocation.state && profileCities.length > 0 ? 1 : 0.5 }}
+                >
                   <option value="">
                     {!preferredLocation.state ? 'Select state first' : profileCities.length === 0 ? 'No cities available' : 'Select City'}
                   </option>
                   {profileCities.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
+                <CustomSelect
+                  placeholder="Select City"
+                  searchable={true}
+                  disabled={!preferredLocation.state || profileCities.length === 0}
+                  disabledPlaceholder={!preferredLocation.state ? 'Select state first' : 'No cities available'}
+                  value={preferredLocation.city}
+                  onChange={(val) => setPreferredLocation({ ...preferredLocation, city: val })}
+                  options={profileCities}
+                />
 
               </div>
             </div>
@@ -462,8 +696,11 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
 
               <div>
                 <label>Country</label>
-                <select value={pathSteps?.country || ''}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, country: e.target.value, state: '', city: '' }))}>
+                <select
+                  className="native-select-desktop"
+                  value={pathSteps?.country || ''}
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, country: e.target.value, state: '', city: '' }))}
+                >
                   <option value="">Select Country</option>
                   {countryApiValue?.map((item, idx) => (
                     <option key={item.name?.common || item.name || idx} value={item.name?.common || item.name}>
@@ -471,30 +708,61 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
                     </option>
                   ))}
                 </select>
+                <CustomSelect
+                  placeholder="Select Country"
+                  searchable={true}
+                  value={pathSteps?.country || ''}
+                  onChange={(val) => setPathSteps(prev => ({ ...prev, country: val, state: '', city: '' }))}
+                  options={countryApiValue || []}
+                />
               </div>
 
               <div>
                 <label>State / Province</label>
-                <select value={pathSteps?.state || ''}
+                <select
+                  className="native-select-desktop"
+                  value={pathSteps?.state || ''}
                   disabled={!pathSteps?.country || targetStates.length === 0}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, state: e.target.value, city: '' }))}>
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, state: e.target.value, city: '' }))}
+                >
                   <option value="">
                     {!pathSteps?.country ? 'Select country first' : targetStates.length === 0 ? 'No states available' : 'Select State / Province'}
                   </option>
                   {targetStates.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
+                <CustomSelect
+                  placeholder="Select State / Province"
+                  searchable={true}
+                  disabled={!pathSteps?.country || targetStates.length === 0}
+                  disabledPlaceholder={!pathSteps?.country ? 'Select country first' : 'No states available'}
+                  value={pathSteps?.state || ''}
+                  onChange={(val) => setPathSteps(prev => ({ ...prev, state: val, city: '' }))}
+                  options={targetStates}
+                />
               </div>
 
               <div>
                 <label>City</label>
-                <select value={pathSteps?.city || ''}
+                <select
+                  className="native-select-desktop"
+                  value={pathSteps?.city || ''}
                   disabled={!pathSteps?.state || targetCities.length === 0}
-                  onChange={(e) => setPathSteps(prev => ({ ...prev, city: e.target.value }))}>
+                  onChange={(e) => setPathSteps(prev => ({ ...prev, city: e.target.value }))}
+                >
                   <option value="">
                     {!pathSteps?.state ? 'Select state first' : targetCities.length === 0 ? 'No cities available' : 'Select City'}
                   </option>
                   {targetCities.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
+                <CustomSelect
+                  placeholder="Select City"
+                  searchable={true}
+                  disabled={!pathSteps?.state || targetCities.length === 0}
+                  disabledPlaceholder={!pathSteps?.state ? 'Select state first' : 'No cities available'}
+                  value={pathSteps?.city || ''}
+                  onChange={(val) => setPathSteps(prev => ({ ...prev, city: val }))}
+                  options={targetCities}
+                />
               </div>
 
             </div>
@@ -514,8 +782,22 @@ const handleCancel = () => { setShowPopup(false); setLocalStepCount(''); };
             <h3 className="step-popup-title">Add Steps to Your Path</h3>
             <p className="step-popup-description">How many steps do you want to add to this path?</p>
             <div className="step-popup-input-wrapper">
-              <input type="number" min="1" step="1" placeholder="Enter number of steps"
-                value={stepCount} onChange={(e) => setLocalStepCount(e.target.value)} className="step-popup-input" />
+              <input
+                type="number"
+                min="1"
+                step="1"
+                placeholder="Enter number of steps"
+                value={stepCount}
+                onChange={(e) => setLocalStepCount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleContinue();
+                  }
+                }}
+                className="step-popup-input"
+                autoFocus
+              />
             </div>
             <div className="step-popup-buttons">
               <button className="step-popup-btn step-popup-btn-cancel" onClick={handleCancel}>Cancel</button>

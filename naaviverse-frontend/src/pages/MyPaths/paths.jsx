@@ -365,6 +365,32 @@ const PillsSingle = ({ options, value, onChange }) => (
   </div>
 );
 
+const PillsMax = ({ options, value = [], onChange, max = 2 }) => {
+  const current = Array.isArray(value) ? value : (value ? [value] : []);
+  return (
+    <div className="epm-pills">
+      {options.map(opt => {
+        const isSelected = current.includes(opt);
+        return (
+          <span
+            key={opt}
+            className={`epm-pill${isSelected ? " on" : ""}`}
+            onClick={() => {
+              if (isSelected) {
+                onChange(current.filter(v => v !== opt));
+              } else if (current.length < max) {
+                onChange([...current, opt]);
+              }
+            }}
+          >
+            {opt}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
   const [loading, setLoading] = useState(false);
@@ -377,7 +403,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     program:                 "",
     path_type:               "",
     path_cat:                "",
-    personality:             "",
+    personality:             [],
     financialSituation:      [],
     curriculum:              [],
     grade:                   [],
@@ -399,7 +425,11 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
       program:                 selectedPath.program                 || "",
       path_type:               selectedPath.path_type               || "",
       path_cat:                selectedPath.path_cat                || "",
-      personality:             selectedPath.personality             || "",
+      personality:             Array.isArray(selectedPath.personality)
+                                ? selectedPath.personality
+                                : (selectedPath.personality
+                                    ? selectedPath.personality.split(',').map(s => s.trim()).filter(Boolean)
+                                    : []),
       financialSituation:      selectedPath.financialSituation      || [],
       curriculum:              selectedPath.curriculum              || [],
       grade:                   selectedPath.grade                   || [],
@@ -420,7 +450,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
   const changedCount = Object.keys(form).filter(key => {
     const nv = form[key], ov = selectedPath?.[key];
     if (Array.isArray(nv)) {
-      const oa = Array.isArray(ov) ? ov : [];
+      const oa = Array.isArray(ov) ? ov : (ov ? [ov] : []);
       return !(nv.length === oa.length && nv.every((v, i) => String(v) === String(oa[i])));
     }
     return nv !== (ov ?? "");
@@ -440,7 +470,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     Object.keys(form).forEach(key => {
       const nv = form[key], ov = selectedPath[key];
       if (Array.isArray(nv)) {
-        const oa = Array.isArray(ov) ? ov : [];
+        const oa = Array.isArray(ov) ? ov : (ov ? [ov] : []);
         const same = nv.length === oa.length && nv.every((v, i) => String(v) === String(oa[i]));
         if (!same) diff[key] = nv;
       } else if (nv !== (ov ?? "")) {
@@ -581,10 +611,11 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
               </div>
 
               {/* ── Personality ── */}
-              <p className="epm-sec">Personality Type</p>
+              <p className="epm-sec">Personality Type <span style={{ fontSize: "11px", fontWeight: "normal", color: "#64748b" }}>(Select up to 2)</span></p>
               <div className="epm-field">
-                <PillsSingle options={OPTS.personality}
+                <PillsMax options={OPTS.personality}
                   value={form.personality}
+                  max={2}
                   onChange={v => set("personality", v)} />
               </div>
 

@@ -106,12 +106,33 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [isMobileScreen, setIsMobileScreen] = useState(
+    typeof window !== "undefined" ? window.innerWidth <= 768 : false
+  );
   const dropdownRef = useRef(null);
+
+  const isControlled = isOpen !== undefined;
+  const isSidebarOpen = isControlled ? isOpen : internalOpen;
+
+  const handleSidebarClose = () => {
+    if (onClose) onClose();
+    if (!isControlled) setInternalOpen(false);
+  };
 
   useEffect(() => {
     // Clear any stale collapsed flag so side section and three dots are visible by default
     localStorage.removeItem('partnerSidebarCollapsed');
+
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth <= 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // On mobile screens, drawer is always full width and never collapsed to 64px icon rail
+  const isEffectivelyCollapsed = collapsed && !isMobileScreen;
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -141,7 +162,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
     setaccsideNav(each.title);
     if (each.path) navigate(each.path);
     if (handleChangeAccDashsidebar) handleChangeAccDashsidebar();
-    if (onClose) onClose();
+    handleSidebarClose();
   };
 
   const handleLogout = () => {
@@ -165,8 +186,36 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
   }, []);
 
   return (
-    <div className={`partner-dashboard-sidebar ${isOpen ? "open" : ""} ${collapsed ? "collapsed" : ""}`}>
-      {/* Floating edge toggle button on sidebar border */}
+    <>
+      {/* Fallback floating hamburger button on mobile if parent does not control sidebar and sidebar is closed */}
+      {!isControlled && !isSidebarOpen && (
+        <div className="partner-mobile-floating-topbar">
+          <button
+            type="button"
+            className="partner-mobile-hamburger"
+            onClick={() => setInternalOpen(true)}
+            aria-label="Open menu"
+            title="Open menu"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Backdrop overlay for mobile drawer if uncontrolled */}
+      {!isControlled && isSidebarOpen && (
+        <div
+          className="partner-sidebar-overlay"
+          onClick={handleSidebarClose}
+        />
+      )}
+
+      <div className={`partner-dashboard-sidebar ${isSidebarOpen ? "open" : ""} ${isEffectivelyCollapsed ? "collapsed" : ""}`}>
+      {/* Floating edge toggle button on sidebar border - desktop only */}
       <button
         className="sidebar-edge-toggle-btn"
         onClick={(e) => { e.stopPropagation(); toggleCollapsed(); }}
@@ -183,7 +232,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
         <div
           className="sidebar-logo-click"
           onClick={() => {
-            if (collapsed) {
+            if (isEffectivelyCollapsed) {
               toggleCollapsed();
               return;
             }
@@ -192,11 +241,11 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
               navigate("/dashboard/accountants/home");
             }
           }}
-          title={collapsed ? "Expand sidebar" : "Naavi Home"}
+          title={isEffectivelyCollapsed ? "Expand sidebar" : "Naavi Home"}
         >
           <img
-            className={`partner-dashboard-logo ${collapsed ? "collapsed-logo" : ""}`}
-            src={collapsed ? faviconLogo : logo}
+            className={`partner-dashboard-logo ${isEffectivelyCollapsed ? "collapsed-logo" : ""}`}
+            src={isEffectivelyCollapsed ? faviconLogo : logo}
             alt="Naavi"
           />
         </div>
@@ -207,12 +256,12 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
           className="sidebar-mobile-close-btn"
           onClick={(e) => {
             e.stopPropagation();
-            if (onClose) onClose();
+            handleSidebarClose();
           }}
           aria-label="Close sidebar"
           title="Close sidebar"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -249,7 +298,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
           title={isLocked ? "Your account is pending admin approval" : (collapsed ? "Add New" : "")}
           onClick={() => {
             if (isLocked) return;
-            if (onClose) onClose();
+            handleSidebarClose();
             setTimeout(() => setispopular(true), 300);
           }}
         >
@@ -265,6 +314,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
               if (!isLocked) {
                 navigate("/dashboard/accountants/profile");
                 setaccsideNav("Profile");
+                handleSidebarClose();
               }
             }}
           >
@@ -330,6 +380,7 @@ const AccDashsidebar = ({ isNotOnMainPage, handleChangeAccDashsidebar, admin, ac
         </div>
       </div>
     </div>
+    </>
   );
 };
 

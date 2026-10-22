@@ -18,6 +18,50 @@ import { saveState } from "./app/browser-storage.ts";
 import ContextProvider from "./pages/dashboard/WalletScan/globalComponents/Context/Context";
 import { GlobalContexProvider1 } from "./pages/dashboard/WalletScan/globalContext";
 import RegistrationContextProvider from "./RegistrationContext";
+// Preserve per-account cart keys across logout handlers and authentication cleanup
+if (typeof window !== "undefined") {
+  const protectStorageClear = (storage) => {
+    try {
+      if (!storage || typeof storage.clear !== "function") return;
+      const origClear = storage.clear.bind(storage);
+      storage.clear = function () {
+        const preserved = [];
+        try {
+          for (let i = 0; i < storage.length; i++) {
+            const key = storage.key(i);
+            if (
+              key &&
+              (key.startsWith("naavi_marketplace_cart") ||
+                key.startsWith("marketplaceCart_") ||
+                key.startsWith("cart_") ||
+                key.startsWith("naavi_step_feedback_") ||
+                key.startsWith("stepFeedback_"))
+            ) {
+              preserved.push({ key, value: storage.getItem(key) });
+            }
+          }
+        } catch (e) {
+          // ignore scan error
+        }
+        origClear();
+        preserved.forEach(({ key, value }) => {
+          if (value !== null) {
+            try {
+              storage.setItem(key, value);
+            } catch (e) {
+              // ignore write error
+            }
+          }
+        });
+      };
+    } catch (e) {
+      // ignore wrapper setup error
+    }
+  };
+
+  protectStorageClear(window.localStorage);
+  protectStorageClear(window.sessionStorage);
+}
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 

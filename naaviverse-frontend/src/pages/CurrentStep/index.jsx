@@ -85,7 +85,7 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
     if (value.comment !== undefined && selected !== "comment_submitted") {
       setCommentText(value.comment);
     }
-  }, [value.action, value.comment]);
+  }, [value.action, value.comment, selected]);
 
   const handleAction = (action) => {
     if (action === "comment") {
@@ -113,12 +113,12 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
   };
 
   // Already submitted feedback — show compact badge
-  const hasResult = selected && selected !== "comment";
+  const hasResult = Boolean(selected && (selected !== "comment" || !open));
   const resultLabel =
     selected === "helpful" ? "Helpful" :
     selected === "notRelevant" ? "Not Relevant" :
     selected === "skip" ? "Skipped" :
-    selected === "comment_submitted" ? "Comment Sent" : "";
+    (selected === "comment" || selected === "comment_submitted") ? "Comment Sent" : selected;
 
   return (
     <div className="feedback-strip">
@@ -486,7 +486,99 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const [popupDetails, setPopupDetails] = useState("");
   const [selectedCard, setSelectedCard] = useState(0);
   const [acceptOffer, setAcceptOffer] = useState(false);
-  const [stepFeedback, setStepFeedback] = useState({});
+  const activeStepId = currentStepPageData?._id || localStorage.getItem("selectedStepId") || "";
+
+  const getStepFeedbackKey = useCallback((email, stepId) => {
+    const cleanMail = (email || userEmail || "guest@naaviverse.com").toLowerCase().trim();
+    const cleanStep = stepId || localStorage.getItem("selectedStepId") || "default";
+    return `naavi_step_feedback_${cleanMail}_${cleanStep}`;
+  }, [userEmail]);
+
+  const [stepFeedback, setStepFeedback] = useState(() => {
+    try {
+      const stepId = localStorage.getItem("selectedStepId") || "";
+      const rawUser = localStorage.getItem("user");
+      const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+      const email = (
+        parsedUser?.user?.email ||
+        parsedUser?.email ||
+        localStorage.getItem("loginEmail") ||
+        localStorage.getItem("userEmail") ||
+        "guest@naaviverse.com"
+      ).toLowerCase().trim();
+      const sKey = `naavi_step_feedback_${email}_${stepId || "default"}`;
+      const raw = localStorage.getItem(sKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.warn("Could not load initial step feedback:", e);
+    }
+    return {};
+  });
+
+  // Re-sync feedback when step, path, or user changes
+  useEffect(() => {
+    const stepId = activeStepId || localStorage.getItem("selectedStepId") || "";
+    const email = (userEmail && userEmail !== "guest" ? userEmail : "guest@naaviverse.com").toLowerCase().trim();
+    const sKey = getStepFeedbackKey(email, stepId);
+
+    try {
+      const raw = localStorage.getItem(sKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          setStepFeedback(parsed);
+        } else {
+          setStepFeedback({});
+        }
+      } else {
+        setStepFeedback({});
+      }
+    } catch {
+      setStepFeedback({});
+    }
+
+    // Background reconciliation with backend /api/feedback/path/:pathId
+    const pathId = selectedPathId || localStorage.getItem("selectedPathId");
+    if (pathId && stepId && email && email !== "guest@naaviverse.com") {
+      axios.get(`${BASE_URL}/api/feedback/path/${pathId}`)
+        .then((res) => {
+          if (res.data?.status && Array.isArray(res.data?.data)) {
+            const matches = res.data.data.filter(
+              (f) =>
+                f.studentEmail?.toLowerCase() === email.toLowerCase() &&
+                String(f.stepId) === String(stepId)
+            );
+            if (matches.length > 0) {
+              setStepFeedback((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                matches.forEach((m) => {
+                  if (m.viewType && (!next[m.viewType] || !next[m.viewType].action)) {
+                    next[m.viewType] = {
+                      action: m.action,
+                      comment: m.comment || "",
+                      skipped: m.action === "skip",
+                    };
+                    changed = true;
+                  }
+                });
+                if (changed) {
+                  try {
+                    localStorage.setItem(sKey, JSON.stringify(next));
+                  } catch (e) {}
+                  return next;
+                }
+                return prev;
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activeStepId, userEmail, selectedPathId, getStepFeedbackKey]);
 
   const {
     currentStepData, setCurrentStepData,
@@ -503,19 +595,27 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   } = useStore();
 
   const updateStepFeedback = async (key, nextValue) => {
-    setStepFeedback(prev => ({
-      ...prev,
-      [key]: nextValue,
-    }));
+    const stepId = activeStepId || localStorage.getItem("selectedStepId") || "";
+    const pathId = selectedPathId || localStorage.getItem("selectedPathId") || "";
+    const email = (userEmail && userEmail !== "guest" ? userEmail : "guest@naaviverse.com").toLowerCase().trim();
 
+    // 1. Immediately update in-memory state and save to user-specific localStorage
+    setStepFeedback((prev) => {
+      const next = {
+        ...prev,
+        [key]: nextValue,
+      };
+      try {
+        const sKey = getStepFeedbackKey(email, stepId);
+        localStorage.setItem(sKey, JSON.stringify(next));
+      } catch (e) {
+        console.warn("Could not save step feedback locally:", e);
+      }
+      return next;
+    });
+
+    // 2. Persist to backend
     try {
-      const raw = localStorage.getItem("user");
-      const user = raw ? JSON.parse(raw) : null;
-      const email = user?.email || userEmail || "guest@naaviverse.com";
-
-      const pathId = selectedPathId || localStorage.getItem("selectedPathId") || "";
-      const stepId = localStorage.getItem("selectedStepId") || "";
-
       await axios.post(`${BASE_URL}/api/feedback`, {
         type: "step",
         studentEmail: email,

@@ -364,7 +364,7 @@ export default function PartnerFeedback() {
                       <polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" />
                     </svg>
                   </div>
-                  <h2 className="pf-path-name">{group.pathName}</h2>
+                  <h2 className="pf-path-name" style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>{group.pathName}</h2>
                 </div>
                 <span className="pf-path-count-badge">
                   {group.feedbacks.length} {group.feedbacks.length === 1 ? "response" : "responses"}

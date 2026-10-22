@@ -438,7 +438,7 @@ const LevelThreeModal = ({
 
             {/* Hint while in progress */}
             {!allAnswered && (
-              <div style={{ marginTop: "12px", fontSize: "12px", color: "#94a3b8", textAlign: "center" }}>
+              <div className="up-questions-hint" style={{ marginTop: "12px", fontSize: "12px", color: "#94a3b8", textAlign: "center" }}>
                 Answer all {totalCount} questions to reveal your personality type
               </div>
             )}

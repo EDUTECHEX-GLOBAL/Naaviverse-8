@@ -185,47 +185,49 @@ const Pathview = memo(({
             )}
           </div>
 
-          <button
-            className="pathview-topbar__coords-btn"
-            onClick={onAdjustCoordinates}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="18" x2="20" y2="18" />
-              <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
-              <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
-              <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
-            </svg>
-            Adjust Coordinates
-          </button>
-
-          {/* New Request Path action button */}
-          <button
-            className="pathview-topbar__request-btn"
-            onClick={() => onRequestPath && onRequestPath(searchQuery)}
-            title="Can't find your path? Request Super Admin to curate it"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Request Path
-          </button>
-
-          {/* User's Request Tracker button */}
-          {myRequestsCount > 0 && (
+          <div className="pathview-topbar__actions">
             <button
-              className="pathview-topbar__myrequests-btn"
-              onClick={() => onOpenMyRequests && onOpenMyRequests()}
-              title="View your custom path requests"
+              className="pathview-topbar__coords-btn"
+              onClick={onAdjustCoordinates}
             >
-              My Requests
-              <span className={`myrequests-pill ${readyRequestsCount > 0 ? "ready" : ""}`}>
-                {readyRequestsCount > 0 ? `${readyRequestsCount} Ready!` : myRequestsCount}
-              </span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+                <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none" />
+                <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none" />
+                <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none" />
+              </svg>
+              Adjust Coordinates
             </button>
-          )}
+
+            {/* New Request Path action button */}
+            <button
+              className="pathview-topbar__request-btn"
+              onClick={() => onRequestPath && onRequestPath(searchQuery)}
+              title="Can't find your path? Request Super Admin to curate it"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Request Path
+            </button>
+
+            {/* User's Request Tracker button */}
+            {myRequestsCount > 0 && (
+              <button
+                className="pathview-topbar__myrequests-btn"
+                onClick={() => onOpenMyRequests && onOpenMyRequests()}
+                title="View your custom path requests"
+              >
+                My Requests
+                <span className={`myrequests-pill ${readyRequestsCount > 0 ? "ready" : ""}`}>
+                  {readyRequestsCount > 0 ? `${readyRequestsCount} Ready!` : myRequestsCount}
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

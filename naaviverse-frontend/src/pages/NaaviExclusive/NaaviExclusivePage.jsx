@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 // Adjust this relative path to match where this file actually sits in src/.
@@ -6,7 +6,10 @@ import axios from "axios";
 import naaviLogo from "../../logos/naavi_final_logo2.png";
 import "./NaaviExclusivePage.scss";
 import { validatePersonName } from "../../utils/emailValidator";
-import { SvgCheck } from "../../utils/SvgIcons";
+import { SvgCheck, SvgClose } from "../../utils/SvgIcons";
+import ResponsiveDatePicker from "../../components/ResponsiveDatePicker/ResponsiveDatePicker";
+import { Country } from "country-state-city";
+import { getCountryPhoneRules, sanitizePhoneInput, validatePhoneDigits, isPhoneKeyAllowed } from "../UserProfile/LevelOneModal";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -22,6 +25,58 @@ const getPriceNumber = (cost) => {
   if (!cost || cost === "Free" || cost === "free") return 0;
   const num = parseFloat(String(cost).replace(/[^0-9.]/g, ""));
   return isNaN(num) ? 0 : num;
+};
+
+// ── Existing country data and calling code options ────────────────────────────
+const buildDialCodeOptions = () => {
+  const allCountries = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+  const seen = new Set();
+  const list = [];
+  allCountries.forEach((c) => {
+    if (c.phonecode) {
+      const formattedCode = c.phonecode.startsWith("+") ? c.phonecode : `+${c.phonecode}`;
+      const key = `${c.isoCode}-${formattedCode}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        const rules = getCountryPhoneRules(c.isoCode);
+        list.push({
+          code: formattedCode,
+          isoCode: c.isoCode,
+          name: c.name,
+          flag: c.flag || "",
+          lengths: rules.lengths,
+          minLength: rules.minLength,
+          maxLength: rules.maxLength,
+          formatDescription: rules.formatDescription,
+          placeholder: rules.placeholder,
+        });
+      }
+    }
+  });
+  return list.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+let cachedDialCodeOptions = null;
+const getDialCodeOptions = () => {
+  if (!cachedDialCodeOptions) {
+    cachedDialCodeOptions = buildDialCodeOptions();
+  }
+  return cachedDialCodeOptions;
+};
+
+const parsePhoneInfo = (raw, dialOptions) => {
+  let clean = (raw || "").trim();
+  let iso = "IN";
+  let code = "+91";
+  if (clean.startsWith("+")) {
+    const matchDial = dialOptions.find((d) => clean.startsWith(d.code));
+    if (matchDial) {
+      iso = matchDial.isoCode;
+      code = matchDial.code;
+      clean = clean.slice(matchDial.code.length).trim();
+    }
+  }
+  return { digits: sanitizePhoneInput(clean, 15), iso, code };
 };
 
 const genOrderId = () =>
@@ -128,8 +183,116 @@ const ItemSummaryCard = ({ item }) => {
 };
 
 // ─── Step 1 — Student Details ─────────────────────────────────────────────────
-const DetailsStep = ({ form, onChange, onNext }) => {
+const DetailsStep = ({ form, onChange, setForm, onNext }) => {
   const [errors, setErrors] = useState({});
+
+  const dialCodeOptions = useMemo(() => getDialCodeOptions(), []);
+  const selectedPhoneIso = form.phoneIso || "IN";
+
+  const currentPhoneCountry = useMemo(() => {
+    return (
+      dialCodeOptions.find((c) => c.isoCode === selectedPhoneIso) ||
+      dialCodeOptions.find((c) => c.isoCode === "IN") ||
+      dialCodeOptions[0] ||
+      {
+        lengths: [10],
+        minLength: 10,
+        maxLength: 10,
+        formatDescription: "exactly 10 digits",
+        placeholder: "9876543210",
+        name: "India",
+        code: "+91",
+        isoCode: "IN",
+      }
+    );
+  }, [dialCodeOptions, selectedPhoneIso]);
+
+  const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
+  const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
+  const [phoneInputFocused, setPhoneInputFocused] = useState(false);
+  const phoneDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (phoneDropdownRef.current && !phoneDropdownRef.current.contains(e.target)) {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setPhoneCodeDropdownOpen(false);
+        setPhoneCodeSearch("");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const filteredDialCodes = useMemo(() => {
+    if (!phoneCodeSearch.trim()) return dialCodeOptions;
+    const q = phoneCodeSearch.toLowerCase();
+    return dialCodeOptions.filter(
+      (opt) =>
+        opt.name.toLowerCase().includes(q) ||
+        opt.code.includes(q) ||
+        opt.isoCode.toLowerCase().includes(q)
+    );
+  }, [dialCodeOptions, phoneCodeSearch]);
+
+  const handlePhoneCountryChange = (isoCode) => {
+    const countryObj = dialCodeOptions.find((c) => c.isoCode === isoCode);
+    if (countryObj) {
+      const cleanDigits = sanitizePhoneInput(form.phone || "", countryObj.maxLength);
+      if (setForm) {
+        setForm((prev) => ({
+          ...prev,
+          phone: cleanDigits,
+          phoneIso: countryObj.isoCode,
+          phoneCountryCode: countryObj.code,
+        }));
+      } else {
+        onChange({ target: { name: "phoneIso", value: countryObj.isoCode } });
+        onChange({ target: { name: "phoneCountryCode", value: countryObj.code } });
+        onChange({ target: { name: "phone", value: cleanDigits } });
+      }
+      if (errors.phone) {
+        setErrors((prev) => ({ ...prev, phone: "" }));
+      }
+    }
+  };
+
+  const handlePhoneKeyDown = (e) => {
+    if (!isPhoneKeyAllowed(e, form.phone, currentPhoneCountry.maxLength)) {
+      e.preventDefault();
+    }
+  };
+
+  const handlePhonePaste = (e) => {
+    e.preventDefault();
+    const pasted = (e.clipboardData || window.clipboardData).getData("text") || "";
+    const target = e.target;
+    const start = target.selectionStart || 0;
+    const end = target.selectionEnd || 0;
+    const current = form.phone || "";
+    const merged = current.slice(0, start) + pasted + current.slice(end);
+    const result = sanitizePhoneInput(merged, currentPhoneCountry.maxLength);
+    if (setForm) {
+      setForm((prev) => ({ ...prev, phone: result }));
+    } else {
+      onChange({ target: { name: "phone", value: result } });
+    }
+    if (errors.phone) {
+      setErrors((prev) => ({ ...prev, phone: "" }));
+    }
+  };
 
   const validate = () => {
     const e = {};
@@ -137,8 +300,12 @@ const DetailsStep = ({ form, onChange, onNext }) => {
     if (!nameVal.isValid) e.fullName = nameVal.message;
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       e.email = "Enter a valid email.";
-    if (!form.phone.trim() || !/^\d{10}$/.test(form.phone.replace(/\s/g, "")))
-      e.phone = "Enter a valid 10-digit phone.";
+
+    const phoneVal = validatePhoneDigits(form.phone, currentPhoneCountry, currentPhoneCountry.name, true);
+    if (!phoneVal.isValid) {
+      e.phone = phoneVal.message;
+    }
+
     if (!form.dob) e.dob = "Date of birth is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -191,17 +358,168 @@ const DetailsStep = ({ form, onChange, onNext }) => {
 
         <div className="ne-field">
           <label htmlFor="ne-phone">Phone number *</label>
-          <input id="ne-phone" name="phone" type="tel" placeholder="9876543210"
-            value={form.phone} onChange={onChange} maxLength={10}
-            className={errors.phone ? "error" : ""} />
+          <div
+            ref={phoneDropdownRef}
+            className={`ne-phone-input-group ${
+              phoneCodeDropdownOpen || phoneInputFocused ? "focused" : ""
+            } ${errors.phone ? "error" : ""}`}
+          >
+            {/* Country Calling Code & Flag selector trigger */}
+            <div
+              className="ne-phone-trigger"
+              onClick={() => setPhoneCodeDropdownOpen((prev) => !prev)}
+              title="Click to select country calling code"
+              tabIndex={0}
+              role="button"
+              aria-haspopup="listbox"
+              aria-expanded={phoneCodeDropdownOpen}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setPhoneCodeDropdownOpen((prev) => !prev);
+                }
+              }}
+            >
+              <img
+                src={`https://flagcdn.com/w40/${currentPhoneCountry.isoCode.toLowerCase()}.png`}
+                alt={currentPhoneCountry.name}
+                className="ne-phone-flag"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+              <span className="ne-phone-code">{currentPhoneCountry.code}</span>
+              <svg
+                className={`ne-phone-arrow ${phoneCodeDropdownOpen ? "open" : ""}`}
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+
+            {/* Local Phone Number Input */}
+            <input
+              id="ne-phone"
+              name="phone"
+              type="tel"
+              placeholder={currentPhoneCountry.placeholder || "9876543210"}
+              value={form.phone}
+              maxLength={currentPhoneCountry.maxLength + 8}
+              onChange={(e) => {
+                const sanitized = sanitizePhoneInput(
+                  e.target.value,
+                  currentPhoneCountry.maxLength
+                );
+                if (setForm) {
+                  setForm((prev) => ({ ...prev, phone: sanitized }));
+                } else {
+                  onChange({ target: { name: "phone", value: sanitized } });
+                }
+                if (errors.phone) {
+                  setErrors((prev) => ({ ...prev, phone: "" }));
+                }
+              }}
+              onKeyDown={handlePhoneKeyDown}
+              onPaste={handlePhonePaste}
+              onFocus={() => setPhoneInputFocused(true)}
+              onBlur={() => setPhoneInputFocused(false)}
+              className="ne-phone-input"
+            />
+
+            {/* Phone Code Dropdown Menu */}
+            {phoneCodeDropdownOpen && (
+              <div
+                className="ne-phone-dropdown"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Search wrap */}
+                <div className="ne-phone-search-wrap">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search country or code..."
+                    value={phoneCodeSearch}
+                    onChange={(e) => setPhoneCodeSearch(e.target.value)}
+                    autoFocus
+                    className="ne-phone-search-input"
+                  />
+                  {phoneCodeSearch && (
+                    <span
+                      onClick={() => setPhoneCodeSearch("")}
+                      className="ne-phone-search-clear"
+                    >
+                      <SvgClose size={12} />
+                    </span>
+                  )}
+                </div>
+
+                {/* Code List */}
+                <div className="ne-phone-list">
+                  {filteredDialCodes.length === 0 ? (
+                    <div className="ne-phone-empty">No codes found</div>
+                  ) : (
+                    filteredDialCodes.map((opt) => {
+                      const isSelected = opt.isoCode === selectedPhoneIso;
+                      return (
+                        <div
+                          key={`${opt.isoCode}-${opt.code}`}
+                          onClick={() => {
+                            handlePhoneCountryChange(opt.isoCode);
+                            setPhoneCodeDropdownOpen(false);
+                            setPhoneCodeSearch("");
+                          }}
+                          className={`ne-phone-item ${isSelected ? "selected" : ""}`}
+                        >
+                          <div className="ne-phone-item-left">
+                            <img
+                              src={`https://flagcdn.com/w40/${opt.isoCode.toLowerCase()}.png`}
+                              alt={opt.name}
+                              className="ne-phone-flag"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                              }}
+                            />
+                            <span className="ne-phone-item-code">{opt.code}</span>
+                            <span className="ne-phone-item-name">{opt.name}</span>
+                          </div>
+                          {isSelected && <SvgCheck size={13} />}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
           {errors.phone && <span className="ne-err">{errors.phone}</span>}
         </div>
 
         <div className="ne-field">
           <label htmlFor="ne-dob">Date of birth *</label>
-          <input id="ne-dob" name="dob" type="date"
-            value={form.dob} onChange={onChange}
-            className={errors.dob ? "error" : ""} />
+          <ResponsiveDatePicker
+            id="ne-dob"
+            name="dob"
+            value={form.dob}
+            onChange={onChange}
+            className={errors.dob ? "error" : ""}
+          />
           {errors.dob && <span className="ne-err">{errors.dob}</span>}
         </div>
 
@@ -372,7 +690,9 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
         prefill: {
           name: studentForm.fullName,
           email: studentForm.email,
-          contact: studentForm.phone,
+          contact: studentForm.phoneCountryCode
+            ? `${studentForm.phoneCountryCode}${studentForm.phone}`
+            : studentForm.phone,
         },
         theme: {
           color: "#1FA655"
@@ -661,10 +981,17 @@ const NaaviExclusivePage = () => {
   const initialEmail = prefilled?.email || userObj.email || localStorage.getItem("loginEmail") || "";
   const initialPhone = prefilled?.phone || userObj.phone || userObj.phoneNumber || userObj.mobile || "";
 
+  const dialCodeOptions = useMemo(() => getDialCodeOptions(), []);
+  const initialParsedPhone = useMemo(() => {
+    return parsePhoneInfo(initialPhone, dialCodeOptions);
+  }, [initialPhone, dialCodeOptions]);
+
   const [form, setForm] = useState({
     fullName: initialFullName,
     email: initialEmail,
-    phone: initialPhone,
+    phone: initialParsedPhone.digits,
+    phoneIso: initialParsedPhone.iso,
+    phoneCountryCode: initialParsedPhone.code,
     dob: userObj.dob || "",
     institution: userObj.institution || userObj.schoolName || userObj.school || "",
     notes: "",
@@ -678,13 +1005,27 @@ const NaaviExclusivePage = () => {
         .then((res) => {
           if (res.data?.status && res.data?.data) {
             const uData = res.data.data;
-            setForm((prev) => ({
-              ...prev,
-              fullName: prev.fullName || uData.name || uData.fullName || uData.username || "",
-              email: prev.email || uData.email || "",
-              phone: prev.phone || uData.phoneNumber || uData.phone || uData.mobile || "",
-              institution: prev.institution || uData.school || uData.institution || "",
-            }));
+            const rawPhone = uData.phoneNumber || uData.phone || uData.mobile || "";
+            setForm((prev) => {
+              let newPhone = prev.phone;
+              let newIso = prev.phoneIso || "IN";
+              let newCode = prev.phoneCountryCode || "+91";
+              if (!newPhone && rawPhone) {
+                const parsed = parsePhoneInfo(rawPhone, dialCodeOptions);
+                newPhone = parsed.digits;
+                newIso = parsed.iso;
+                newCode = parsed.code;
+              }
+              return {
+                ...prev,
+                fullName: prev.fullName || uData.name || uData.fullName || uData.username || "",
+                email: prev.email || uData.email || "",
+                phone: newPhone,
+                phoneIso: newIso,
+                phoneCountryCode: newCode,
+                institution: prev.institution || uData.school || uData.institution || "",
+              };
+            });
           }
         })
         .catch(() => {});
@@ -767,7 +1108,12 @@ const NaaviExclusivePage = () => {
               {step < 3 && <StepIndicator step={step} />}
 
               {step === 1 && (
-                <DetailsStep form={form} onChange={handleFormChange} onNext={() => setStep(2)} />
+                <DetailsStep
+                  form={form}
+                  onChange={handleFormChange}
+                  setForm={setForm}
+                  onNext={() => setStep(2)}
+                />
               )}
               {step === 2 && (
                 <PaymentStep item={item} studentForm={form} onBack={() => setStep(1)} onSuccess={() => setStep(3)} />

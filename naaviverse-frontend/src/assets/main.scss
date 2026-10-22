@@ -41,3 +41,48 @@ body, h1, h2, h3, h4, h5, h6, p, a, span, button, input, select, textarea, label
 .fa, .fas, .far, .fab, [class^="fa-"], [class*=" fa-"] {
   font-family: "Font Awesome 5 Free", "FontAwesome" !important;
 }
+
+/* ── Mobile Popup Message (Toast): Position 'X' in upper left corner ── */
+@media (max-width: 991px) {
+  .Toastify__toast {
+    position: relative !important;
+    padding-left: 32px !important;
+    padding-right: 14px !important;
+    align-items: center !important;
+  }
+
+  .Toastify__close-button {
+    position: absolute !important;
+    top: 8px !important;
+    left: 8px !important;
+    right: auto !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
+    padding: 2px !important;
+    z-index: 2 !important;
+  }
+}
+
+/* ── Native Date Picker Mobile & iPad Popup Overflow Fix ── */
+@media (max-width: 1080px) {
+  input[type="date"] {
+    position: relative;
+    max-width: 100%;
+
+    &::-webkit-calendar-picker-indicator {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      margin: 0;
+      padding: 0;
+    }
+
+    &::-webkit-datetime-edit {
+      margin-left: 24px;
+    }
+  }
+}
+
+
