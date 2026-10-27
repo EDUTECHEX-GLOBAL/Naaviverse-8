@@ -543,7 +543,7 @@ const NewHomePage = () => {
               : "Register your business and join our growing partner network"}
           </div>
 
-          {/* Role pill switcher */}
+      
           <div className="toggle-box">
             <div
               className={`toggle-each ${isUser ? "toggle-each-active" : ""}`}
