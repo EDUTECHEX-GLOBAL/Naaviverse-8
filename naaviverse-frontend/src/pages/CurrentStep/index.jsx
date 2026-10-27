@@ -70,32 +70,26 @@ const FEEDBACK_ACTIONS = [
 
 const FeedbackStrip = ({ value = {}, onChange }) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(value.action || "");
-  const [commentText, setCommentText] = useState(value.comment || "");
+  const [selected, setSelected] = useState(value?.action || "");
+  const [commentText, setCommentText] = useState(value?.comment || "");
   const showComment = selected === "comment";
 
+  // Sync external value when prop changes (e.g. on step change or db sync)
   useEffect(() => {
-    if (value.action !== undefined) {
-      if (value.action === "comment" && selected === "comment_submitted") {
-        // Keep the submitted visual state intact
-      } else {
-        setSelected(value.action);
-      }
-    }
-    if (value.comment !== undefined && selected !== "comment_submitted") {
-      setCommentText(value.comment);
-    }
-  }, [value.action, value.comment, selected]);
+    setSelected(value?.action || "");
+    setCommentText(value?.comment || "");
+  }, [value?.action, value?.comment]);
 
   const handleAction = (action) => {
     if (action === "comment") {
       setSelected("comment");
+      setOpen(true);
     } else {
       setSelected(action);
       setOpen(false); // collapse after selection
       onChange({
         action,
-        comment: "",
+        comment: commentText, // preserve comment so switching back retains it
         skipped: action === "skip",
       });
     }
@@ -103,13 +97,28 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
 
   const handleSubmitComment = (e) => {
     e.stopPropagation();
+    const finalComment = (commentText || "").trim();
     onChange({
       action: "comment",
-      comment: commentText,
+      comment: finalComment,
       skipped: false,
     });
-    setSelected("comment_submitted");
+    setSelected("comment");
     setOpen(false); // collapse after submit
+  };
+
+  const handleClearComment = (e) => {
+    e.stopPropagation();
+    setCommentText("");
+    onChange({
+      action: selected === "comment" ? "comment" : selected,
+      comment: "",
+      skipped: selected === "skip",
+    });
+    if (selected === "comment") {
+      setSelected("");
+      setOpen(false);
+    }
   };
 
   // Already submitted feedback — show compact badge
@@ -178,13 +187,25 @@ const FeedbackStrip = ({ value = {}, onChange }) => {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
               />
-              <button
-                type="button"
-                className="feedback-submit-btn"
-                onClick={handleSubmitComment}
-              >
-                Submit
-              </button>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px" }}>
+                {Boolean(commentText || value?.comment) && (
+                  <button
+                    type="button"
+                    className="feedback-submit-btn"
+                    style={{ background: "#f3f4f6", color: "#4b5563", border: "1px solid #d1d5db" }}
+                    onClick={handleClearComment}
+                  >
+                    Clear
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="feedback-submit-btn"
+                  onClick={handleSubmitComment}
+                >
+                  Submit
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -478,108 +499,6 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
   const [stepLoading, setStepLoading] = useState(true);
   const [viewsLoading, setViewsLoading] = useState(true);
 
-  const [totalStepsCount, setTotalStepsCount] = useState(null);
-  const [currentStepPageData, setCurrentStepPageData] = useState(null);
-  const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
-  const [popup, setPopup] = useState(false);
-  const [popupContent, setPopupContent] = useState("default");
-  const [popupDetails, setPopupDetails] = useState("");
-  const [selectedCard, setSelectedCard] = useState(0);
-  const [acceptOffer, setAcceptOffer] = useState(false);
-  const activeStepId = currentStepPageData?._id || localStorage.getItem("selectedStepId") || "";
-
-  const getStepFeedbackKey = useCallback((email, stepId) => {
-    const cleanMail = (email || userEmail || "guest@naaviverse.com").toLowerCase().trim();
-    const cleanStep = stepId || localStorage.getItem("selectedStepId") || "default";
-    return `naavi_step_feedback_${cleanMail}_${cleanStep}`;
-  }, [userEmail]);
-
-  const [stepFeedback, setStepFeedback] = useState(() => {
-    try {
-      const stepId = localStorage.getItem("selectedStepId") || "";
-      const rawUser = localStorage.getItem("user");
-      const parsedUser = rawUser ? JSON.parse(rawUser) : null;
-      const email = (
-        parsedUser?.user?.email ||
-        parsedUser?.email ||
-        localStorage.getItem("loginEmail") ||
-        localStorage.getItem("userEmail") ||
-        "guest@naaviverse.com"
-      ).toLowerCase().trim();
-      const sKey = `naavi_step_feedback_${email}_${stepId || "default"}`;
-      const raw = localStorage.getItem(sKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") return parsed;
-      }
-    } catch (e) {
-      console.warn("Could not load initial step feedback:", e);
-    }
-    return {};
-  });
-
-  // Re-sync feedback when step, path, or user changes
-  useEffect(() => {
-    const stepId = activeStepId || localStorage.getItem("selectedStepId") || "";
-    const email = (userEmail && userEmail !== "guest" ? userEmail : "guest@naaviverse.com").toLowerCase().trim();
-    const sKey = getStepFeedbackKey(email, stepId);
-
-    try {
-      const raw = localStorage.getItem(sKey);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") {
-          setStepFeedback(parsed);
-        } else {
-          setStepFeedback({});
-        }
-      } else {
-        setStepFeedback({});
-      }
-    } catch {
-      setStepFeedback({});
-    }
-
-    // Background reconciliation with backend /api/feedback/path/:pathId
-    const pathId = selectedPathId || localStorage.getItem("selectedPathId");
-    if (pathId && stepId && email && email !== "guest@naaviverse.com") {
-      axios.get(`${BASE_URL}/api/feedback/path/${pathId}`)
-        .then((res) => {
-          if (res.data?.status && Array.isArray(res.data?.data)) {
-            const matches = res.data.data.filter(
-              (f) =>
-                f.studentEmail?.toLowerCase() === email.toLowerCase() &&
-                String(f.stepId) === String(stepId)
-            );
-            if (matches.length > 0) {
-              setStepFeedback((prev) => {
-                const next = { ...prev };
-                let changed = false;
-                matches.forEach((m) => {
-                  if (m.viewType && (!next[m.viewType] || !next[m.viewType].action)) {
-                    next[m.viewType] = {
-                      action: m.action,
-                      comment: m.comment || "",
-                      skipped: m.action === "skip",
-                    };
-                    changed = true;
-                  }
-                });
-                if (changed) {
-                  try {
-                    localStorage.setItem(sKey, JSON.stringify(next));
-                  } catch (e) {}
-                  return next;
-                }
-                return prev;
-              });
-            }
-          }
-        })
-        .catch(() => {});
-    }
-  }, [activeStepId, userEmail, selectedPathId, getStepFeedbackKey]);
-
   const {
     currentStepData, setCurrentStepData,
     currentStepDataLength, setCurrentStepDataLength,
@@ -594,6 +513,141 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
     index, setIndex,
   } = useStore();
 
+  const [totalStepsCount, setTotalStepsCount] = useState(null);
+  const [currentStepPageData, setCurrentStepPageData] = useState(null);
+  const [currentStepPagePathId, setCurrentStepPagePathId] = useState("");
+  const [popup, setPopup] = useState(false);
+  const [popupContent, setPopupContent] = useState("default");
+  const [popupDetails, setPopupDetails] = useState("");
+  const [selectedCard, setSelectedCard] = useState(0);
+  const [acceptOffer, setAcceptOffer] = useState(false);
+  const activeStepId = localStorage.getItem("selectedStepId") || currentStepData?._id || currentStepPageData?._id || "";
+
+  const loadStoredFeedback = useCallback((email, pathId, stepId) => {
+    const cleanMail = (email || userEmail || "guest@naaviverse.com").toLowerCase().trim();
+    const cleanPath = pathId || selectedPathId || localStorage.getItem("selectedPathId") || "default";
+    const cleanStep = stepId || localStorage.getItem("selectedStepId") || "default";
+
+    const primaryKey = `naavi_step_feedback_${cleanMail}_${cleanPath}_${cleanStep}`;
+    const legacyKey = `naavi_step_feedback_${cleanMail}_${cleanStep}`;
+
+    try {
+      const primaryRaw = localStorage.getItem(primaryKey);
+      if (primaryRaw) {
+        const parsed = JSON.parse(primaryRaw);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+      const legacyRaw = localStorage.getItem(legacyKey);
+      if (legacyRaw) {
+        const parsed = JSON.parse(legacyRaw);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.warn("Could not load stored step feedback:", e);
+    }
+    return {};
+  }, [userEmail, selectedPathId]);
+
+  const saveStoredFeedback = useCallback((email, pathId, stepId, nextObj) => {
+    const cleanMail = (email || userEmail || "guest@naaviverse.com").toLowerCase().trim();
+    const cleanPath = pathId || selectedPathId || localStorage.getItem("selectedPathId") || "default";
+    const cleanStep = stepId || localStorage.getItem("selectedStepId") || "default";
+
+    const primaryKey = `naavi_step_feedback_${cleanMail}_${cleanPath}_${cleanStep}`;
+    const legacyKey = `naavi_step_feedback_${cleanMail}_${cleanStep}`;
+    try {
+      const serialized = JSON.stringify(nextObj);
+      localStorage.setItem(primaryKey, serialized);
+      localStorage.setItem(legacyKey, serialized);
+    } catch (e) {
+      console.warn("Could not save step feedback locally:", e);
+    }
+  }, [userEmail, selectedPathId]);
+
+  const [stepFeedback, setStepFeedback] = useState(() => {
+    try {
+      const stepId = localStorage.getItem("selectedStepId") || "";
+      const pathId = localStorage.getItem("selectedPathId") || "";
+      const rawUser = localStorage.getItem("user");
+      const parsedUser = rawUser ? JSON.parse(rawUser) : null;
+      const email = (
+        parsedUser?.user?.email ||
+        parsedUser?.email ||
+        localStorage.getItem("loginEmail") ||
+        localStorage.getItem("userEmail") ||
+        "guest@naaviverse.com"
+      ).toLowerCase().trim();
+      const primaryKey = `naavi_step_feedback_${email}_${pathId || "default"}_${stepId || "default"}`;
+      const legacyKey = `naavi_step_feedback_${email}_${stepId || "default"}`;
+      const raw = localStorage.getItem(primaryKey) || localStorage.getItem(legacyKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") return parsed;
+      }
+    } catch (e) {
+      console.warn("Could not load initial step feedback:", e);
+    }
+    return {};
+  });
+
+  // Re-sync feedback when step, path, or user changes
+  useEffect(() => {
+    const stepId = activeStepId || localStorage.getItem("selectedStepId") || "";
+    const email = (userEmail && userEmail !== "guest" ? userEmail : "guest@naaviverse.com").toLowerCase().trim();
+    const pathId = selectedPathId || localStorage.getItem("selectedPathId") || "";
+
+    if (!stepId) {
+      setStepFeedback({});
+      return;
+    }
+
+    // 1. Immediately reset / load feedback for the active step so previous step's comments never leak
+    const stored = loadStoredFeedback(email, pathId, stepId);
+    setStepFeedback(stored || {});
+
+    // 2. Background reconciliation with backend /api/feedback/path/:pathId
+    if (pathId && stepId && email && email !== "guest@naaviverse.com") {
+      axios.get(`${BASE_URL}/api/feedback/path/${pathId}`)
+        .then((res) => {
+          if (res.data?.status && Array.isArray(res.data?.data)) {
+            const currentStepOid = currentStepPageData?._id ? String(currentStepPageData._id) : null;
+            const matches = res.data.data.filter(
+              (f) =>
+                f.studentEmail?.toLowerCase() === email.toLowerCase() &&
+                (String(f.stepId) === String(stepId) || (currentStepOid && String(f.stepId) === currentStepOid))
+            );
+            if (matches.length > 0) {
+              setStepFeedback((prev) => {
+                const next = { ...prev };
+                let changed = false;
+                const seenViews = new Set();
+                matches.forEach((m) => {
+                  if (m.viewType && !seenViews.has(m.viewType)) {
+                    seenViews.add(m.viewType);
+                    // Sync if local is empty or backend has newer comment
+                    if (!next[m.viewType] || !next[m.viewType].action || (m.comment && !next[m.viewType].comment)) {
+                      next[m.viewType] = {
+                        action: m.action,
+                        comment: m.comment || "",
+                        skipped: m.action === "skip",
+                      };
+                      changed = true;
+                    }
+                  }
+                });
+                if (changed) {
+                  saveStoredFeedback(email, pathId, stepId, next);
+                  return next;
+                }
+                return prev;
+              });
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activeStepId, userEmail, selectedPathId, loadStoredFeedback, saveStoredFeedback, currentStepPageData?._id]);
+
   const updateStepFeedback = async (key, nextValue) => {
     const stepId = activeStepId || localStorage.getItem("selectedStepId") || "";
     const pathId = selectedPathId || localStorage.getItem("selectedPathId") || "";
@@ -601,29 +655,29 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
     // 1. Immediately update in-memory state and save to user-specific localStorage
     setStepFeedback((prev) => {
-      const next = {
-        ...prev,
-        [key]: nextValue,
-      };
-      try {
-        const sKey = getStepFeedbackKey(email, stepId);
-        localStorage.setItem(sKey, JSON.stringify(next));
-      } catch (e) {
-        console.warn("Could not save step feedback locally:", e);
+      const next = { ...prev };
+      if (!nextValue || (!nextValue.action && !nextValue.comment)) {
+        delete next[key];
+      } else {
+        next[key] = nextValue;
       }
+      saveStoredFeedback(email, pathId, stepId, next);
       return next;
     });
 
     // 2. Persist to backend
     try {
+      const actionToSend = !nextValue || (!nextValue.action && !nextValue.comment)
+        ? "delete"
+        : (nextValue.action || "comment");
       await axios.post(`${BASE_URL}/api/feedback`, {
         type: "step",
         studentEmail: email,
         pathId,
         stepId,
         viewType: key, // macro, micro, or nano
-        action: nextValue.action || "",
-        comment: nextValue.comment || "",
+        action: actionToSend,
+        comment: nextValue?.comment || "",
       });
       console.log(`Step feedback for ${key} view submitted successfully.`);
     } catch (err) {
@@ -749,7 +803,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
 
   /* ── Step data fetch ─────────────────────────────────────────── */
   useEffect(() => {
-    const stepId = localStorage.getItem("selectedStepId");
+    const stepId = localStorage.getItem("selectedStepId") || activeStepId;
     const pathId = selectedPathId || localStorage.getItem("selectedPathId");
     if (!stepId || !pathId) { setStepLoading(false); return; }
     setStepLoading(true);
@@ -758,7 +812,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
         const steps = res?.data?.data?.steps || [];
         if (!Array.isArray(steps)) return;
         setTotalStepsCount(steps.length);
-        const step = steps.find((s) => s?._id === stepId || s?.step_id === stepId);
+        const step = steps.find((s) => String(s?._id) === String(stepId) || String(s?.step_id) === String(stepId));
         if (step) {
           setCurrentStepPageData(step);
           setCurrentStepPagePathId(pathId);
@@ -767,12 +821,12 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       })
       .catch((err) => console.error("Error fetching path steps:", err))
       .finally(() => setStepLoading(false));
-  }, [selectedPathId]);
+  }, [selectedPathId, activeStepId]);
 
   /* ── Fetch AI step views ─────────────────────────────────────── */
   useEffect(() => {
     const loadStepViews = async () => {
-      const stepId = localStorage.getItem("selectedStepId");
+      const stepId = localStorage.getItem("selectedStepId") || activeStepId;
       const pathId = selectedPathId || localStorage.getItem("selectedPathId");
       if (!stepId || !pathId) { setViewsLoading(false); return; }
       setViewsLoading(true);
@@ -787,7 +841,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
       } finally { setViewsLoading(false); }
     };
     loadStepViews();
-  }, [selectedPathId]);
+  }, [selectedPathId, activeStepId]);
 
   /* ── User data ───────────────────────────────────────────────── */
   useEffect(() => {
@@ -1113,6 +1167,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   : <div className="vc-desc vc-empty">No macro view available yet.</div>}
               </div>
               <FeedbackStrip
+                key={`${activeStepId}_macro`}
                 value={stepFeedback.macro}
                 onChange={(nextValue) => updateStepFeedback("macro", nextValue)}
               />
@@ -1173,6 +1228,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   </div>}
               </div>
               <FeedbackStrip
+                key={`${activeStepId}_micro`}
                 value={stepFeedback.micro}
                 onChange={(nextValue) => updateStepFeedback("micro", nextValue)}
               />
@@ -1236,6 +1292,7 @@ const CurrentStep = ({ productDataArray, selectedPathId, showSelectedPath, selec
                   </div>}
               </div>
               <FeedbackStrip
+                key={`${activeStepId}_nano`}
                 value={stepFeedback.nano}
                 onChange={(nextValue) => updateStepFeedback("nano", nextValue)}
               />

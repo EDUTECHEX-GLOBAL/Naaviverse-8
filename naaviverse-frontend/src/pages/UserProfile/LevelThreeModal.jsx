@@ -445,22 +445,6 @@ const LevelThreeModal = ({
           </>
         )}
 
-        {/* Footer Validation Notice if scrolled to bottom */}
-        {validationError && (
-          <div className="up-validation-banner" style={{ margin: "14px 0 6px" }}>
-            <div className="up-validation-banner-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-            </div>
-            <div className="up-validation-banner-content">
-              <span className="up-validation-banner-text">{validationError}</span>
-            </div>
-          </div>
-        )}
-
         {/* Footer */}
         <div className="up-form-footer">
           {onBack && creation && (

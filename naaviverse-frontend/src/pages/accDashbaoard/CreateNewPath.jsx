@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './CreateNewPath.scss';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { SvgArrowUp } from "../../utils/SvgIcons";
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
@@ -704,7 +703,7 @@ const CreateNewPath = ({
               <label>What program will they be studying? <span className="required">*</span></label>
               <div className="autocomplete-wrapper">
                 <input type="text"
-                  placeholder={selectedUniversity ? "Search program..." : "<SvgArrowUp size={14} /> Select a university first"}
+                  placeholder="Program name"
                   value={pathSteps?.program || ''}
                   disabled={!selectedUniversity}
                   style={{ opacity: selectedUniversity ? 1 : 0.5, cursor: selectedUniversity ? 'text' : 'not-allowed' }}

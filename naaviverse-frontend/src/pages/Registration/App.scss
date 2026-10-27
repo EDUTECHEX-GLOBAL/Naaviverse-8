@@ -223,6 +223,7 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   align-items: center;
   background: $bg-card;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 20px 40px;
 
   /* Sleek custom scrollbar */
@@ -272,7 +273,7 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   z-index: 1;
   width: 100%;
   max-width: 400px;
-  margin: auto 0;
+  margin: auto;
   padding: 16px 0 24px 0;
   animation: fadeInUp 0.5s ease-out;
 }
@@ -681,6 +682,35 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
     opacity: 0.5;
     pointer-events: none;
   }
+
+  &.loading {
+    opacity: 0.88;
+    cursor: wait;
+    pointer-events: none;
+  }
+
+  .btn-loading-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2.2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: btnSpin 0.7s infinite linear;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+}
+
+@keyframes btnSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* ===== DIVIDER ===== */
@@ -787,6 +817,7 @@ $shadow-card: 0 20px 50px -20px rgba(26, 31, 61, 0.18);
   .regrightside {
     width: 55%;
     padding: 28px 32px;
+    scrollbar-gutter: stable;
   }
 }
 

@@ -2066,14 +2066,19 @@ table {
 // ══════════════════════════════════════════════════════════════════════════════
 // RESPONSIVE UTILITIES
 // ══════════════════════════════════════════════════════════════════════════════
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
   .ph-root {
     min-height: 100% !important;
     height: auto !important;
-    padding-top: 50px !important;
     padding-bottom: 0 !important;
     display: flex !important;
     flex-direction: column !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .ph-root {
+    padding-top: 50px !important;
   }
 
   .ph-header {
@@ -2541,6 +2546,20 @@ table {
   }
 }
 
+.ph-notif-root {
+  min-height: 100vh !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px 20px 16px !important;
+  box-sizing: border-box !important;
+  flex: 1 !important;
+
+  @media (max-width: 768px) {
+    padding: 50px 10px 0 !important;
+  }
+}
+
 .ph-notif-page {
   background: #ffffff;
   border-radius: var(--ph-r-lg);
@@ -2548,15 +2567,15 @@ table {
   box-shadow: var(--ph-shadow-sm);
   display: flex;
   flex-direction: column;
-  min-height: 580px;
+  flex: 1 !important;
+  min-height: calc(100vh - 32px) !important;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
 
   @media (max-width: 768px) {
-    min-height: calc(100vh - 65px) !important;
-    flex: 1 !important;
-    margin-top: 6px !important;
-    margin-bottom: 0 !important;
+    min-height: calc(100vh - 56px) !important;
+    margin-top: 0 !important;
     border-radius: 14px 14px 0 0 !important;
   }
 }
@@ -2623,14 +2642,11 @@ table {
 
 .ph-notif-body {
   display: flex;
-  flex: 1;
-  min-height: 480px;
+  flex: 1 !important;
+  min-height: 0 !important;
 
   @media (max-width: 768px) {
     flex-direction: column !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    display: flex !important;
   }
 }
 
@@ -2640,6 +2656,7 @@ table {
   background: var(--ph-slate-50);
   border-right: 1px solid var(--ph-slate-100);
   padding: 14px 10px;
+  overflow-y: auto;
 
   @media (max-width: 768px) {
     width: 100% !important;
@@ -2767,14 +2784,10 @@ table {
 }
 
 .ph-notif-list-full {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-
-  @media (max-width: 768px) {
-    flex: 1 !important;
-    padding-bottom: 24px !important;
-  }
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  padding: 8px 0 24px 0 !important;
 }
 
 .ph-notif-empty {
@@ -2896,6 +2909,19 @@ table {
 /* ── PAGE 1: MY MARKETPLACE LISTING TABLE ── */
 .ph-marketplace-root {
   padding: 24px 28px 40px;
+
+  @media (max-width: 1200px) {
+    padding: 16px 16px 0 !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    .ph-marketplace-card {
+      flex: 1 !important;
+      min-height: calc(100vh - 40px) !important;
+      margin-bottom: 0 !important;
+    }
+  }
 
   @media (max-width: 768px) {
     padding: 16px 12px 0 !important;
@@ -3292,6 +3318,19 @@ table {
 /* ── PAGE 2: MARKETPLACE ITEM DETAILS PAGE ── */
 .ph-market-detail-root {
   padding: 24px 28px 40px;
+
+  @media (max-width: 1200px) {
+    padding: 16px 16px 0 !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    .ph-market-detail-card {
+      flex: 1 !important;
+      min-height: calc(100vh - 40px) !important;
+      margin-bottom: 0 !important;
+    }
+  }
 
   @media (max-width: 768px) {
     padding: 16px 12px 0 !important;
@@ -3812,6 +3851,19 @@ table {
 .ph-actions-root {
   padding: 24px 28px 40px;
 
+  @media (max-width: 1200px) {
+    padding: 16px 16px 0 !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    .ph-page-card {
+      flex: 1 !important;
+      min-height: calc(100vh - 40px) !important;
+      margin-bottom: 0 !important;
+    }
+  }
+
   @media (max-width: 768px) {
     padding: 16px 12px 0 !important;
   }
@@ -3955,6 +4007,19 @@ table {
    ============================================================================== */
 .ph-paths-root {
   padding: 24px 28px 40px;
+
+  @media (max-width: 1200px) {
+    padding: 16px 16px 0 !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    .ph-page-card {
+      flex: 1 !important;
+      min-height: calc(100vh - 40px) !important;
+      margin-bottom: 0 !important;
+    }
+  }
 
   @media (max-width: 768px) {
     padding: 16px 12px 0 !important;
@@ -4168,6 +4233,19 @@ table {
    ============================================================================== */
 .ph-path-detail-root {
   padding: 24px 28px 40px;
+
+  @media (max-width: 1200px) {
+    padding: 16px 16px 0 !important;
+    min-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    .ph-page-card {
+      flex: 1 !important;
+      min-height: calc(100vh - 40px) !important;
+      margin-bottom: 0 !important;
+    }
+  }
 
   @media (max-width: 768px) {
     padding: 16px 12px 0 !important;

@@ -69,8 +69,9 @@ $sidebar-width: 240px;
   padding: 0;
 
   // Ensure no border or outline
-  border: none;
-  outline: none;
+  body:has(.user-dashboard-sidebar.collapsed) & {
+    left: 64px;
+  }
 
   @media (max-width: 768px) {
     left: 0 !important;
@@ -84,6 +85,10 @@ $sidebar-width: 240px;
   left: calc(var(--sidebar-width, #{$sidebar-width}) + (100vw - var(--sidebar-width, #{$sidebar-width})) / 2);
   transform: translate(-50%, -50%);
   transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+
+  body:has(.user-dashboard-sidebar.collapsed) & {
+    left: calc(64px + (100vw - 64px) / 2);
+  }
   width: 90%;
   max-width: 440px;
   background: $bg-card;
@@ -596,20 +601,25 @@ $sidebar-width: 240px;
 }
 
 // ─── Coordinates Overlay ─────────────────────────────────────
-// CRITICAL: Starts EXACTLY at sidebar edge - NO GAP
+// CRITICAL: Starts EXACTLY at sidebar edge - NO GAP (adapts dynamically to collapsed sidebar)
 .coords-overlay {
   position: fixed;
   top: 0;
-  left: $sidebar-width;
+  left: var(--sidebar-width, #{$sidebar-width});
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.2);
   z-index: 300;
   animation: fadeIn 0.2s ease;
+  transition: left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   margin: 0;
   padding: 0;
   border: none;
   outline: none;
+
+  body:has(.user-dashboard-sidebar.collapsed) & {
+    left: 64px;
+  }
 
   @media (max-width: 768px) {
     left: 0;

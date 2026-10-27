@@ -1,217 +1,507 @@
+// ── ResponsiveDatePicker.scss ───────────────────────────────────────
+// Clean, modern, professional Date Picker with Month & Year Dropdowns,
+// Navigation Arrows, and Interactive Calendar Grid
+
+$rdp-brand:       #3E7BFA;
+$rdp-brand-hover: #2b68ea;
+$rdp-brand-light: #eff6ff;
+$rdp-text-dark:   #0f172a;
+$rdp-text-sub:    #475569;
+$rdp-text-muted:  #94a3b8;
+$rdp-border:      #cbd5e1;
+$rdp-border-light:#f1f5f9;
+$rdp-bg-card:     #ffffff;
+
 .rdp-container {
   position: relative;
   width: 100%;
   box-sizing: border-box;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
+// ── Input Box ────────────────────────────────────────────────────────
 .rdp-input-box {
   width: 100%;
-  height: 38px;
+  height: 32px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 10px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-family: 'Poppins', sans-serif !important;
-  font-size: 0.82rem;
-  color: #0f172a;
+  border: 1px solid $rdp-border;
+  border-radius: 7px;
+  font-size: 11.5px;
+  color: $rdp-text-dark;
   cursor: pointer;
   box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.15s ease;
+  user-select: none;
 
   &:hover {
-    border-color: #3b82f6;
+    border-color: $rdp-brand;
+    background: #fbfcfe;
   }
 
   &.open {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border-color: $rdp-brand;
+    box-shadow: 0 0 0 3px rgba(62, 123, 250, 0.15);
+    background: #ffffff;
   }
 
-  .rdp-cal-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #64748b;
-    flex-shrink: 0;
+  &.disabled {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   .rdp-display-text {
     flex: 1;
     font-weight: 500;
-    line-height: 1;
+    color: $rdp-text-dark;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &.is-placeholder {
-      color: #94a3b8;
+      color: $rdp-text-muted;
+      font-weight: 400;
+    }
+  }
+
+  .rdp-actions-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+
+    .rdp-clear-icon-btn {
+      border: none;
+      background: #f1f5f9;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.12s ease;
+
+      &:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+      }
+    }
+
+    .rdp-cal-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 13px;
     }
   }
 }
 
+// ── Popup Card ────────────────────────────────────────────────────────
 .rdp-popup-card {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 5px);
   left: 0;
-  width: 280px;
-  max-width: calc(100vw - 32px);
-  background: #ffffff;
+  width: 268px;
+  max-width: calc(100vw - 20px);
+  background: $rdp-bg-card;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 12px 14px 10px;
-  z-index: 1200;
+  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+  padding: 10px 12px 8px;
+  z-index: 1100;
   box-sizing: border-box;
   user-select: none;
-  font-family: 'Poppins', sans-serif !important;
-
-  @media (max-width: 480px) {
-    width: 270px;
-    padding: 10px 12px 8px;
-  }
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  animation: rdpFadeIn 0.15s ease-out;
 
   &.align-right {
     left: auto;
     right: 0;
   }
+
+  &.open-upward {
+    top: auto;
+    bottom: calc(100% + 5px);
+  }
 }
 
-.rdp-popup-header {
+@keyframes rdpFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Header: Month/Year Selectors & Arrows ─────────────────────────────
+.rdp-nav-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  gap: 4px;
+  margin-bottom: 8px;
   padding-bottom: 6px;
-  border-bottom: 1px solid #f1f5f9;
-
-  .rdp-popup-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .rdp-title-chevron {
-      font-size: 10px;
-      color: #64748b;
-      margin-left: 2px;
-    }
-  }
-
-  .rdp-arrows {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  border-bottom: 1px solid $rdp-border-light;
 
   .rdp-arrow-btn {
     width: 24px;
     height: 24px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #475569;
-    cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.12s ease;
+    flex-shrink: 0;
 
     &:hover {
-      background: #eff6ff;
+      background: $rdp-brand-light;
+      color: $rdp-brand;
       border-color: #bfdbfe;
-      color: #2563eb;
-    }
-
-    &:active {
-      transform: scale(0.95);
     }
   }
-}
 
-.rdp-popup-weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  margin-bottom: 6px;
-
-  .rdp-weekday-cell {
-    font-size: 11px;
-    font-weight: 600;
-    color: #475569;
-    padding: 2px 0;
-  }
-}
-
-.rdp-popup-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-  margin-bottom: 10px;
-
-  .rdp-day-cell {
-    height: 28px;
+  .rdp-selectors-group {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .rdp-dropdown-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+
+    .rdp-header-btn {
+      appearance: none !important;
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 6px !important;
+      height: 24px !important;
+      padding: 0 7px !important;
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
+      color: #1e293b !important;
+      font-family: 'Poppins', sans-serif !important;
+      cursor: pointer !important;
+      outline: none !important;
+      box-sizing: border-box !important;
+      vertical-align: middle !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: auto !important;
+      transition: all 0.15s ease;
+
+      &:hover,
+      &.active {
+        background: #ffffff !important;
+        border-color: $rdp-brand !important;
+        box-shadow: 0 0 0 2px rgba(62, 123, 250, 0.12) !important;
+      }
+
+      &.rdp-month-btn {
+        min-width: 86px;
+      }
+
+      &.rdp-year-btn {
+        min-width: 58px;
+      }
+    }
+
+    .rdp-select-chevron {
+      font-size: 8px;
+      color: #94a3b8;
+      margin-left: 5px;
+      line-height: 1;
+      transition: transform 0.15s ease;
+
+      &.rotate {
+        transform: rotate(180deg);
+      }
+    }
+
+    /* Custom Dropdown Popup Menu */
+    .rdp-custom-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.18), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
+      max-height: 155px;
+      overflow-y: auto;
+      z-index: 1200;
+      padding: 3px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+
+      &.rdp-month-menu {
+        width: 106px;
+      }
+      &.rdp-year-menu {
+        width: 72px;
+      }
+
+      .rdp-menu-item {
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        padding: 4px 8px;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: #334155;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        line-height: 1.4;
+        font-family: 'Poppins', sans-serif !important;
+
+        &:hover {
+          background: #eff6ff;
+          color: $rdp-brand;
+        }
+
+        &.selected {
+          background: $rdp-brand;
+          color: #ffffff;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+// ── Weekdays Row ─────────────────────────────────────────────────────
+.rdp-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+  text-align: center;
+
+  .rdp-weekday-cell {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: $rdp-text-muted;
+    padding: 3px 0;
+    text-transform: uppercase;
+  }
+}
+
+// ── Days Grid ────────────────────────────────────────────────────────
+.rdp-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+
+  .rdp-day-btn {
+    width: 32px;
+    height: 30px;
+    margin: 0 auto;
     border: 1px solid transparent;
+    background: transparent;
     border-radius: 6px;
     font-size: 11.5px;
     font-weight: 500;
-    color: #0f172a;
+    color: $rdp-text-dark;
     cursor: pointer;
-    padding: 0;
-    margin: 0;
-    transition: background 0.12s ease, color 0.12s ease;
-
-    &:hover:not(.selected) {
-      background: #f1f5f9;
-      color: #2563eb;
-    }
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
 
     &.muted {
-      color: #94a3b8;
+      color: #cbd5e1;
     }
 
-    &.today:not(.selected) {
-      border-color: #2563eb;
+    &:hover:not(.selected) {
+      background: $rdp-brand-light;
+      color: $rdp-brand;
+    }
+
+    &.today {
+      border-color: $rdp-brand;
+      color: $rdp-brand;
       font-weight: 700;
-      color: #2563eb;
     }
 
     &.selected {
-      background: #2563eb !important;
+      background: $rdp-brand !important;
+      border-color: $rdp-brand !important;
       color: #ffffff !important;
       font-weight: 700;
+      box-shadow: 0 2px 6px rgba(62, 123, 250, 0.35);
     }
   }
 }
 
+// ── Popup Footer ─────────────────────────────────────────────────────
 .rdp-popup-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 10px;
   padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid $rdp-border-light;
 
   .rdp-footer-btn {
-    background: none;
     border: none;
+    background: transparent;
     font-size: 11px;
     font-weight: 600;
-    color: #2563eb;
     cursor: pointer;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Poppins', sans-serif !important;
-    transition: background 0.12s ease;
+    padding: 3px 8px;
+    border-radius: 5px;
+    transition: all 0.12s ease;
 
-    &:hover {
-      background: #eff6ff;
+    &.clear-btn {
+      color: #94a3b8;
+
+      &:hover {
+        background: #f1f5f9;
+        color: #ef4444;
+      }
+    }
+
+    &.today-btn {
+      color: $rdp-brand;
+      background: $rdp-brand-light;
+
+      &:hover {
+        background: #dbeafe;
+      }
     }
   }
 }
+
+// ── Mobile Responsive Optimizations ──────────────────────────────────
+@media (max-width: 480px) {
+  .rdp-popup-card {
+    width: 250px;
+    padding: 8px 10px 6px;
+    border-radius: 10px;
+  }
+
+  .rdp-nav-header {
+    gap: 3px;
+    margin-bottom: 6px;
+    padding-bottom: 5px;
+
+    .rdp-arrow-btn {
+      width: 22px;
+      height: 22px;
+      font-size: 13px;
+      border-radius: 5px;
+    }
+
+    .rdp-selectors-group {
+      gap: 4px;
+    }
+
+    .rdp-dropdown-wrapper {
+      .rdp-header-btn {
+        height: 22px !important;
+        font-size: 11px !important;
+        padding: 0 5px !important;
+        border-radius: 5px !important;
+
+        &.rdp-month-btn {
+          min-width: 78px;
+        }
+
+        &.rdp-year-btn {
+          min-width: 52px;
+        }
+      }
+
+      .rdp-select-chevron {
+        font-size: 7px;
+        margin-left: 4px;
+      }
+
+      .rdp-custom-menu {
+        max-height: 135px;
+        border-radius: 6px;
+
+        &.rdp-month-menu {
+          width: 96px;
+        }
+        &.rdp-year-menu {
+          width: 66px;
+        }
+
+        .rdp-menu-item {
+          font-size: 10.5px;
+          padding: 3px 6px;
+        }
+      }
+    }
+  }
+
+  .rdp-weekdays-row {
+    margin-bottom: 2px;
+
+    .rdp-weekday-cell {
+      font-size: 9.5px;
+      padding: 1px 0;
+    }
+  }
+
+  .rdp-days-grid {
+    gap: 1px;
+
+    .rdp-day-btn {
+      width: 28px;
+      height: 25px;
+      font-size: 10.5px;
+      border-radius: 5px;
+    }
+  }
+
+  .rdp-popup-footer {
+    margin-top: 6px;
+    padding-top: 6px;
+
+    .rdp-footer-btn {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+  }
+}
+

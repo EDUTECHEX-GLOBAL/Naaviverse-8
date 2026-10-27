@@ -113,7 +113,7 @@ const getMarketplaceStarRating = (item) => {
 const RenderStars = ({ rating = 5, size = 12 }) => {
   const numRating = Math.round(Number(rating) || 5);
   return (
-    <span className="adm-rating-stars" style={{ display: "inline-flex", gap: "2px", verticalAlign: "middle" }}>
+    <span className="adm-rating-stars" style={{ display: "inline-flex", gap: "2px", verticalAlign: "middle", flexShrink: 0 }}>
       {Array.from({ length: 5 }, (_, i) =>
         i < numRating ? (
           <SvgStarFilled key={i} size={size} color="#f59e0b" />

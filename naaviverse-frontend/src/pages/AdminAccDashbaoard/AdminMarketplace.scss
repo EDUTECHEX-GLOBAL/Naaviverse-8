@@ -622,7 +622,7 @@ $paid-light : #FEE2E2;
 
 .adm-table {
   width: 100%;
-  min-width: 560px;
+  min-width: 680px;
   border-collapse: collapse;
   table-layout: fixed; // locks each column to its own width on desktop — cell content can never bleed into the next column
 
@@ -651,13 +651,30 @@ $paid-light : #FEE2E2;
     overflow: hidden;
   }
 
-  // Name / Partner Email get most of the space — Rating, Access, and the
-  // View button only ever hold short badges, so they stay minimal and fixed.
-  th:nth-child(1), td:nth-child(1) { width: 38%; }
-  th:nth-child(2), td:nth-child(2) { width: 34%; }
-  th:nth-child(3), td:nth-child(3) { width: 11%; }
-  th:nth-child(4), td:nth-child(4) { width: 9%; }
-  th:nth-child(5), td:nth-child(5) { width: 8%; }
+  // Column width allocations — Name & Email get flexible space while Rating,
+  // Access, and View button get guaranteed minimums so badges never clip.
+  th:nth-child(1), td:nth-child(1) { width: 34%; }
+  th:nth-child(2), td:nth-child(2) { width: 28%; }
+  th:nth-child(3), td:nth-child(3) {
+    width: 18%;
+    min-width: 140px;
+    overflow: visible;
+    white-space: nowrap;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  th:nth-child(4), td:nth-child(4) {
+    width: 10%;
+    min-width: 75px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  th:nth-child(5), td:nth-child(5) {
+    width: 10%;
+    min-width: 75px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
 }
 
 .adm-row {
@@ -779,6 +796,13 @@ $paid-light : #FEE2E2;
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  span {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 
   &--modal {
     padding: 2px 0;
@@ -792,6 +816,10 @@ $paid-light : #FEE2E2;
   font-size: 10px;
   letter-spacing: 0;
   line-height: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .adm-view-btn {
@@ -1541,17 +1569,26 @@ $paid-light : #FEE2E2;
 
       .adm-rating-badge {
         font-size: 10.5px !important;
-        padding: 2px 7px !important;
+        padding: 2px 8px !important;
         border-radius: 20px !important;
         background: #f8faff !important;
         border: 1px solid #dbeafe !important;
         color: #1e40af !important;
         font-weight: 600 !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        box-sizing: border-box !important;
 
         .adm-rating-stars {
           font-size: 8.5px !important;
           color: #f59e0b !important;
           margin-right: 3px !important;
+          flex-shrink: 0 !important;
+        }
+
+        span {
+          flex-shrink: 0 !important;
+          white-space: nowrap !important;
         }
       }
     }

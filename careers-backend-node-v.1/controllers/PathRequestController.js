@@ -373,8 +373,8 @@ const createPathFromRequest = async (req, res) => {
 
       const stepDoc = new Step({
         email: adminEmail,
-        name: macroName,
-        macro_name: macroName,
+        name: /^step\s*\d+\s*:/i.test(s.name || macroName) ? (s.name || macroName) : `Step ${i + 1}: ${s.name || macroName}`,
+        macro_name: macroName.replace(/^step\s*\d+\s*:\s*/i, ''),
         macro_description: macroDesc,
         macro_length: typeof macroLen === "string" ? macroLen : JSON.stringify(macroLen),
         macro_access: macroAccess,

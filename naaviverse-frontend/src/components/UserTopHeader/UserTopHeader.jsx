@@ -439,6 +439,11 @@ export default function UserTopHeader({ onBack }) {
       }
     }
 
+    if (location.pathname.toLowerCase().includes("notifications") || location.search.toLowerCase().includes("notifications")) {
+      navigate("/dashboard/users/home");
+      return;
+    }
+
     if (onBack) {
       onBack();
     } else {

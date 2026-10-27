@@ -552,10 +552,10 @@ const MyStepsAcc = ({
 
     // ─── Filtered steps: skip path mapping when filterPathId is present ───────
     const filteredSteps = partnerStepsData?.filter((step) => {
-        const title = step?.macro_name || step?.name || "";
+        const title = step?.name || step?.macro_name || "";
         const desc = step?.macro_description || step?.description || "";
         const q = search?.toLowerCase() || "";
-        if (!title.trim()) return false;
+        if (!title.trim() && !desc.trim()) return false;
 
         // When coming from "View Steps", steps are already filtered by path_id
         if (filterPathId) {
@@ -729,12 +729,25 @@ const MyStepsAcc = ({
                         )}
 
                         {/* Step cards */}
-                        {!loading && filteredSteps?.map((step) => {
+                        {!loading && filteredSteps?.map((step, index) => {
                             const pathName = stepToPathMap[step._id?.toString()] || stepToPathMap[step._id] || null;
                             const macroDuration = parseDuration(step.macro_length) || `${step.length || 0} Days`;
                             const microDuration = parseDuration(step.micro_length);
                             const nanoDuration = parseDuration(step.nano_length);
                             const isActiveStep = mypathsMenu !== "Inactive Steps";
+
+                            // Step Title: prioritize step.name, formatted with step number
+                            const stepTitle = (() => {
+                                const rawName = (step.name || step.macro_name || "Untitled Step").trim();
+                                if (/^step\s*\d+\s*:/i.test(rawName)) {
+                                    return rawName;
+                                }
+                                const order = step.step_order || index + 1;
+                                return `Step ${order}: ${rawName}`;
+                            })();
+
+                            // Macro Name: distinct macro view name with fallback
+                            const macroName = (step.macro_name || "Macro View").trim();
 
                             return (
                                 <div
@@ -750,7 +763,7 @@ const MyStepsAcc = ({
                                     <div className="step-card-header">
                                       <h3 className="step-card-title">
   <img src={stepIcon} alt="step" style={{ width: "18px", height: "18px", objectFit: "contain", opacity: 0.8, flexShrink: 0, verticalAlign: "middle", marginRight: "7px" }} />
-  {step.macro_name || step.name || "Untitled Step"}
+  {stepTitle}
 </h3>
                                         <div className="step-card-badges">
                                             {pathName && (
@@ -766,7 +779,7 @@ const MyStepsAcc = ({
                                     <div className="step-layers-grid">
                                         <LayerCard
                                             type="macro"
-                                            name={step.macro_name || step.name}
+                                            name={macroName}
                                             description={step.macro_description || step.description}
                                             length={macroDuration}
                                             access={step.macro_access || step.cost || "Free"}

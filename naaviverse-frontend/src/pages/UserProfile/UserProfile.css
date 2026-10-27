@@ -1340,12 +1340,40 @@
   }
 
   .up-card-body {
-    padding: 18px 20px 24px;
+    padding: 14px 16px 20px;
   }
 
   .up-info-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .up-info-item {
+    padding: 9px 12px;
+    border-radius: 8px;
+  }
+
+  .up-info-label {
+    font-size: 9.5px;
+    margin-bottom: 3px;
+    letter-spacing: 0.7px;
+  }
+
+  .up-info-value {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .up-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .up-avatar-placeholder {
+    width: 46px;
+    height: 46px;
+    font-size: 19px;
   }
 
   .up-form-row,
@@ -1594,6 +1622,65 @@
   }
 }
 
+@media (max-width: 768px) {
+  .up-card-body {
+    padding: 12px 14px 16px !important;
+  }
+
+  .up-cards-stack {
+    gap: 12px !important;
+  }
+
+  .up-info-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    row-gap: 0 !important;
+    column-gap: 0 !important;
+    border: 1px solid var(--gray-200) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    background: var(--gray-50) !important;
+    margin-bottom: 14px !important;
+  }
+
+  .up-info-item {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 7px 11px !important;
+    border: none !important;
+    border-bottom: 1px solid var(--gray-200) !important;
+    border-radius: 0 !important;
+    background: var(--gray-50) !important;
+  }
+
+  .up-info-item:last-child {
+    border-bottom: none !important;
+  }
+
+  .up-info-label {
+    font-size: 9px !important;
+    margin-bottom: 2px !important;
+    letter-spacing: 0.6px !important;
+  }
+
+  .up-info-value {
+    font-size: 12.5px !important;
+    line-height: 1.3 !important;
+  }
+
+  .up-avatar {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .up-avatar-placeholder {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 16px !important;
+  }
+}
+
 @media (max-width: 480px) {
   .up-creation-page {
     padding: 50px 10px 36px !important;
@@ -1631,7 +1718,7 @@
   .up-page-header { margin-bottom: 16px; }
   .up-page-title { font-size: 22px; }
   .up-page-sub { font-size: 12.5px; }
-  .up-cards-stack { gap: 14px; }
+  .up-cards-stack { gap: 10px !important; }
 
   .up-card-header {
     padding: 18px 16px;
@@ -1680,7 +1767,59 @@
     font-size: 20px;
   }
 
-  .up-info-grid { grid-template-columns: 1fr; }
+  .up-card-body {
+    padding: 10px 10px 14px !important;
+  }
+
+  .up-info-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    row-gap: 0 !important;
+    column-gap: 0 !important;
+    border: 1px solid var(--gray-200) !important;
+    border-radius: 7px !important;
+    overflow: hidden !important;
+    background: var(--gray-50) !important;
+    margin-bottom: 12px !important;
+  }
+
+  .up-info-item {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 6px 10px !important;
+    border: none !important;
+    border-bottom: 1px solid var(--gray-200) !important;
+    border-radius: 0 !important;
+    background: var(--gray-50) !important;
+  }
+
+  .up-info-item:last-child {
+    border-bottom: none !important;
+  }
+
+  .up-info-label {
+    font-size: 8.5px !important;
+    margin-bottom: 2px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .up-info-value {
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+
+  .up-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    border-width: 2px !important;
+  }
+
+  .up-avatar-placeholder {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+  }
 
   .up-form-footer {
     gap: 6px !important;

@@ -28,6 +28,7 @@ const EMPTY_LAYER = {
 };
 
 const EMPTY_STEP = {
+  stepName: "",
   macro: { ...EMPTY_LAYER },
   micro: { ...EMPTY_LAYER },
   nano: { ...EMPTY_LAYER },
@@ -99,9 +100,12 @@ const parseDuration = (val) => {
 const normalizeStep = (raw) => {
   if (!raw) return JSON.parse(JSON.stringify(EMPTY_STEP));
 
+  const stepName = raw.name || raw.stepName || (raw.step_order ? `Step ${raw.step_order}: ${raw.macro_name || ""}` : raw.macro_name) || "";
+
   // Already in new shape
   if (raw.macro && typeof raw.macro === "object" && raw.macro.name !== undefined) {
     return {
+      stepName,
       macro: { ...EMPTY_LAYER, ...raw.macro, paid: false, free: raw.macro.free !== undefined ? raw.macro.free : true, marketplace: raw.macro.marketplace || [] },
       micro: { ...EMPTY_LAYER, ...raw.micro, marketplace: raw.micro?.marketplace || [] },
       nano: { ...EMPTY_LAYER, ...raw.nano, marketplace: raw.nano?.marketplace || [] },
@@ -110,9 +114,10 @@ const normalizeStep = (raw) => {
 
   // Legacy flat shape
   return {
+    stepName,
     macro: {
       ...EMPTY_LAYER,
-      name: raw.macro_name || raw.name || "",
+      name: raw.macro_name || "",
       desc: raw.macro_description || raw.description || "",
       duration: parseDuration(raw.macro_length || raw.length),
       paid: false,
@@ -802,7 +807,7 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
 
       const payload = {
         email: partner?.email || "",
-        name: formData.macro?.name || "",
+        name: formData.stepName?.trim() || (selectedStep?.step_order ? `Step ${selectedStep.step_order}: ${formData.macro?.name || ""}` : formData.macro?.name) || "",
 
         macro_name:         formData.macro?.name || "",
         macro_description:  formData.macro?.desc || "",
@@ -867,6 +872,21 @@ const EditStepForm = ({ selectedStep, onSave, onCancel }) => {
       {message && !showSuccess && (
         <div style={styles.errorMsg}>{message}</div>
       )}
+
+      {/* Step Details (Step Name) */}
+      <div style={{ ...styles.layerSection, borderLeft: "3px solid #0d6b6e" }}>
+        <h3 style={{ ...styles.layerTitle, color: "#0d6b6e" }}>STEP DETAILS</h3>
+        <div style={styles.formGroup}>
+          <label style={styles.label}>Step Name</label>
+          <input
+            type="text"
+            style={styles.input}
+            placeholder="e.g. Step 1: Explore Career Opportunities..."
+            value={formData.stepName || ""}
+            onChange={(e) => setFormData((prev) => ({ ...prev, stepName: e.target.value }))}
+          />
+        </div>
+      </div>
 
       {LAYERS.map((layerKey) => (
         <LayerSection

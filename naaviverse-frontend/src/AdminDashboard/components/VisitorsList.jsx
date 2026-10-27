@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { DatePicker, Button, Pagination, Input, Select } from 'antd';
+import { Button, Pagination, Input, Select } from 'antd';
 import 'antd/dist/reset.css';
 import dayjs from 'dayjs';
+import ResponsiveDatePicker from '../../components/ResponsiveDatePicker/ResponsiveDatePicker';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   FiDownload,
@@ -70,6 +71,16 @@ const VisitorsList = () => {
         const created = dayjs(v.createdAt);
         return created.isAfter(dayjs(startDate).subtract(1, 'day')) &&
                created.isBefore(dayjs(endDate).add(1, 'day'));
+      });
+    } else if (startDate) {
+      filtered = filtered.filter(v => {
+        const created = dayjs(v.createdAt);
+        return created.isAfter(dayjs(startDate).subtract(1, 'day'));
+      });
+    } else if (endDate) {
+      filtered = filtered.filter(v => {
+        const created = dayjs(v.createdAt);
+        return created.isBefore(dayjs(endDate).add(1, 'day'));
       });
     }
 
@@ -164,11 +175,11 @@ const VisitorsList = () => {
         </div>
         <div className="visitors-list__actions">
           {hasFilters && (
-            <Button size="small" onClick={clearFilters} icon={<FiFilter size={12} />} className="btn-outline">
+            <Button size="small" onClick={clearFilters} icon={<FiFilter size={11} />} className="btn-outline">
               Clear
             </Button>
           )}
-          <Button size="small" onClick={exportData} icon={<FiDownload size={12} />} type="primary" className="btn-primary">
+          <Button size="small" onClick={exportData} icon={<FiDownload size={11} />} type="primary" className="btn-primary">
             Export
           </Button>
         </div>
@@ -197,26 +208,26 @@ const VisitorsList = () => {
       <div className="visitors-list__filters">
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> Start</div>
-          <DatePicker
-            size="small"
+          <ResponsiveDatePicker
             value={startDate}
-            onChange={setStartDate}
+            onChange={(e) => setStartDate(e?.target ? e.target.value : (e || null))}
             format="MMM DD, YYYY"
             placeholder="Start date"
             className="filter-date"
             allowClear
+            showToday
           />
         </div>
         <div className="filter-item">
           <div className="filter-label"><FiCalendar /> End</div>
-          <DatePicker
-            size="small"
+          <ResponsiveDatePicker
             value={endDate}
-            onChange={setEndDate}
+            onChange={(e) => setEndDate(e?.target ? e.target.value : (e || null))}
             format="MMM DD, YYYY"
             placeholder="End date"
             className="filter-date"
             allowClear
+            showToday
           />
         </div>
         <div className="filter-item">

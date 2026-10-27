@@ -202,33 +202,32 @@ body {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-.table-container h2 {
-  margin-bottom: 20px;
-  color: #161617;
-}
+  h2 {
+    margin-bottom: 20px;
+    color: #161617;
+  }
 
-/* Table Styling */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-thead {
-  font-size: 16px;
-  text-align: center;
-  color: black;
-}
+  thead {
+    font-size: 16px;
+    text-align: center;
+    color: black;
+  }
 
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
 
-tbody tr:hover {
-  background-color: #f1f1f1;
+  tbody tr:hover {
+    background-color: #f1f1f1;
+  }
 }
 
 /* Welcome Message */
@@ -314,9 +313,11 @@ tbody tr:hover {
     font-size: 18px;
   }
 
-  th, td {
-    padding: 10px 10px;
-    font-size: 14px;
+  .table-container {
+    th, td {
+      padding: 10px 10px;
+      font-size: 14px;
+    }
   }
 
   .admin-sidebar {
@@ -375,11 +376,11 @@ tbody tr:hover {
 
   .table-container {
     padding: 10px;
-  }
 
-  th, td {
-    font-size: 12px;
-    padding: 8px;
+    th, td {
+      font-size: 12px;
+      padding: 8px;
+    }
   }
 
   .admin-sidebar {
@@ -420,6 +421,9 @@ tbody tr:hover {
   background: #f6f8fb;
   color: #172033;
   font-family: 'Poppins', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .admin-main-shell {
@@ -622,11 +626,11 @@ tbody tr:hover {
 
   .table-container {
     padding: 10px;
-  }
 
-  th, td {
-    font-size: 12px;
-    padding: 8px;
+    th, td {
+      font-size: 12px;
+      padding: 8px;
+    }
   }
 
   .admin-sidebar {
@@ -757,18 +761,27 @@ tbody tr:hover {
 
   .admin-sidebar {
     padding: 14px 10px;
-    gap: 5px;
-    font-size: 13px;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .admin-nav-link {
-    min-height: 36px;
-    padding: 8px 10px;
-    gap: 8px;
+    min-height: 38px;
+    padding: 9px 12px;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+
+    &.active {
+      color: #1d4ed8;
+      font-weight: 700;
+    }
   }
 
   .admin-main-shell {
-    padding: 12px 14px 20px;
+    padding: 14px 14px 12px;
   }
 }
 
@@ -780,8 +793,25 @@ tbody tr:hover {
   }
 
   .admin-main-shell {
+    min-height: auto;
     overflow: visible;
-    padding: 10px;
+    padding: 12px 10px 10px;
+  }
+
+  .admin-sidebar {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .admin-nav-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+
+    &.active {
+      color: #1d4ed8;
+      font-weight: 700;
+    }
   }
 
   .admin-topbar {
@@ -801,11 +831,13 @@ tbody tr:hover {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1200px) {
   .admin-main-shell {
     padding-top: 0;
   }
+}
 
+@media (min-width: 768px) {
   .admin-topbar {
     display: none;
     min-height: 0;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import "./userHome.scss";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { GetWalletBalance, GetWalletTxns } from "../../views/inner-pages/pages/services/wallet";
 import pathIcon from "../../assets/images/assets/naavi-icon2.webp";
@@ -173,10 +173,25 @@ export default function UserHome({ initialView = "home" }) {
   const rawName = user?.name || user?.fullName || localStorage.getItem("userName") || "";
   const firstName = rawName.split(" ")[0] || (user?.email || "there").split("@")[0] || "Aparna";
 
-  const [activeTab, setActiveTab] = useState("wallet");
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() => {
+    const matched = TABS.find((t) => t.path === window.location.pathname);
+    return matched ? matched.key : "";
+  });
+
+  useEffect(() => {
+    const matched = TABS.find((t) => t.path === location.pathname);
+    if (matched) {
+      setActiveTab(matched.key);
+    }
+  }, [location.pathname]);
+
   const [view, setView] = useState(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get("view") || initialView || "home";
+    if (window.location.pathname.includes("notifications") || params.get("view") === "notifications" || initialView === "notifications") {
+      return "notifications";
+    }
+    return "home";
   });
   const [notifFilter, setNotifFilter] = useState("all");
   const [showNotif, setShowNotif] = useState(false);
@@ -186,10 +201,14 @@ export default function UserHome({ initialView = "home" }) {
   const [activity, setActivity] = useState([]);
 
   useEffect(() => {
-    if (initialView && initialView !== "home") {
-      setView(initialView);
+    const params = new URLSearchParams(location.search);
+    const queryView = params.get("view");
+    if (location.pathname.includes("notifications") || queryView === "notifications" || (initialView && initialView === "notifications")) {
+      setView("notifications");
+    } else {
+      setView("home");
     }
-  }, [initialView]);
+  }, [location.pathname, location.search, initialView]);
   const [walletLoading, setWalletLoading] = useState(true);
   const [myPath, setMyPath] = useState(null);
   const [explorePaths, setExplorePaths] = useState([]);
@@ -1166,18 +1185,6 @@ export default function UserHome({ initialView = "home" }) {
         <div className="approvals-card uh-notif-page-card">
           <div className="uh-notif-page-header">
             <div className="uh-notif-page-header-left">
-              <button
-                className="back-btn uh-notif-back-btn"
-                onClick={() => {
-                  setView("home");
-                  if (window.location.pathname.includes("notifications")) navigate("/dashboard/users/home");
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Back
-              </button>
               <h2 className="uh-notif-page-title">
                 Notifications
               </h2>
@@ -1185,9 +1192,6 @@ export default function UserHome({ initialView = "home" }) {
             <div className="uh-notif-page-actions">
               <button className="uh-notif-btn-read" onClick={markAllRead}>
                 Mark all read
-              </button>
-              <button className="uh-notif-btn-clear" onClick={() => { markAllRead(); setNotifications([]); }}>
-                Clear all
               </button>
             </div>
           </div>
@@ -1372,7 +1376,9 @@ export default function UserHome({ initialView = "home" }) {
           <div className="uh-ch-left">
             <div className="uh-ch-label">AVAILABLE CREDITS</div>
             <div className="uh-ch-number">{credits?.available ?? "—"}</div>
-            <div className="uh-ch-meta">{credits?.used ?? "—"} used · expires {credits?.expiry ?? "—"}</div>
+            <div className="uh-ch-meta">
+              {credits?.used ?? "—"} used · {credits?.expiry ? (/^expire/i.test(credits.expiry) ? credits.expiry : `expires ${credits.expiry}`) : "—"}
+            </div>
             <div className="uh-ch-bar-wrap">
               <div className="uh-ch-bar" style={{ width: `${creditPct}%` }} />
             </div>
@@ -1389,7 +1395,14 @@ export default function UserHome({ initialView = "home" }) {
 
         <div className="uh-quick-tiles">
           {TABS.map(t => (
-            <button key={t.key} className={`uh-quick-tile ${activeTab === t.key ? "active" : ""}`} onClick={() => navigate(t.path)}>
+            <button
+              key={t.key}
+              className={`uh-quick-tile ${activeTab === t.key ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab(t.key);
+                navigate(t.path);
+              }}
+            >
               <div className="uh-qt-icon"><Icon type={t.icon} size={16} color={activeTab === t.key ? "#2563eb" : "#64748b"} /></div>
               <span>{t.label}</span>
               <Icon type="arrow-r" size={11} color={activeTab === t.key ? "#2563eb" : "#94a3b8"} />

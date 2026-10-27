@@ -231,6 +231,7 @@ export default function PartnerExclusiveDashboard() {
   const [feedbackView, setFeedbackView] = useState("cards"); // 'cards' or 'table'
   const [currentPartner, setCurrentPartner] = useState(partner);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -335,19 +336,31 @@ export default function PartnerExclusiveDashboard() {
     });  };
 
   const handleExportExcel = () => {
-    if (!stats?.allTransactions?.length) return;
-    const ws = XLSX.utils.json_to_sheet(stats.allTransactions.map(tx => ({
-      "Student Email": tx.studentEmail,
-      "Service/Product": tx.service,
-      "Amount (INR)": tx.amount,
-      "Status": tx.status,
-      "Method": tx.type,
-      "Date": new Date(tx.date).toLocaleDateString(),
-      "Feedback": tx.feedback
-    })));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
-    XLSX.writeFile(wb, `${currentPartner?.partnerId || partner?.partnerId || "partner"}_Transactions.xlsx`);
+    if (!stats?.allTransactions?.length || exportLoading) return;
+    setExportLoading(true);
+
+    setTimeout(() => {
+      try {
+        const ws = XLSX.utils.json_to_sheet(stats.allTransactions.map(tx => ({
+          "Student Email": tx.studentEmail,
+          "Service/Product": tx.service,
+          "Amount (INR)": tx.amount,
+          "Status": tx.status,
+          "Method": tx.type,
+          "Date": new Date(tx.date).toLocaleDateString(),
+          "Feedback": tx.feedback
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+        XLSX.writeFile(wb, `${currentPartner?.partnerId || partner?.partnerId || "partner"}_Transactions.xlsx`);
+      } catch (err) {
+        console.error("Export error:", err);
+      } finally {
+        setTimeout(() => {
+          setExportLoading(false);
+        }, 500);
+      }
+    }, 450);
   };
 
   const handleTicketSubmit = () => {
@@ -706,8 +719,23 @@ export default function PartnerExclusiveDashboard() {
                           ]}
                         />
                       </div>
-                      <button className="px-export-btn" onClick={handleExportExcel} disabled={!stats?.allTransactions?.length}>
-                        <Icon.Download /> Export
+                      <button
+                        className={`px-export-btn ${exportLoading ? "loading" : ""}`}
+                        onClick={handleExportExcel}
+                        disabled={exportLoading || !stats?.allTransactions?.length}
+                        title={exportLoading ? "Exporting data..." : "Export transactions to Excel"}
+                      >
+                        {exportLoading ? (
+                          <>
+                            <span className="px-btn-spinner" />
+                            <span>Exporting...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Icon.Download />
+                            <span>Export</span>
+                          </>
+                        )}
                       </button>
                     </div>
 

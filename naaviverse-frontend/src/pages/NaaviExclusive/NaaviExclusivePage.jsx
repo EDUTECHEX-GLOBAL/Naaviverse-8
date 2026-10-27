@@ -112,12 +112,16 @@ const StepIndicator = ({ step }) => (
 );
 
 const ItemSummaryCard = ({ item }) => {
-  const isFree = !item.cost || item.cost === "Free";
   const isInternalPartner =
     item?.checkoutType === "internal" ||
     item?.creationSource === "admin_created" ||
     (item?.partnerType || "").toLowerCase() === "internal" ||
     item?.isInternal === true;
+
+  const subtotal = item.subtotal !== undefined ? item.subtotal : getPriceNumber(item.cost);
+  const isFree = !subtotal || subtotal === 0 || item.cost === "Free" || item.cost === "free";
+  const tax = isFree ? 0 : (item.tax !== undefined ? item.tax : Math.round(subtotal * 0.18));
+  const total = isFree ? 0 : (item.total !== undefined ? item.total : subtotal + tax);
 
   return (
     <div className="ne-summary-card">
@@ -170,12 +174,27 @@ const ItemSummaryCard = ({ item }) => {
           )}
         </div>
 
-        <div className="ne-sc-price-row">
-          <span>Total</span>
-          <span className={`ne-sc-total ${isFree ? "free" : ""}`}>
-            {isFree ? "Free" : formatPrice(item.cost)}
-          </span>
-        </div>
+        {isFree ? (
+          <div className="ne-sc-price-row">
+            <span>Total</span>
+            <span className="ne-sc-total free">Free</span>
+          </div>
+        ) : (
+          <div className="ne-sc-price-breakdown">
+            <div className="ne-sc-subrow">
+              <span>Subtotal</span>
+              <span className="ne-sc-subval">{formatPrice(subtotal)}</span>
+            </div>
+            <div className="ne-sc-subrow">
+              <span>GST (18%)</span>
+              <span className="ne-sc-subval">{formatPrice(tax)}</span>
+            </div>
+            <div className="ne-sc-price-row">
+              <span>Total Payable</span>
+              <span className="ne-sc-total">{formatPrice(total)}</span>
+            </div>
+          </div>
+        )}
         <div className="ne-sc-footnote">Partner access unlocks right after confirmation.</div>
       </div>
     </div>
@@ -553,7 +572,10 @@ const DetailsStep = ({ form, onChange, setForm, onNext }) => {
 const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
   const [processing, setProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const isFree = !item.cost || item.cost === "Free";
+  const subtotal = item.subtotal !== undefined ? item.subtotal : getPriceNumber(item.cost);
+  const isFree = !subtotal || subtotal === 0 || item.cost === "Free" || item.cost === "free";
+  const tax = isFree ? 0 : (item.tax !== undefined ? item.tax : Math.round(subtotal * 0.18));
+  const total = isFree ? 0 : (item.total !== undefined ? item.total : subtotal + tax);
 
   const handlePay = async () => {
     try {
@@ -576,10 +598,10 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
       } catch (e) {}
 
       // Check if item is free or if we need to bypass Razorpay completely
-      const amountVal = getPriceNumber(item.cost);
-      const isFree = !amountVal || amountVal === 0;
+      const amountVal = total;
+      const isItemFree = !amountVal || amountVal === 0;
 
-      if (isFree) {
+      if (isItemFree) {
         // Free item bypass
         const mockRes = await axios.post(`${BASE_URL}/api/payment/mock-purchase`, {
           userEmail: studentForm.email,
@@ -614,7 +636,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
         productName: item.name,
         billingMethod: "lifetime", // marketplace products are lifetime/one-time
         profileId: profileId,
-        amount: amountVal || 1, // fallback to 1 Rs if 0 is passed for test validation
+        amount: amountVal || 1, // total including GST
         currency: "INR",
         planTier: undefined,
         tier: itemLayer === "nano" ? "nano" : "micro",
@@ -770,7 +792,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
             <div className="ne-payment-number">••••  ••••  ••••  {studentForm.phone?.slice(-4) || "2026"}</div>
             <div className="ne-payment-meta">
               <span>{studentForm.fullName || "Student Name"}</span>
-              <strong>{formatPrice(item.cost)}</strong>
+              <strong>{formatPrice(total)}</strong>
             </div>
           </div>
           <div className="ne-payment-copy">
@@ -806,7 +828,7 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
             <><span className="ne-spinner" /> Launching checkout...</>
           ) : (
             <>
-              {isFree ? "Confirm enrollment" : `Pay ${formatPrice(item.cost)}`}
+              {isFree ? "Confirm enrollment" : `Pay ${formatPrice(total)}`}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
               </svg>
@@ -822,6 +844,10 @@ const PaymentStep = ({ item, studentForm, onBack, onSuccess }) => {
 const SuccessStep = ({ item, form, orderId, onReturnToNaaviverse }) => {
   const [countdown, setCountdown] = useState(8);
   const timerRef = useRef(null);
+  const subtotal = item.subtotal !== undefined ? item.subtotal : getPriceNumber(item.cost);
+  const isFree = !subtotal || subtotal === 0 || item.cost === "Free" || item.cost === "free";
+  const tax = isFree ? 0 : (item.tax !== undefined ? item.tax : Math.round(subtotal * 0.18));
+  const total = isFree ? 0 : (item.total !== undefined ? item.total : subtotal + tax);
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
@@ -857,7 +883,7 @@ const SuccessStep = ({ item, form, orderId, onReturnToNaaviverse }) => {
         <div className="ne-receipt-row"><span>Service</span><strong>{item.name}</strong></div>
         <div className="ne-receipt-row">
           <span>Amount paid</span>
-          <strong className="ne-green">{!item.cost || item.cost === "Free" ? "₹0 (Free)" : formatPrice(item.cost)}</strong>
+          <strong className="ne-green">{isFree ? "₹0 (Free)" : formatPrice(total)}</strong>
         </div>
         <div className="ne-receipt-row">
           <span>Status</span>
@@ -886,11 +912,20 @@ const NaaviExclusivePage = () => {
   const navigate = useNavigate();
 
   const [item, setItem] = useState(() => {
-    if (location.state?.item) return location.state.item;
-    try {
-      const stored = sessionStorage.getItem("naaviExclusiveItem") || localStorage.getItem("naaviExclusiveItem");
-      if (stored) return JSON.parse(stored);
-    } catch (e) { /* ignore */ }
+    let raw = location.state?.item;
+    if (!raw) {
+      try {
+        const stored = sessionStorage.getItem("naaviExclusiveItem") || localStorage.getItem("naaviExclusiveItem");
+        if (stored) raw = JSON.parse(stored);
+      } catch (e) { /* ignore */ }
+    }
+    if (raw) {
+      const sub = raw.subtotal !== undefined ? raw.subtotal : getPriceNumber(raw.cost);
+      const isF = !sub || sub === 0 || raw.cost === "Free" || raw.cost === "free";
+      const tax = isF ? 0 : (raw.tax !== undefined ? raw.tax : Math.round(sub * 0.18));
+      const tot = isF ? 0 : (raw.total !== undefined ? raw.total : sub + tax);
+      return { ...raw, subtotal: sub, tax, total: tot };
+    }
     return null;
   });
 
@@ -913,6 +948,9 @@ const NaaviExclusivePage = () => {
           goal: "Demo service for testing the exclusive checkout flow.",
           layer: "macro",
           cost: "Free",
+          subtotal: 0,
+          tax: 0,
+          total: 0,
           websiteUrl: "https://example.com",
         });
         setLoading(false);
@@ -930,9 +968,16 @@ const NaaviExclusivePage = () => {
           // Try to find the matching item in the partner's marketplace items
           const matched = itemsList.find(i => String(i._id) === String(itemId)) || itemsList[0];
           if (matched) {
+            const sub = getPriceNumber(matched.cost);
+            const isF = !sub || sub === 0 || matched.cost === "Free" || matched.cost === "free";
+            const tax = isF ? 0 : Math.round(sub * 0.18);
+            const tot = isF ? 0 : sub + tax;
             // Attach partner business name and website to the checkout item for card UI
             setItem({
               ...matched,
+              subtotal: sub,
+              tax,
+              total: tot,
               partner_email: partnerInfo.email,
               businessName: partnerInfo.businessName,
               websiteUrl: partnerInfo.website,

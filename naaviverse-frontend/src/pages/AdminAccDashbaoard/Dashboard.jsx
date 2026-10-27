@@ -1163,9 +1163,6 @@ export default function Dashboard() {
               <button style={{ fontSize: 12, fontWeight: 600, background: "var(--slate-100)", color: "var(--slate-600)", border: "none", padding: "6px 14px", borderRadius: "var(--radius-full)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={markAllRead}>
                 Mark all read
               </button>
-              <button style={{ fontSize: 12, fontWeight: 600, background: "var(--rose-50)", color: "var(--rose-600)", border: "1px solid var(--rose-100)", padding: "6px 14px", borderRadius: "var(--radius-full)", cursor: "pointer", fontFamily: "var(--font)" }} onClick={() => { markAllRead(); setNotifications([]); }}>
-                Clear all
-              </button>
             </div>
           </div>
           <div style={{ display: "flex", flex: 1 }}>

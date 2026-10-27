@@ -2119,7 +2119,7 @@ const AccDashboard = () => {
     />
   </>
              ) : accsideNav === "Home" ? (
-  <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", width: "100%", maxWidth: "100%" }}>
+  <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", width: "100%", maxWidth: "100%", display: "flex", flexDirection: "column" }}>
      <PartnerHome setispopular={setispopular} />
   </div>
               ) : accsideNav === "Marketplace" ? (

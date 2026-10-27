@@ -34,16 +34,21 @@ $text-muted:    #9aa1b5;
 // ── Root ──────────────────────────────────────────────────
 .subscription-list {
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2px 14px;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 18px 24px;
+  box-sizing: border-box;
   font-family: 'Poppins', sans-serif !important;
   background: $page-bg;
   min-height: 100vh;
   font-size: 12px;
 
   @media (min-width: 768px) {
-    padding: 0 2px 14px;
+    padding: 8px 18px 24px;
+  }
+
+  @media (max-width: 767px) {
+    padding: 8px 12px 20px;
   }
 
   // ── Header ────────────────────────────────────────────
@@ -51,9 +56,17 @@ $text-muted:    #9aa1b5;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
-    gap: 8px;
+    margin-bottom: 12px;
+    gap: 12px;
     flex-wrap: wrap;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0;
+
+    > div:first-child {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   &__title {
@@ -74,43 +87,84 @@ $text-muted:    #9aa1b5;
 
   &__actions {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
     flex-shrink: 0;
+    margin-left: auto;
+    width: auto;
+    min-width: max-content;
 
-    .ant-btn { display: inline-flex; align-items: center; gap: 5px; }
+    .ant-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 5px !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      margin: 0 !important;
+      height: 28px !important;
+      line-height: 28px !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: max-content !important;
+    }
 
     .btn-outline {
-      border: 1px solid $border;
-      background: $surface;
-      color: $text-secondary;
-      font-size: 12px;
-      font-weight: 600;
+      border: 1px solid $border !important;
+      background: $surface !important;
+      color: #475569 !important;
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
       font-family: 'Poppins', sans-serif !important;
-      height: 28px;
-      padding: 0 10px;
-      border-radius: 8px;
-      transition: all 0.15s;
+      height: 28px !important;
+      line-height: 28px !important;
+      padding: 0 10px !important;
+      border-radius: 6px !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+      transition: all 0.15s ease !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      width: auto !important;
+      min-width: 0 !important;
+
+      svg {
+        font-size: 11px !important;
+      }
 
       &:hover {
-        border-color: $brand-red;
-        color: $red-text;
-        background: $red-bg;
+        border-color: $brand-red !important;
+        color: $red-text !important;
+        background: $red-bg !important;
       }
     }
 
     .btn-primary {
-      background: $brand-blue;
-      border: none;
-      font-size: 12px;
+      background: $brand-blue !important;
+      border: none !important;
+      color: #ffffff !important;
+      font-size: 11.5px !important;
       font-family: 'Poppins', sans-serif !important;
-      font-weight: 600;
-      height: 28px;
-      padding: 0 12px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(62, 123, 250, 0.28);
-      transition: background 0.15s;
+      font-weight: 600 !important;
+      height: 28px !important;
+      line-height: 28px !important;
+      padding: 0 12px !important;
+      border-radius: 6px !important;
+      box-shadow: 0 1px 3px rgba(62, 123, 250, 0.28) !important;
+      transition: all 0.15s ease !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      width: auto !important;
+      min-width: 0 !important;
 
-      &:hover { background: darken($brand-blue, 8%); }
+      svg {
+        font-size: 11px !important;
+      }
+
+      &:hover {
+        background: darken($brand-blue, 8%) !important;
+        color: #ffffff !important;
+      }
     }
   }
 
@@ -207,6 +261,22 @@ $text-muted:    #9aa1b5;
       .filter-date,
       .filter-search {
         width: 100%;
+
+        .rdp-container {
+          width: 100%;
+        }
+
+        .rdp-input-box {
+          height: 30px;
+          border-radius: 7px;
+          border-color: $border;
+          font-size: 11px;
+          background: #fbfcfe;
+
+          &:hover, &.open {
+            border-color: $brand-blue;
+          }
+        }
 
         .ant-picker,
         .ant-input-affix-wrapper,
@@ -437,58 +507,187 @@ $text-muted:    #9aa1b5;
   }
 }
 
-// ── AntD overrides — compact inputs & SMALL calendar panel ──
+// ── AntD DatePicker Dropdown (Year, Month, Date selection) ──
 .ant-picker-dropdown,
 .ant-select-dropdown {
-  font-size: 11px;
   font-family: 'Poppins', sans-serif !important;
+  z-index: 1050 !important;
+  max-width: calc(100vw - 16px) !important;
 }
 
 .ant-picker-panel-container {
-  font-size: 11px;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08) !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  overflow: hidden !important;
+  width: 280px !important;
+  max-width: calc(100vw - 16px) !important;
 
   .ant-picker-panel {
+    width: 100% !important;
+
     .ant-picker-header {
-      padding: 0 6px;
-      height: 28px;
-      line-height: 28px;
+      padding: 6px 10px;
+      height: 38px;
+      line-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
 
-      button { font-size: 11px; line-height: 28px; }
-    }
+      .ant-picker-header-view {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex: 1;
 
-    .ant-picker-body { padding: 6px 8px; }
+        button {
+          font-size: 12.5px !important;
+          font-weight: 600 !important;
+          color: #0f172a !important;
+          padding: 3px 8px !important;
+          border-radius: 6px !important;
+          background: #f1f5f9 !important;
+          transition: all 0.15s ease;
+          cursor: pointer;
 
-    .ant-picker-content {
-      th { font-size: 9px; padding-bottom: 2px; }
+          &:hover {
+            color: $brand-blue !important;
+            background: #dbeafe !important;
+          }
+        }
+      }
 
-      td {
-        padding: 1px 0;
+      .ant-picker-header-prev-btn,
+      .ant-picker-header-next-btn,
+      .ant-picker-header-super-prev-btn,
+      .ant-picker-header-super-next-btn {
+        font-size: 12px;
+        color: #64748b;
+        min-width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.15s ease;
 
-        .ant-picker-cell-inner {
-          width: 22px;
-          height: 22px;
-          line-height: 22px;
-          font-size: 11px;
-          border-radius: 6px;
+        &:hover {
+          color: #0f172a;
+          background: #f1f5f9;
         }
       }
     }
 
+    .ant-picker-body {
+      padding: 8px 10px 10px;
+    }
+
+    .ant-picker-content {
+      width: 100% !important;
+
+      th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748b;
+        padding: 4px 0 6px;
+        text-align: center;
+      }
+
+      td {
+        padding: 2px 0;
+        text-align: center;
+
+        .ant-picker-cell-inner {
+          width: 30px;
+          height: 30px;
+          line-height: 30px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 8px;
+          margin: 0 auto;
+          transition: all 0.12s ease;
+        }
+      }
+    }
+
+    .ant-picker-cell-in-view {
+      color: #1e293b;
+    }
+
     .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner {
-      background: $brand-blue;
+      background: $brand-blue !important;
+      color: #ffffff !important;
+      font-weight: 600;
     }
 
     .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
-      border-color: $brand-blue;
+      border-color: $brand-blue !important;
+      border-radius: 8px;
     }
 
-    .ant-picker-footer { min-width: 0; }
+    .ant-picker-cell:hover:not(.ant-picker-cell-selected) .ant-picker-cell-inner {
+      background: #eff6ff !important;
+      color: $brand-blue !important;
+    }
+
+    .ant-picker-footer {
+      padding: 6px 10px;
+      border-top: 1px solid #f1f5f9;
+
+      .ant-picker-today-btn {
+        color: $brand-blue;
+        font-weight: 600;
+        font-size: 12px;
+
+        &:hover {
+          color: darken($brand-blue, 10%);
+        }
+      }
+    }
+  }
+
+  .ant-picker-year-panel,
+  .ant-picker-month-panel,
+  .ant-picker-decade-panel {
+    width: 280px !important;
+
+    .ant-picker-body {
+      padding: 10px;
+    }
+
+    .ant-picker-content {
+      height: auto;
+
+      .ant-picker-cell {
+        padding: 6px 4px;
+
+        .ant-picker-cell-inner {
+          padding: 4px 8px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 6px;
+          min-width: 52px;
+          height: 28px;
+          line-height: 28px;
+        }
+      }
+    }
+
+    .ant-picker-cell-selected .ant-picker-cell-inner {
+      background: $brand-blue !important;
+      color: #ffffff !important;
+      font-weight: 600;
+    }
   }
 
   .ant-picker-date-panel,
   .ant-picker-month-panel,
-  .ant-picker-year-panel {
-    width: 220px;
+  .ant-picker-year-panel,
+  .ant-picker-decade-panel {
+    width: 280px !important;
   }
 }
 
@@ -529,12 +728,120 @@ $text-muted:    #9aa1b5;
   }
 }
 
-@media (min-width: 768px) {
+/* Cross-device admin responsiveness */
+.subscription-list {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+}
+
+@media (min-width: 1200px) {
   .subscription-list {
-    padding-top: 0;
+    padding: 8px 18px 24px;
 
     &__header {
       align-items: center;
+    }
+  }
+}
+
+@media (min-width: 1440px) {
+  .subscription-list {
+    padding: 8px 18px 24px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .subscription-list {
+    padding: 8px 18px 24px;
+
+    &__header {
+      padding-top: 4px;
+      margin-top: 0;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    &__actions {
+      padding-top: 0;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .subscription-list {
+    min-height: auto;
+    padding: 8px 12px 20px;
+
+    &__header {
+      display: flex !important;
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-top: 0 !important;
+      margin-bottom: 12px !important;
+      padding-top: 4px !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+
+      > div:first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+      }
+    }
+
+    &__subtitle {
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #0f172a !important;
+      line-height: 1.3 !important;
+      margin: 0 !important;
+    }
+
+    &__actions {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-end !important;
+      margin-left: auto !important;
+      width: auto !important;
+      min-width: max-content !important;
+      gap: 6px !important;
+      flex-shrink: 0 !important;
+      padding-top: 0 !important;
+
+      .ant-btn {
+        height: 26px !important;
+        line-height: 26px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+        margin: 0 !important;
+
+        svg {
+          font-size: 10px !important;
+        }
+      }
+
+      .btn-outline {
+        height: 26px !important;
+        line-height: 26px !important;
+        padding: 0 8px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+      }
+
+      .btn-primary {
+        height: 26px !important;
+        line-height: 26px !important;
+        padding: 0 10px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+      }
     }
   }
 }

@@ -248,6 +248,35 @@
   border: none;
 }
 
+.wallet-expired-banner-text {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .wallet-expired-banner {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .wallet-expired-banner svg {
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+    margin-right: 0 !important;
+  }
+
+  .wallet-expired-banner-text {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+    line-height: 1.45 !important;
+  }
+}
+
 /* Balance card sub-text warning state */
 .wallet-balance-sub--warning {
   color: #b45309 !important;

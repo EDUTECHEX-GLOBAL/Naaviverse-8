@@ -271,7 +271,7 @@ export default function PartnerHome({ setispopular }) {
     ];
     const filtered = notifFilter === "all" ? notifications : notifications.filter(n => n.type === notifFilter);
     return (
-      <div className="ph-root">
+      <div className="ph-root ph-notif-root">
         <div className="ph-notif-page">
           <div className="ph-notif-topbar">
             <button className="ph-back-btn" onClick={() => setView("home")}>
@@ -281,7 +281,6 @@ export default function PartnerHome({ setispopular }) {
             <div className="ph-notif-page-title">Notifications</div>
             <div className="ph-notif-topbar-actions" style={{ display: "flex", gap: 8 }}>
               <button className="ph-mark-all-btn" onClick={markAllRead}>Mark all read</button>
-              <button className="ph-clear-btn" onClick={() => { markAllRead(); setNotifications([]); }}>Clear all</button>
             </div>
           </div>
           <div className="ph-notif-body">

@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import axios from "axios";
 
 // ── Inject styles once ───────────────────────────────────────────────────────
-const STYLE_ID = "epm-styles-v3";
-if (!document.getElementById(STYLE_ID)) {
-  const style = document.createElement("style");
+const STYLE_ID = "epm-styles-v6";
+["epm-styles-v5", "epm-styles-v4", "epm-styles-v3", "epm-styles-v2", "epm-styles-v1"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+});
+let style = document.getElementById(STYLE_ID);
+if (!style) {
+  style = document.createElement("style");
   style.id = STYLE_ID;
-  style.textContent = `
+  document.head.appendChild(style);
+}
+const EPM_CSS = `
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
     /* ── Overlay ────────────────────────────────────── */
@@ -129,6 +137,7 @@ if (!document.getElementById(STYLE_ID)) {
       flex-direction: column;
       gap: 5px;
       margin-bottom: 12px;
+      position: relative;
     }
     .epm-label {
       font-size: 0.71rem;
@@ -168,6 +177,118 @@ if (!document.getElementById(STYLE_ID)) {
       background-repeat: no-repeat;
       background-position: right 11px center;
       padding-right: 30px;
+    }
+
+    /* ── Dropdown Select Component Base (Desktop default: native select) ── */
+    .epm-select-wrap {
+      position: relative;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .epm-select-wrap.is-open {
+      z-index: 1050;
+      position: relative;
+    }
+    .epm-select-desktop {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .epm-select-mobile {
+      display: none;
+      width: 100%;
+      position: relative;
+      box-sizing: border-box;
+    }
+    .epm-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.84rem;
+      color: #0d1b2a;
+      background: #f8fafc;
+      border: 1.5px solid #e8ecf2;
+      border-radius: 10px;
+      padding: 8px 11px;
+      cursor: pointer;
+      user-select: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      outline: none;
+      text-align: left;
+    }
+    .epm-select-trigger:hover {
+      border-color: #cbd5e1;
+      background: #ffffff;
+    }
+    .epm-select-trigger.open {
+      border-color: #0d9488;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(13,148,136,0.10);
+    }
+    .epm-select-trigger.is-placeholder .epm-select-val {
+      color: #94a3b8;
+    }
+    .epm-select-val {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+      flex: 1;
+    }
+    .epm-select-chevron {
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+    .epm-select-chevron.open {
+      transform: rotate(180deg);
+    }
+    .epm-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 100%;
+      background: #ffffff;
+      border: 1.5px solid #0d9488;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(13, 27, 42, 0.14);
+      padding: 4px;
+      z-index: 1000;
+      max-height: 180px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      animation: epmFadeIn 0.15s ease-out;
+    }
+    @keyframes epmFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .epm-dropdown-item {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.80rem;
+      color: #334155;
+      padding: 7px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .epm-dropdown-item:hover {
+      background: #f1f5f9;
+      color: #0d1b2a;
+    }
+    .epm-dropdown-item.selected {
+      background: #0d9488;
+      color: #ffffff;
+      font-weight: 500;
     }
 
     /* ── Pill group ─────────────────────────────────── */
@@ -304,15 +425,353 @@ if (!document.getElementById(STYLE_ID)) {
     }
     .epm-success p { font-size: 0.81rem; color: #64748b; margin: 0; }
 
-    @media (max-width: 520px) {
-      .epm-row2 { grid-template-columns: 1fr; }
-      .epm-modal { border-radius: 18px; max-height: 92vh; }
-      .epm-footer { flex-direction: column; align-items: stretch; }
-      .epm-btns { justify-content: flex-end; }
+    /* ── Mobile Responsive Layout ──────────────────── */
+    @media (max-width: 768px) {
+      .epm-overlay {
+        padding: 12px;
+      }
+      .epm-modal {
+        border-radius: 16px;
+        max-height: 92vh;
+        width: 100%;
+        max-width: 440px;
+      }
+      .epm-header {
+        padding: 16px 18px 12px;
+      }
+      .epm-header-title {
+        font-size: 1.12rem;
+      }
+      .epm-body {
+        padding: 14px 16px 20px;
+      }
+      .epm-row2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      .epm-field {
+        margin-bottom: 10px;
+        position: relative;
+      }
+      .epm-field:has(.is-open),
+      .epm-row2:has(.is-open) {
+        z-index: 1050;
+        position: relative;
+      }
+      .epm-label {
+        font-size: 0.68rem;
+      }
+      .epm-input,
+      .epm-textarea {
+        font-size: 0.76rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+        min-height: 36px;
+      }
+      .epm-select-desktop {
+        display: none !important;
+      }
+      .epm-select-mobile {
+        display: block !important;
+        width: 100%;
+        position: relative;
+        box-sizing: border-box;
+      }
+      .epm-select-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.76rem;
+        color: #0d1b2a;
+        background: #f8fafc;
+        border: 1.5px solid #e8ecf2;
+        border-radius: 8px;
+        padding: 6px 10px;
+        min-height: 34px;
+        cursor: pointer;
+        user-select: none;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        outline: none;
+        text-align: left;
+      }
+      .epm-select-trigger:hover {
+        border-color: #cbd5e1;
+        background: #ffffff;
+      }
+      .epm-select-trigger.open {
+        border-color: #0d9488;
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(13,148,136,0.12);
+      }
+      .epm-select-trigger.is-placeholder .epm-select-val {
+        color: #94a3b8;
+      }
+      .epm-select-val {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+        flex: 1;
+        font-size: 0.76rem;
+        color: #0d1b2a;
+      }
+      .epm-select-chevron {
+        width: 9px;
+        height: 5px;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+      }
+      .epm-select-chevron.open {
+        transform: rotate(180deg);
+      }
+      .epm-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 3px);
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        background: #ffffff;
+        border: 1.5px solid #0d9488;
+        border-radius: 8px;
+        box-shadow: 0 4px 18px rgba(13, 27, 42, 0.12);
+        padding: 3px;
+        z-index: 1050;
+        max-height: 135px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        animation: epmFadeIn 0.12s ease-out;
+      }
+      .epm-dropdown-menu::-webkit-scrollbar {
+        width: 4px;
+      }
+      .epm-dropdown-menu::-webkit-scrollbar-track {
+        background: #f8fafc;
+        border-radius: 4px;
+      }
+      .epm-dropdown-menu::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .epm-dropdown-item {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.73rem;
+        color: #334155;
+        padding: 6px 8px;
+        border-radius: 5px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.12s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+      }
+      .epm-dropdown-item:hover {
+        background: #f1f5f9;
+        color: #0d1b2a;
+      }
+      .epm-dropdown-item.selected {
+        background: #0d9488;
+        color: #ffffff;
+        font-weight: 500;
+      }
+      .epm-footer {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .epm-btns {
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .epm-overlay {
+        padding: 8px;
+      }
+      .epm-modal {
+        border-radius: 14px;
+        max-height: 94vh;
+      }
+      .epm-header {
+        padding: 14px 14px 10px;
+      }
+      .epm-body {
+        padding: 12px 14px 16px;
+      }
+      .epm-footer {
+        padding: 10px 14px;
+      }
+      .epm-btn-cancel,
+      .epm-btn-save {
+        padding: 7px 16px;
+        font-size: 0.76rem;
+      }
+      .epm-select-trigger {
+        font-size: 0.74rem;
+        padding: 5px 8px;
+        min-height: 32px;
+        border-radius: 7px;
+      }
+      .epm-select-val {
+        font-size: 0.74rem;
+      }
+      .epm-dropdown-menu {
+        max-height: 120px;
+        padding: 2px;
+        border-radius: 7px;
+      }
+      .epm-dropdown-item {
+        font-size: 0.71rem;
+        padding: 5px 7px;
+        border-radius: 4px;
+      }
+    }
+
+    /* ── Surface Pro 10 & iPad Pro 13 Tablet Responsive Layout ── */
+    /* Target Surface Pro 10:
+         Portrait: 912px - 960px width
+         Landscape: 1368px - 1440px width x 912px - 960px height
+       Target iPad Pro 13:
+         Portrait: 1024px - 1032px width
+         Landscape: 1366px - 1376px width x 1024px - 1032px height
+    */
+    @media (min-width: 769px) and (max-width: 1040px),
+           (min-width: 1041px) and (max-width: 1440px) and (max-height: 1040px),
+           (min-width: 912px) and (max-width: 1440px) and (orientation: landscape) and (max-height: 1040px) {
+      .epm-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: max(16px, env(safe-area-inset-top, 16px))
+                 max(20px, env(safe-area-inset-right, 20px))
+                 max(16px, env(safe-area-inset-bottom, 16px))
+                 max(20px, env(safe-area-inset-left, 20px));
+        z-index: 10005;
+        overflow: hidden;
+        box-sizing: border-box;
+      }
+      .epm-modal {
+        width: 100%;
+        max-width: 580px;
+        max-height: calc(100vh - 44px);
+        max-height: calc(100dvh - 44px);
+        min-height: 0;
+        border-radius: 20px;
+        margin: auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        box-shadow:
+          0 4px 12px rgba(0,0,0,0.06),
+          0 16px 40px rgba(0,0,0,0.18);
+      }
+      .epm-header {
+        padding: 20px 24px 14px;
+        flex-shrink: 0;
+      }
+      .epm-header-title {
+        font-size: 1.22rem;
+      }
+      .epm-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px 24px 12px;
+        box-sizing: border-box;
+      }
+      .epm-footer {
+        padding: 14px 24px 16px;
+        flex-shrink: 0;
+        background: #ffffff;
+        border-top: 1px solid #f0f4f8;
+      }
+      .epm-btns {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .epm-row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .epm-field {
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .epm-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .epm-dropdown-menu {
+        max-height: 170px;
+        z-index: 1050;
+      }
+    }
+
+    /* Tablet Landscape orientation adjustments for shorter vertical viewport */
+    @media (min-width: 769px) and (max-width: 1440px) and (orientation: landscape) and (max-height: 1040px),
+           (min-width: 769px) and (max-width: 1440px) and (max-height: 960px) {
+      .epm-overlay {
+        padding: max(12px, env(safe-area-inset-top, 12px))
+                 max(16px, env(safe-area-inset-right, 16px))
+                 max(12px, env(safe-area-inset-bottom, 12px))
+                 max(16px, env(safe-area-inset-left, 16px));
+      }
+      .epm-modal {
+        max-height: calc(100vh - 28px);
+        max-height: calc(100dvh - 28px);
+        border-radius: 18px;
+      }
+      .epm-header {
+        padding: 15px 22px 11px;
+      }
+      .epm-header-title {
+        font-size: 1.15rem;
+      }
+      .epm-body {
+        padding: 12px 22px 10px;
+      }
+      .epm-footer {
+        padding: 10px 22px 12px;
+      }
+      .epm-field {
+        margin-bottom: 10px;
+      }
+      .epm-sec {
+        margin: 14px 0 8px;
+      }
+      .epm-textarea {
+        min-height: 56px;
+      }
+      .epm-dropdown-menu {
+        max-height: 140px;
+      }
     }
   `;
-  document.head.appendChild(style);
-}
+style.textContent = EPM_CSS;
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -332,6 +791,241 @@ const OPTS = {
   ],
   pathType: ["education", "career", "immigration"],
   pathCat:  ["K12", "Degree"],
+};
+
+// ── Dropdown Select Component ────────────────────────────────────────────────
+const EpmSelect = ({ name, value, onChange, placeholder = "Select...", options = [] }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth <= 768 || (window.matchMedia && window.matchMedia("(max-width: 768px)").matches);
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || (window.matchMedia && window.matchMedia("(max-width: 768px)").matches));
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleOutside);
+      document.addEventListener("touchstart", handleOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("touchstart", handleOutside);
+    };
+  }, [open]);
+
+  const normOptions = (options || []).map(o => {
+    if (typeof o === "object" && o !== null) {
+      return { label: o.label || o.value, value: o.value };
+    }
+    const str = String(o);
+    const label = /^[a-z]/.test(str) ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+    return { label, value: str };
+  });
+
+  // DESKTOP: Untouched 100% native select
+  if (!isMobile) {
+    return (
+      <select
+        className="epm-select"
+        name={name}
+        value={value}
+        onChange={onChange}
+      >
+        <option value="">{placeholder}</option>
+        {normOptions.map(opt => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  // MOBILE: Strictly bounded, compact custom in-DOM dropdown (native select omitted entirely)
+  const selectedOpt = normOptions.find(o => String(o.value) === String(value));
+  const displayText = selectedOpt ? selectedOpt.label : placeholder;
+
+  return (
+    <div
+      className={`epm-select-wrap ${open ? "is-open" : ""}`}
+      ref={ref}
+      style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: "100%",
+        boxSizing: "border-box",
+        zIndex: open ? 1050 : 1,
+      }}
+    >
+      <button
+        type="button"
+        className={`epm-select-trigger ${open ? "open" : ""} ${!value ? "is-placeholder" : ""}`}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "8px",
+          width: "100%",
+          maxWidth: "100%",
+          boxSizing: "border-box",
+          fontFamily: "'Poppins', sans-serif",
+          fontSize: "0.76rem",
+          color: value ? "#0d1b2a" : "#94a3b8",
+          background: open ? "#ffffff" : "#f8fafc",
+          border: open ? "1.5px solid #0d9488" : "1.5px solid #e8ecf2",
+          borderRadius: "8px",
+          padding: "6px 10px",
+          minHeight: "34px",
+          cursor: "pointer",
+          userSelect: "none",
+          textAlign: "left",
+          outline: "none",
+          boxShadow: open ? "0 0 0 2px rgba(13,148,136,0.12)" : "none",
+          transition: "all 0.15s ease",
+        }}
+      >
+        <span
+          className="epm-select-val"
+          style={{
+            flex: 1,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontSize: "0.76rem",
+            color: value ? "#0d1b2a" : "#94a3b8",
+          }}
+        >
+          {displayText}
+        </span>
+        <svg
+          className={`epm-select-chevron ${open ? "open" : ""}`}
+          width="9"
+          height="5"
+          viewBox="0 0 10 6"
+          fill="none"
+          style={{
+            flexShrink: 0,
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease",
+          }}
+        >
+          <path
+            d="M1 1l4 4 4-4"
+            stroke="#94a3b8"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      {open && (
+        <div
+          className="epm-dropdown-menu"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            position: "absolute",
+            top: "calc(100% + 3px)",
+            left: 0,
+            right: 0,
+            width: "100%",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            background: "#ffffff",
+            border: "1.5px solid #0d9488",
+            borderRadius: "8px",
+            boxShadow: "0 6px 20px rgba(13, 27, 42, 0.14)",
+            padding: "3px",
+            zIndex: 1050,
+            maxHeight: "135px",
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+        >
+          <div
+            className={`epm-dropdown-item ${!value ? "selected" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onChange({ target: { name, value: "" } });
+              setOpen(false);
+            }}
+            style={{
+              fontFamily: "'Poppins', sans-serif",
+              fontSize: "0.74rem",
+              color: !value ? "#0d9488" : "#64748b",
+              background: !value ? "#e6f7f5" : "transparent",
+              fontWeight: !value ? 600 : 400,
+              padding: "6px 8px",
+              borderRadius: "5px",
+              cursor: "pointer",
+              userSelect: "none",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              marginBottom: "2px",
+            }}
+          >
+            {placeholder}
+          </div>
+          {normOptions.map((opt) => {
+            const isSelected = String(value) === String(opt.value);
+            return (
+              <div
+                key={opt.value}
+                className={`epm-dropdown-item ${isSelected ? "selected" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChange({ target: { name, value: opt.value } });
+                  setOpen(false);
+                }}
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontSize: "0.74rem",
+                  color: isSelected ? "#ffffff" : "#334155",
+                  background: isSelected ? "#0d9488" : "transparent",
+                  fontWeight: isSelected ? 500 : 400,
+                  padding: "6px 8px",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  userSelect: "none",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  marginBottom: "2px",
+                  transition: "background 0.12s ease",
+                }}
+              >
+                {opt.label}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 // ── Pill components ───────────────────────────────────────────────────────────
@@ -418,6 +1112,16 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
   const [form, setForm] = useState(blank);
 
   useEffect(() => {
+    let s = document.getElementById(STYLE_ID);
+    if (!s) {
+      s = document.createElement("style");
+      s.id = STYLE_ID;
+      s.textContent = EPM_CSS;
+      document.head.appendChild(s);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!selectedPath) return;
     setForm({
       nameOfPath:              selectedPath.nameOfPath              || "",
@@ -490,7 +1194,7 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
     }
   };
 
-  return (
+  const modalContent = (
     /* Overlay renders directly — no parent drawer wrapper needed */
     <div className="epm-overlay" onClick={overlayClick}>
       <div className="epm-modal" onClick={e => e.stopPropagation()}>
@@ -576,21 +1280,23 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
               <div className="epm-row2">
                 <div className="epm-field">
                   <label className="epm-label">Path Type</label>
-                  <select className="epm-select" name="path_type"
-                    value={form.path_type} onChange={onTxt}>
-                    <option value="">Select type</option>
-                    {OPTS.pathType.map(o => (
-                      <option key={o} value={o}>{o.charAt(0).toUpperCase()+o.slice(1)}</option>
-                    ))}
-                  </select>
+                  <EpmSelect
+                    name="path_type"
+                    value={form.path_type}
+                    onChange={onTxt}
+                    placeholder="Select type"
+                    options={OPTS.pathType}
+                  />
                 </div>
                 <div className="epm-field">
                   <label className="epm-label">Category</label>
-                  <select className="epm-select" name="path_cat"
-                    value={form.path_cat} onChange={onTxt}>
-                    <option value="">Select category</option>
-                    {OPTS.pathCat.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
+                  <EpmSelect
+                    name="path_cat"
+                    value={form.path_cat}
+                    onChange={onTxt}
+                    placeholder="Select category"
+                    options={OPTS.pathCat}
+                  />
                 </div>
               </div>
 
@@ -602,11 +1308,13 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
                 </div>
                 <div className="epm-field">
                   <label className="epm-label">Grade Average</label>
-                  <select className="epm-select" name="grade_avg"
-                    value={form.grade_avg?.[0] || ""} onChange={onGA}>
-                    <option value="">Select range</option>
-                    {OPTS.gradeAvg.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
+                  <EpmSelect
+                    name="grade_avg"
+                    value={form.grade_avg?.[0] || ""}
+                    onChange={onGA}
+                    placeholder="Select range"
+                    options={OPTS.gradeAvg}
+                  />
                 </div>
               </div>
 
@@ -680,6 +1388,11 @@ const EditPathForm = ({ selectedPath, onSave, onCancel }) => {
       </div>
     </div>
   );
+
+  if (typeof document !== "undefined" && document.body) {
+    return createPortal(modalContent, document.body);
+  }
+  return modalContent;
 };
 
 export default EditPathForm;

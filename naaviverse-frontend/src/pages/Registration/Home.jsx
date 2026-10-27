@@ -459,6 +459,7 @@ const NewHomePage = () => {
   };
 
   const confirmEmail = () => {
+    setLoading(true);
     const verifyOtpUrl = isUser
       ? `${BASE_URL}/api/auth/verifyotp`
       : `${BASE_URL}/api/partner/verifyotp`;
@@ -482,10 +483,12 @@ const NewHomePage = () => {
           }
           navigate(`/login?role=${signupRole}`);
         } else {
+          setLoading(false);
           updateCurrentForm({ wrongOtp: true });
         }
       })
       .catch(() => {
+        setLoading(false);
         updateCurrentForm({ wrongOtp: true });
       });
   };
@@ -941,9 +944,18 @@ const NewHomePage = () => {
             <button
               type="submit"
               disabled={currentForm.showOtp ? (!currentForm.userOtp || currentForm.userOtp.trim().length === 0 || loading) : (!isFormValid || loading)}
-              className={`nextStep ${(currentForm.showOtp ? (currentForm.userOtp && currentForm.userOtp.trim().length > 0 && !loading) : (isFormValid && !loading)) ? "" : "disabled"}`}
+              className={`nextStep ${(currentForm.showOtp ? (currentForm.userOtp && currentForm.userOtp.trim().length > 0 && !loading) : (isFormValid && !loading)) ? "" : "disabled"} ${loading ? "loading" : ""}`}
             >
-              {loading ? "Creating Account..." : currentForm.showOtp ? "Verify & Continue" : "Create Account"}
+              {loading ? (
+                <span className="btn-loading-content">
+                  <span className="btn-spinner" />
+                  <span>{currentForm.showOtp ? "Verifying..." : "Creating Account..."}</span>
+                </span>
+              ) : currentForm.showOtp ? (
+                "Verify & Continue"
+              ) : (
+                "Create Account"
+              )}
             </button>
           </form>
 

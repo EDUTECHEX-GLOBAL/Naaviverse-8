@@ -268,13 +268,13 @@ async function syncAgentPaths() {
         stepDocsToCreate.push({
           _id: stepObjectId,
           email: creatorEmail,
-          name: step.title || `Step ${stepOrder}`,
+          name: /^step\s*\d+\s*:/i.test(step.title || '') ? step.title : `Step ${stepOrder}: ${step.title || `Step ${stepOrder}`}`,
           description: step.description || '',
           step_order: stepOrder,
           path_id: pathObjectId,
           status: 'active',
 
-          macro_name: step.title || `Step ${stepOrder}`,
+          macro_name: (step.title || `Step ${stepOrder}`).replace(/^step\s*\d+\s*:\s*/i, ''),
           macro_description: macroDesc || step.description || '',
           macro_length: step.duration || '',
 

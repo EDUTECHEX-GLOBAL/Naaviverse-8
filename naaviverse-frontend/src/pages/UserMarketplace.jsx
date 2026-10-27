@@ -1152,7 +1152,16 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
     );
 
     if (externalItem) {
-      sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(externalItem));
+      const extSubtotal = itemPrice(externalItem);
+      const extTax = Math.round(extSubtotal * 0.18);
+      const extTotal = extSubtotal + extTax;
+      const itemToPersist = {
+        ...externalItem,
+        subtotal: extSubtotal,
+        tax: extTax,
+        total: extTotal,
+      };
+      sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(itemToPersist));
       sessionStorage.setItem("naaviExclusiveReturnPath", "/dashboard/users/Marketplace");
       sessionStorage.setItem(
         "naaviExclusiveStudentDetails",
@@ -1579,11 +1588,15 @@ const CheckoutPage = ({ cart, onConfirm, onBack }) => {
             </div>
             <div className="os-divider" />
             <div className="os-sum-row">
+              <span>Subtotal</span>
+              <span>₹{subtotal === 0 ? "0" : subtotal.toLocaleString("en-IN")}</span>
+            </div>
+            <div className="os-sum-row">
               <span>GST (18%)</span>
               <span>₹{tax === 0 ? "0" : tax.toLocaleString("en-IN")}</span>
             </div>
             <div className="os-sum-row os-total">
-              <span>Total</span>
+              <span>Total Payable</span>
               <span>₹{total === 0 ? "0" : total.toLocaleString("en-IN")}</span>
             </div>
             <button type="submit" className="os-pay-btn rzp-pay-btn" disabled={submitting}>
@@ -2585,7 +2598,16 @@ const UserMarketplace = ({ onStepChange }) => {
             setShowCart(false);
             const externalItem = cart.find((item) => item.checkoutType === "external");
             if (externalItem) {
-              sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(externalItem));
+              const extSubtotal = itemPrice(externalItem);
+              const extTax = Math.round(extSubtotal * 0.18);
+              const extTotal = extSubtotal + extTax;
+              const itemToPersist = {
+                ...externalItem,
+                subtotal: extSubtotal,
+                tax: extTax,
+                total: extTotal,
+              };
+              sessionStorage.setItem("naaviExclusiveItem", JSON.stringify(itemToPersist));
               sessionStorage.setItem("naaviExclusiveReturnPath", "/dashboard/users/Marketplace");
               localStorage.setItem("naaviExclusiveItemId", externalItem._id);
               window.open(`/naavi-exclusive/${externalItem.partnerId || ""}`, "_blank");

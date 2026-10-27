@@ -23,6 +23,16 @@ const HomeDashboard = () => {
   const [counts, setCounts] = useState({ contacts: 0, visitors: 0, subscribers: 0 });
   const [loading, setLoading] = useState(true);
   const [trendData, setTrendData] = useState([]);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1200);
+    };
+    checkTablet();
+    window.addEventListener("resize", checkTablet);
+    return () => window.removeEventListener("resize", checkTablet);
+  }, []);
 
   useEffect(() => {
     const fetchTrends = async () => {
@@ -149,32 +159,34 @@ const HomeDashboard = () => {
             <h3>Category Trends</h3>
             <p>Monthly growth across all categories</p>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="contactsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3E7BFA" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="#3E7BFA" stopOpacity={0.02}/>
-                </linearGradient>
-                <linearGradient id="visitorsGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1FA655" stopOpacity={0.35}/>
-                  <stop offset="95%" stopColor="#1FA655" stopOpacity={0.02}/>
-                </linearGradient>
-                <linearGradient id="subscribersGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F5B324" stopOpacity={0.4}/>
-                  <stop offset="95%" stopColor="#F5B324" stopOpacity={0.02}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#eef1f7" vertical={false} />
-              <XAxis dataKey="month" tick={{ fill: '#9aa1b5', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#9aa1b5', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', padding: '6px 10px', border: '1px solid #e7ebf1' }} />
-              <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '6px' }} />
-              <Area type="monotone" dataKey="contacts" name="Contacts" stroke="#3E7BFA" strokeWidth={2} fill="url(#contactsGradient)" />
-              <Area type="monotone" dataKey="visitors" name="Visitors" stroke="#1FA655" strokeWidth={2} fill="url(#visitorsGradient)" />
-              <Area type="monotone" dataKey="subscribers" name="Subscribers" stroke="#F5B324" strokeWidth={2} fill="url(#subscribersGradient)" />
-            </AreaChart>
-          </ResponsiveContainer>
+          <div className="chart-box">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={trendData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="contactsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3E7BFA" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="#3E7BFA" stopOpacity={0.02}/>
+                  </linearGradient>
+                  <linearGradient id="visitorsGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1FA655" stopOpacity={0.35}/>
+                    <stop offset="95%" stopColor="#1FA655" stopOpacity={0.02}/>
+                  </linearGradient>
+                  <linearGradient id="subscribersGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#F5B324" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#F5B324" stopOpacity={0.02}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#eef1f7" vertical={false} />
+                <XAxis dataKey="month" tick={{ fill: '#9aa1b5', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: '#9aa1b5', fontSize: 10 }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', padding: '6px 10px', border: '1px solid #e7ebf1' }} />
+                <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '6px' }} />
+                <Area type="monotone" dataKey="contacts" name="Contacts" stroke="#3E7BFA" strokeWidth={2} fill="url(#contactsGradient)" />
+                <Area type="monotone" dataKey="visitors" name="Visitors" stroke="#1FA655" strokeWidth={2} fill="url(#visitorsGradient)" />
+                <Area type="monotone" dataKey="subscribers" name="Subscribers" stroke="#F5B324" strokeWidth={2} fill="url(#subscribersGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         <div className="chart-card">
@@ -182,27 +194,29 @@ const HomeDashboard = () => {
             <h3>Distribution</h3>
             <p>Current breakdown by category</p>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart margin={{ top: 4, right: 20, bottom: 4, left: 20 }}>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={52}
-                innerRadius={30}
-                labelLine={false}
-                label={({ percent }) => percent > 0 ? `${Math.round(percent * 100)}%` : ''}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', padding: '6px 10px', border: '1px solid #e7ebf1' }} />
-              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: '10.5px', paddingTop: '6px' }} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="chart-box chart-box--pie">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart margin={{ top: 4, right: 20, bottom: 4, left: 20 }}>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={isTablet ? 68 : 52}
+                  innerRadius={isTablet ? 40 : 30}
+                  labelLine={false}
+                  label={({ percent }) => percent > 0 ? `${Math.round(percent * 100)}%` : ''}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="white" strokeWidth={2} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ fontSize: '11px', borderRadius: '8px', padding: '6px 10px', border: '1px solid #e7ebf1' }} />
+                <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: '10.5px', paddingTop: '6px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 

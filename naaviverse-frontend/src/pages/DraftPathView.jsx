@@ -733,7 +733,7 @@ const DraftPathView = () => {
         path_id: id,
         step_order: isNew ? steps.length + 1 : steps[currentStepIndex]?.step_order,
         email: JSON.parse(localStorage.getItem("partner"))?.email || "",
-        name: currentStep.macro?.name || "",
+        name: currentStep.name || (currentStep.step_order ? `Step ${currentStep.step_order}: ${currentStep.macro?.name || ""}` : currentStep.macro?.name) || "",
 
         macro_name: currentStep.macro?.name || "",
         macro_description: currentStep.macro?.desc || "",

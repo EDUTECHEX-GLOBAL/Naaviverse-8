@@ -50,7 +50,7 @@ const createFeedback = async (req, res) => {
     }
 
     const isValidPathId = pathId && mongoose.Types.ObjectId.isValid(pathId);
-    const isValidStepId = stepId && mongoose.Types.ObjectId.isValid(stepId);
+    let isValidStepId = stepId && mongoose.Types.ObjectId.isValid(stepId);
 
     // Fetch path and step details
     let pathDoc = null;
@@ -75,6 +75,27 @@ const createFeedback = async (req, res) => {
       stepDoc = await Step.findById(stepId).lean();
     }
 
+    // Fallback: If stepDoc not found by stepId directly, try finding within pathDoc
+    if (!stepDoc && pathDoc && Array.isArray(pathDoc.the_ids)) {
+      const match = pathDoc.the_ids.find(
+        (t) => String(t.step_id) === String(stepId) || String(t._id) === String(stepId)
+      );
+      if (match && match.step_id) {
+        stepDoc = await Step.findById(match.step_id).lean();
+      }
+      if (!stepDoc && !isNaN(Number(stepId))) {
+        const orderNum = Number(stepId);
+        const stepIds = pathDoc.the_ids.map((s) => s.step_id);
+        stepDoc = await Step.findOne({ _id: { $in: stepIds }, step_order: orderNum }).lean();
+        if (!stepDoc && pathDoc.the_ids[orderNum - 1]) {
+          stepDoc = await Step.findById(pathDoc.the_ids[orderNum - 1].step_id).lean();
+        }
+      }
+    }
+
+    const actualStepId = stepDoc ? stepDoc._id : stepId;
+    isValidStepId = actualStepId && mongoose.Types.ObjectId.isValid(actualStepId);
+
     // ── MARKETPLACE FEEDBACK ─────────────────────────────────────────────────
     if (type === "marketplace") {
       const payload = {
@@ -97,7 +118,7 @@ const createFeedback = async (req, res) => {
           studentEmail,
           type,
           pathId: new mongoose.Types.ObjectId(pathId),
-          stepId: new mongoose.Types.ObjectId(stepId),
+          stepId: new mongoose.Types.ObjectId(actualStepId),
           viewType: viewType || null,
           providerName: providerName || "",
           providerType: providerType || "",
@@ -146,7 +167,7 @@ const createFeedback = async (req, res) => {
     }
 
     // ── STEP FEEDBACK ────────────────────────────────────────────────────────
-    if (!pathId || !stepId) {
+    if (!pathId || !actualStepId) {
       return res.status(400).json({
         status: false,
         message: "Step feedback requires pathId and stepId",
@@ -168,21 +189,50 @@ const createFeedback = async (req, res) => {
       return res.status(404).json({ status: false, message: "Step not found" });
     }
 
-    // Save local feedback record
-    const feedback = new Feedback({
-      studentEmail,
-      type,
+    // Handle delete action: remove feedback document completely
+    if (action === "delete") {
+      await Feedback.deleteMany({
+        studentEmail: studentEmail.toLowerCase().trim(),
+        pathId: new mongoose.Types.ObjectId(pathId),
+        stepId: new mongoose.Types.ObjectId(actualStepId),
+        viewType: viewType || null,
+      });
+      return res.json({
+        status: true,
+        message: "Feedback removed successfully",
+      });
+    }
+
+    // Save or update local feedback record
+    let feedback = await Feedback.findOne({
+      studentEmail: studentEmail.toLowerCase().trim(),
       pathId: new mongoose.Types.ObjectId(pathId),
-      stepId: new mongoose.Types.ObjectId(stepId),
+      stepId: new mongoose.Types.ObjectId(actualStepId),
       viewType: viewType || null,
-      providerName: providerName || "",
-      providerType: providerType || "",
-      action,
-      comment: comment || "",
-      path_source: pathSource,
-      owner_id: ownerId,
-      status: "pending",
     });
+
+    if (feedback) {
+      feedback.action = action;
+      feedback.comment = comment || "";
+      feedback.path_source = pathSource;
+      feedback.owner_id = ownerId;
+      feedback.status = "pending";
+    } else {
+      feedback = new Feedback({
+        studentEmail: studentEmail.toLowerCase().trim(),
+        type,
+        pathId: new mongoose.Types.ObjectId(pathId),
+        stepId: new mongoose.Types.ObjectId(actualStepId),
+        viewType: viewType || null,
+        providerName: providerName || "",
+        providerType: providerType || "",
+        action,
+        comment: comment || "",
+        path_source: pathSource,
+        owner_id: ownerId,
+        status: "pending",
+      });
+    }
     await feedback.save();
 
     // If it's a partner path, we do not sync it to the HuggingFace AI agent
@@ -265,7 +315,7 @@ const getFeedbackForPath = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(pathId)) {
       return res.status(400).json({ status: false, message: "Invalid pathId format" });
     }
-    const feedbacks = await Feedback.find({ pathId }).sort({ createdAt: -1 }).lean();
+    const feedbacks = await Feedback.find({ pathId }).sort({ updatedAt: -1, createdAt: -1 }).lean();
     return res.json({ status: true, data: feedbacks });
   } catch (err) {
     console.error("getFeedbackForPath error:", err);

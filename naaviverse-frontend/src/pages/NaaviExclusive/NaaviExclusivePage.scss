@@ -299,6 +299,35 @@ $radius-lg: 14px;
   }
 }
 
+.ne-sc-price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid $line;
+
+  .ne-sc-subrow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: $ink-soft;
+    font-size: 0.74rem;
+    font-weight: 500;
+
+    .ne-sc-subval {
+      color: $ink;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+  }
+
+  .ne-sc-price-row {
+    padding-top: 8px;
+    margin-top: 2px;
+    border-top: 1px dashed $line;
+  }
+}
+
 .ne-sc-price-row {
   display: flex;
   justify-content: space-between;
