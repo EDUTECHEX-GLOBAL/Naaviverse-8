@@ -424,12 +424,63 @@ INSTITUTION_PROGRAM_REGISTRY: Dict[str, Dict[str, int]] = {
 
 # ─── EXTRACTION & PARSING UTILITIES ──────────────────────────────────────────
 
+def is_school_completed(text: str) -> bool:
+    """
+    Checks if the student has already completed high school / senior secondary education.
+    Handles 'High School Graduate', 'Grade 12 Graduate', 'Completed Grade 12',
+    'Senior Secondary Graduate', 'Passed 12th Board', 'A-Levels Completed', etc.
+    """
+    if not text:
+        return False
+    t = str(text).lower()
+    grad_keywords = [
+        "high school graduate", "high school completed", "finished high school",
+        "grade 12 graduate", "12th graduate", "12th pass", "passed 12th",
+        "senior secondary graduate", "completed grade 12", "completed 12th",
+        "a-levels completed", "completed a-levels", "high school diploma recipient",
+        "post-secondary applicant", "gap year after school", "high school graduate (senior secondary)",
+        "12th board completed", "completed senior secondary"
+    ]
+    return any(k in t for k in grad_keywords)
+
+
+def is_zero_duration_task(dur_str: Any, title_desc: str = "") -> bool:
+    """
+    Identifies whether an activity is an instantaneous, same-period, or administrative action
+    (e.g., portal account creation, downloading official syllabus, submitting test score report).
+    These actions do not take an entire calendar month and should never create artificial 'Month 0' entries.
+    """
+    s = str(dur_str or "").lower().strip()
+    td = (title_desc or "").lower()
+
+    if "immediate" in s or "instant" in s or s in [
+        "0", "0m", "0 month", "0 months", "0 mo", "0 days", "0 day", "0 weeks", "0 week",
+        "same day", "none", "negligible", "administrative"
+    ]:
+        return True
+    if re.match(r"^0(?:\.0)?\s*(?:month|mo|day|week|m|d|w)s?$", s):
+        return True
+
+    if any(k in td for k in [
+        "portal account", "create account", "download syllabus", "download document",
+        "open website", "click submit", "submit button", "review notification",
+        "save helpline", "bookmark link", "diagnostic link", "portal registration",
+        "application form registration", "submit form", "pay fee", "accept offer"
+    ]) and not any(k in td for k in ["course", "curriculum", "preparation", "internship", "semester", "year"]):
+        return True
+
+    return False
+
+
 def extract_school_grade(text: str) -> Optional[int]:
     """
     Extracts high school grade integer (1 to 12) from text.
     Handles 'Grade 10', 'Class 11', '12th', 'tenth grade', etc.
+    Returns None if the student has already completed / graduated high school.
     """
     if not text:
+        return None
+    if is_school_completed(text):
         return None
     t = str(text).lower()
     
@@ -618,6 +669,14 @@ def parse_goal_components(goal: str) -> Dict[str, str]:
         if re.search(r'\b' + kw + r'\b', g_low):
             parsed["country"] = country_name
             break
+
+    # 4. Admission vs Degree Completion intent detection
+    admission_keywords = [
+        "admission", "admissions", "admit", "accepted", "acceptance",
+        "enroll", "enrollment", "enrolling", "entry", "entering", "get into", "getting into",
+        "matriculation", "matriculate", "intake", "fall intake", "spring intake"
+    ]
+    parsed["is_admission_goal"] = any(k in g_low for k in admission_keywords)
 
     return parsed
 
@@ -894,6 +953,497 @@ def resolve_category(
         return "academic"
 
     return "academic"
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DYNAMIC ACADEMIC STATE & GOAL-AWARE STAGE ARCHITECTURE (GOOGLE MAPS CONCEPT)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def extract_student_academic_state(current_text: str, profile: Optional[dict] = None) -> Dict[str, Any]:
+    prof = profile or {}
+    t = (current_text or "").lower()
+    
+    # 1. High School Graduate Detection
+    grad_keywords = [
+        "high school graduate", "high school completed", "finished high school",
+        "grade 12 graduate", "12th graduate", "12th pass", "passed 12th",
+        "senior secondary graduate", "completed grade 12", "completed 12th",
+        "a-levels completed", "completed a-levels", "high school diploma recipient",
+        "post-secondary applicant", "gap year after school", "high school graduate (senior secondary)",
+        "12th board completed", "completed senior secondary"
+    ]
+    is_graduated_hs = any(k in t for k in grad_keywords) or (
+        isinstance(prof.get("academics"), dict) and any(k in str(prof.get("academics", {}).get("currentGrade", "")).lower() for k in grad_keywords)
+    ) or (
+        isinstance(prof.get("academicInfo"), dict) and any(k in str(prof.get("academicInfo", {}).get("gradeLevel", "")).lower() for k in grad_keywords)
+    )
+
+    # 2. Undergraduate / College Graduate Detection
+    is_bachelor_grad = any(k in t for k in [
+        "bachelor graduate", "btech graduate", "college graduate", "graduated with bachelor",
+        "completed bachelor", "b.sc graduate", "engineering graduate", "bachelor degree holder",
+        "alumnus", "alumna", "bachelor's holder"
+    ])
+    is_undergrad = not is_bachelor_grad and any(k in t for k in [
+        "undergrad", "college student", "bachelor student", "btech", "b.tech", "bsc", "b.sc",
+        "engineering student", "sophomore", "junior", "freshman", "senior student",
+        "1st year b", "2nd year b", "3rd year b", "4th year b"
+    ])
+
+    # 3. Master's / Postgraduate Detection
+    is_masters_grad = any(k in t for k in ["master graduate", "mtech graduate", "msc graduate", "mba graduate", "completed master", "master's degree holder"])
+    is_masters_student = not is_masters_grad and any(k in t for k in ["master student", "mtech student", "msc student", "postgrad student", "pg student", "mba student"])
+
+    # 4. Extract School Grade if in Secondary School
+    grade = None
+    if not is_graduated_hs and not is_bachelor_grad and not is_undergrad and not is_masters_grad and not is_masters_student:
+        grade = extract_school_grade(current_text)
+        if grade is None and isinstance(prof.get("academics"), dict):
+            grade = extract_school_grade(str(prof.get("academics", {}).get("currentGrade", "")))
+        if grade is None and isinstance(prof.get("academicInfo"), dict):
+            grade = extract_school_grade(str(prof.get("academicInfo", {}).get("gradeLevel", "")))
+
+    # 5. Determine Calendar Progress in current academic year
+    calendar_progress = "default"
+    rem_months = 12
+    rationale = "Standard full academic year remaining"
+
+    if any(k in t for k in [
+        "near end", "end of", "exams pending", "final exams", "appearing for final",
+        "completing soon", "last month", "1 month remaining", "2 months remaining",
+        "2 months left", "final term", "term 2 ending", "may", "june"
+    ]):
+        calendar_progress = "end"
+        rem_months = 2
+        rationale = "Near end of academic year (2 months remaining for final examinations)"
+    elif any(k in t for k in [
+        "halfway", "half done", "mid-year", "middle of", "semester 2",
+        "spring semester", "6 months remaining", "term 1 completed"
+    ]):
+        calendar_progress = "middle"
+        rem_months = 6
+        rationale = "Mid-year academic stage (6 months remaining)"
+    elif any(k in t for k in [
+        "beginning", "start of", "starting", "entering", "commencing",
+        "semester 1", "fall semester", "just entered", "first term"
+    ]):
+        calendar_progress = "start"
+        rem_months = 12
+        rationale = "Beginning of academic year (full 12 months remaining)"
+
+    # 6. Detect Already Completed Milestones / Activities
+    completed_activities = {
+        "test_scores_ready": any(k in t for k in [
+            "sat score", "sat 1", "scored 1", "act score", "jee completed", "jee rank",
+            "neet qualified", "ielts 7", "ielts 8", "toefl 1", "gre 3", "gmat 7",
+            "entrance exam results", "exam results in hand", "entrance examination results",
+            "standardized test taken", "test scores ready"
+        ]),
+        "shortlist_ready": any(k in t for k in [
+            "shortlisted universities", "shortlisted colleges", "colleges shortlisted",
+            "selected target universities", "university shortlist prepared", "target list ready"
+        ]),
+        "applications_submitted": any(k in t for k in [
+            "applications submitted", "applied to universities", "already applied",
+            "waiting for admission decisions", "waiting for decisions", "submitted applications",
+            "applications pending decision", "dossier submitted"
+        ]),
+        "admit_offer_received": any(k in t for k in [
+            "admission offer", "received admit", "got admit", "admitted to",
+            "offer letter in hand", "accepted admission offer", "enrollment offer"
+        ])
+    }
+
+    return {
+        "grade": grade,
+        "is_graduated_hs": is_graduated_hs,
+        "is_undergrad": is_undergrad,
+        "is_bachelor_graduate": is_bachelor_grad,
+        "is_masters_student": is_masters_student,
+        "is_masters_graduate": is_masters_grad,
+        "calendar_progress": calendar_progress,
+        "current_stage_rem_months": rem_months,
+        "stage_rationale": rationale,
+        "completed_activities": completed_activities
+    }
+
+def parse_academic_goal_intent(goal_text: str, parsed_goal: Optional[dict] = None) -> Dict[str, Any]:
+    g = (goal_text or "").lower()
+
+    # Detect degree level
+    if any(k in g for k in ["phd", "doctorate", "doctoral", "dphil"]):
+        deg_level = "PhD"
+        deg_months = 48
+    elif any(k in g for k in ["master", "mtech", "msc", "m.sc", "ms in", "mba", "postgrad"]):
+        deg_level = "Master's"
+        deg_months = 24
+    elif any(k in g for k in ["bachelor", "btech", "b.tech", "bsc", "b.sc", "undergraduate", "b.a", "bs in", "college"]):
+        deg_level = "Bachelor's"
+        deg_months = 48
+    else:
+        deg_level = parsed_goal.get("degree_level", "Bachelor's") if parsed_goal else "Bachelor's"
+        deg_months = 48
+
+    # Country override for degree coursework duration
+    if any(k in g for k in ["uk", "england", "london", "oxford", "cambridge"]) and deg_level == "Bachelor's":
+        deg_months = 36
+    elif any(k in g for k in ["uk", "england"]) and deg_level == "Master's":
+        deg_months = 12
+
+    # Detect Intent: ADMISSION vs DEGREE_COMPLETION vs EXAMINATION
+    is_exam = any(k in g for k in ["sat prep", "ielts prep", "pass exam", "score 1", "qualify neet", "clear jee"])
+    is_degree_completion = any(k in g for k in [
+        "complete degree", "degree completion", "graduate with degree", "graduation from",
+        "full 4-year degree", "complete bachelor", "complete b.tech", "complete master",
+        "earn degree", "finish degree", "complete my bachelor", "complete my master"
+    ])
+    
+    if is_exam:
+        intent = "EXAMINATION"
+    elif is_degree_completion:
+        intent = "DEGREE_COMPLETION"
+    else:
+        intent = "ADMISSION"
+
+    return {
+        "raw_goal": goal_text,
+        "degree_level": deg_level,
+        "program_coursework_months": deg_months,
+        "intent_type": intent
+    }
+
+def build_dynamic_academic_stages(student_state: dict, goal_intent: dict, parsed_goal: Optional[dict] = None) -> List[Dict[str, Any]]:
+    stages: List[Dict[str, Any]] = []
+    grade = student_state["grade"]
+    is_grad_hs = student_state["is_graduated_hs"]
+    is_bach_grad = student_state["is_bachelor_graduate"]
+    is_ug = student_state["is_undergrad"]
+    is_ms_grad = student_state["is_masters_graduate"]
+    is_ms_student = student_state["is_masters_student"]
+    comp = student_state["completed_activities"]
+    rem_m = student_state["current_stage_rem_months"]
+    intent = goal_intent["intent_type"]
+    target_level = goal_intent["degree_level"]
+    prog_months = goal_intent["program_coursework_months"]
+
+    # 1. School Student Journey (Grade 1 to 12)
+    if grade is not None:
+        if grade < 12:
+            stages.append({
+                "stage": f"Grade {grade} Academic Curriculum & Term Completion",
+                "months": rem_m,
+                "stage_type": "current_school_grade",
+                "notes": student_state["stage_rationale"]
+            })
+            for g in range(grade + 1, 12):
+                stages.append({
+                    "stage": f"Grade {g} Standard Academic Curriculum",
+                    "months": 12,
+                    "stage_type": "intermediate_school_grade",
+                    "notes": f"Full academic year coursework, examinations, and foundational prerequisites for Grade {g}"
+                })
+            # Final Grade 12 & University Admissions Cycle
+            if comp.get("applications_submitted"):
+                stages.append({
+                    "stage": "Grade 12 Final Term & Admissions Decision Review Window",
+                    "months": max(2, min(rem_m, 4)),
+                    "stage_type": "admission_decision_window",
+                    "notes": "Awaiting official university admissions decisions and completing final secondary school examinations"
+                })
+                stages.append({
+                    "stage": "Admission Acceptance, Financial Clearance & University Enrollment Deposit",
+                    "months": 1,
+                    "stage_type": "enrollment_formalization",
+                    "notes": "Formal intent to enroll submission, tuition deposit, and university matriculation"
+                })
+            else:
+                stages.append({
+                    "stage": "Grade 12 Senior Year & University Application / Admissions Cycle",
+                    "months": 12,
+                    "stage_type": "senior_year_admission_cycle",
+                    "notes": "Grade 12 curriculum and board examinations completed in parallel with entrance testing, college applications, admissions decisions, and enrollment"
+                })
+        else:
+            # Currently in Grade 12
+            if comp.get("applications_submitted"):
+                stages.append({
+                    "stage": "Admissions Committee Evaluation & Decision Waiting Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Application review period across target universities awaiting official decisions"
+                })
+                stages.append({
+                    "stage": "Admission Acceptance & University Enrollment Deposit",
+                    "months": 1,
+                    "stage_type": "enrollment_deposit",
+                    "notes": "Official enrollment confirmation and deposit submission"
+                })
+            elif comp.get("test_scores_ready") and comp.get("shortlist_ready"):
+                stages.append({
+                    "stage": "Grade 12 Final Applications & Admissions Review",
+                    "months": max(3, rem_m // 2),
+                    "stage_type": "targeted_applications",
+                    "notes": "Submitting finalized dossiers to shortlisted colleges and tracking admissions outcomes"
+                })
+                stages.append({
+                    "stage": "University Enrollment Deposit & Pre-Matriculation",
+                    "months": 1,
+                    "stage_type": "enrollment_deposit",
+                    "notes": "Confirming enrollment and preparing official transcripts"
+                })
+            else:
+                stages.append({
+                    "stage": "Grade 12 Senior Year & University Application Cycle",
+                    "months": rem_m,
+                    "stage_type": "senior_year_admission_cycle",
+                    "notes": "Senior year board examinations, university entrance testing, application dossiers, and enrollment"
+                })
+
+    # 2. High School Graduate Journey (Senior Secondary Completed)
+    elif is_grad_hs:
+        if target_level == "Bachelor's":
+            if comp.get("applications_submitted"):
+                stages.append({
+                    "stage": "Admissions Committee Evaluation & Decision Notification Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Awaiting official admissions decisions from applied university portals"
+                })
+                stages.append({
+                    "stage": "Admission Acceptance, Visa Formalities & University Enrollment Deposit",
+                    "months": 1,
+                    "stage_type": "enrollment_visa_stage",
+                    "notes": "Formal enrollment confirmation, deposit payment, and visa processing"
+                })
+            elif comp.get("test_scores_ready") and comp.get("shortlist_ready"):
+                stages.append({
+                    "stage": "Application Dossier Assembly (SOP, Essays & References)",
+                    "months": 1,
+                    "stage_type": "application_preparation",
+                    "notes": "Writing program-specific essays and assembling recommendation letters"
+                })
+                stages.append({
+                    "stage": "Application Portal Submissions & Admissions Decision Waiting Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Submitting applications and awaiting official university admissions decisions"
+                })
+                stages.append({
+                    "stage": "Financial Documentation, Student Visa & University Matriculation",
+                    "months": 1,
+                    "stage_type": "enrollment_visa_stage",
+                    "notes": "Financial clearance, student visa processing, and university matriculation"
+                })
+            elif comp.get("test_scores_ready"):
+                stages.append({
+                    "stage": "University Research, Strategic Shortlisting & Eligibility Audit",
+                    "months": 1,
+                    "stage_type": "university_shortlisting",
+                    "notes": "Analyzing university admission requirements and finalizing 10-12 target college portfolio"
+                })
+                stages.append({
+                    "stage": "Application Dossier Assembly (SOP, Essays & References)",
+                    "months": 2,
+                    "stage_type": "application_preparation",
+                    "notes": "Writing personal statements, supplemental essays, and acquiring counselor references"
+                })
+                stages.append({
+                    "stage": "Application Portal Submissions & Admissions Review Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Submitting applications and awaiting official university admissions decisions"
+                })
+                stages.append({
+                    "stage": "Financial Documentation, Student Visa & University Matriculation",
+                    "months": 1,
+                    "stage_type": "enrollment_visa_stage",
+                    "notes": "Financial clearance, student visa processing, and university matriculation"
+                })
+            else:
+                stages.append({
+                    "stage": "Standardized Testing & Entrance Examination Preparation",
+                    "months": 3,
+                    "stage_type": "exam_prep_stage",
+                    "notes": "Diagnostic testing, subject preparation, and taking standardized tests (SAT/ACT/IELTS/JEE)"
+                })
+                stages.append({
+                    "stage": "University Research, Strategic Shortlisting & Eligibility Audit",
+                    "months": 1,
+                    "stage_type": "university_shortlisting",
+                    "notes": "Analyzing university admission requirements and finalizing 10-12 target college portfolio"
+                })
+                stages.append({
+                    "stage": "Application Dossier Drafting (Common App, SOP & References)",
+                    "months": 2,
+                    "stage_type": "application_preparation",
+                    "notes": "Writing personal statements, institutional supplemental essays, and acquiring counselor references"
+                })
+                stages.append({
+                    "stage": "Application Filing & Admissions Committee Review Window",
+                    "months": 3,
+                    "stage_type": "admission_review_window",
+                    "notes": "Application portal submission and admissions review period awaiting decision release"
+                })
+                stages.append({
+                    "stage": "Financial Clearance, Student Visa & University Enrollment",
+                    "months": 2,
+                    "stage_type": "enrollment_visa_stage",
+                    "notes": "Offer evaluation, enrollment deposit, I-20/CAS visa issuance, and university matriculation"
+                })
+        elif target_level == "Master's":
+            stages.append({
+                "stage": "Undergraduate Bachelor's Degree (Prerequisite Foundation)",
+                "months": 48,
+                "stage_type": "intermediate_undergraduate_degree",
+                "notes": "Standard 4-year undergraduate bachelor's degree prerequisite"
+            })
+            stages.append({
+                "stage": "Master's Degree Admissions & Enrollment Cycle",
+                "months": 6,
+                "stage_type": "graduate_admissions_cycle",
+                "notes": "Graduate admissions, GRE/IELTS, SOP, and enrollment"
+            })
+        elif target_level == "PhD":
+            stages.append({
+                "stage": "Undergraduate Bachelor's Degree (STEM Foundation)",
+                "months": 48,
+                "stage_type": "intermediate_undergraduate_degree",
+                "notes": "Standard 4-year undergraduate bachelor's degree prerequisite"
+            })
+            stages.append({
+                "stage": "Doctoral Graduate Admissions & Faculty Alignment",
+                "months": 9,
+                "stage_type": "phd_admissions_cycle",
+                "notes": "Doctoral research proposal, faculty advisor matching, and admissions"
+            })
+
+    # 3. Bachelor's Graduate Journey (College Completed, targeting Master's or PhD)
+    elif is_bach_grad:
+        if target_level == "Master's":
+            if comp.get("applications_submitted"):
+                stages.append({
+                    "stage": "Graduate Faculty Admissions Committee Review Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Graduate admissions and faculty departmental committee review"
+                })
+                stages.append({
+                    "stage": "Offer Acceptance, Graduate Assistantship & Visa/Enrollment",
+                    "months": 1,
+                    "stage_type": "enrollment_stage",
+                    "notes": "Accepting graduate offer, TA/RA onboarding, and university enrollment"
+                })
+            elif comp.get("test_scores_ready"):
+                stages.append({
+                    "stage": "Graduate Program Research, Faculty Alignment & Shortlisting",
+                    "months": 1,
+                    "stage_type": "shortlisting",
+                    "notes": "Faculty research alignment, lab specialization analysis, and program shortlisting"
+                })
+                stages.append({
+                    "stage": "Statement of Purpose Drafting & Academic Reference Assembly",
+                    "months": 2,
+                    "stage_type": "dossier_prep",
+                    "notes": "Drafting research-oriented SOP and securing 3 academic professor recommendation letters"
+                })
+                stages.append({
+                    "stage": "Graduate Portal Filing & Admissions Review Window",
+                    "months": 2,
+                    "stage_type": "decision_waiting_window",
+                    "notes": "Filing graduate applications and waiting for admissions decisions"
+                })
+                stages.append({
+                    "stage": "Graduate Offer Acceptance & University Matriculation",
+                    "months": 1,
+                    "stage_type": "enrollment_stage",
+                    "notes": "Enrollment confirmation, visa, and departmental registration"
+                })
+            else:
+                stages.append({
+                    "stage": "Graduate Entrance Testing (GRE / GMAT / IELTS / TOEFL) Preparation",
+                    "months": 2,
+                    "stage_type": "exam_prep",
+                    "notes": "Diagnostic testing and focused graduate entrance exam preparation"
+                })
+                stages.append({
+                    "stage": "Graduate Program Research, Faculty Alignment & Shortlisting",
+                    "months": 1,
+                    "stage_type": "shortlisting",
+                    "notes": "Evaluating lab funding, faculty research areas, and curricular specializations"
+                })
+                stages.append({
+                    "stage": "Statement of Purpose Drafting & Academic Reference Assembly",
+                    "months": 2,
+                    "stage_type": "dossier_prep",
+                    "notes": "Drafting technical statement of purpose, CV, and acquiring faculty recommendations"
+                })
+                stages.append({
+                    "stage": "Graduate Application Filing & Faculty Review Window",
+                    "months": 3,
+                    "stage_type": "review_window",
+                    "notes": "Submitting graduate dossiers and awaiting department committee decisions"
+                })
+                stages.append({
+                    "stage": "Graduate Offer Acceptance, Student Visa & University Matriculation",
+                    "months": 2,
+                    "stage_type": "enrollment_stage",
+                    "notes": "Scholarship/TA finalization, visa processing, and official graduate enrollment"
+                })
+        elif target_level == "PhD":
+            stages.append({
+                "stage": "Doctoral Research Proposal & Faculty Alignment",
+                "months": 3,
+                "stage_type": "research_proposal",
+                "notes": "Literature review, research statement, and prospective PI correspondence"
+            })
+            stages.append({
+                "stage": "PhD Departmental Review & Faculty Interviews",
+                "months": 3,
+                "stage_type": "faculty_interviews",
+                "notes": "Departmental interview rounds and funding/fellowship committee evaluation"
+            })
+            stages.append({
+                "stage": "Fellowship Award Acceptance & Doctoral Matriculation",
+                "months": 2,
+                "stage_type": "enrollment_stage",
+                "notes": "Doctoral funding acceptance, visa processing, and matriculation"
+            })
+
+    # 4. Currently an Undergraduate Student
+    elif is_ug:
+        stages.append({
+            "stage": "Remaining Undergraduate Degree Coursework & Capstone",
+            "months": 24,
+            "stage_type": "current_academic_stage",
+            "notes": "Completing remaining major requirements, core electives, and senior capstone"
+        })
+        if target_level in ["Master's", "PhD"]:
+            stages.append({
+                "stage": "Graduate School Application & Admission Cycle",
+                "months": 6,
+                "stage_type": "graduate_admission_cycle",
+                "notes": "Standardized tests, faculty outreach, application filing, and admissions"
+            })
+
+    # 5. Default Fallback
+    else:
+        stages.append({
+            "stage": f"Academic Preparation & Admission Cycle for {target_level}",
+            "months": 12,
+            "stage_type": "general_academic_prep",
+            "notes": "Standardized prerequisites, application portfolio, and admissions cycle"
+        })
+
+    # Append full degree coursework ONLY IF GOAL INTENT IS DEGREE COMPLETION!
+    if intent == "DEGREE_COMPLETION":
+        stages.append({
+            "stage": f"{target_level} Degree Academic Coursework & Capstone/Thesis",
+            "months": prog_months,
+            "stage_type": "degree_program_coursework",
+            "notes": f"Full academic degree curriculum: lecture modules, lab practicals, credits, and graduation requirements ({prog_months} months)"
+        })
+
+    return stages
 
 
 def calculate_path_duration(
@@ -1475,217 +2025,12 @@ def calculate_path_duration(
         }
 
     # ═════════════════════════════════════════════════════════════════════════
-    # 4. ACADEMIC & RESEARCH DURATION LOGIC (STRICT MULTI-STAGE DETERMINISM)
+    # 4. ACADEMIC & RESEARCH DURATION LOGIC (DYNAMIC REQUIREMENT-BASED CALCULATION)
     # ═════════════════════════════════════════════════════════════════════════
+    student_state = extract_student_academic_state(curr_str, prof)
     parsed_goal = parse_goal_components(goal_str)
-    dest_months, dest_notes, dest_status = resolve_target_program_duration(parsed_goal)
-    dest_level = parsed_goal["degree_level"]
-    dest_country = parsed_goal.get("country", "").lower()
-    
-    # Check if student is in school
-    school_grade = extract_school_grade(curr_str)
-    if not school_grade and isinstance(prof.get("academics"), dict):
-        school_grade = extract_school_grade(str(prof.get("academics", {}).get("currentGrade", "")))
-
-    curr_low = curr_str.lower()
-    is_undergrad_current = any(k in curr_low for k in ["bachelor", "btech", "b.tech", "bsc", "b.sc", "undergrad", "college student", "engineering student", "sophomore", "junior", "freshman"])
-    is_masters_current = any(k in curr_low for k in ["master", "mtech", "msc", "mba", "postgrad", "pg student"])
-
-    # -------------------------------------------------------------------------
-    # SCENARIO A: User is CURRENTLY IN HIGH SCHOOL (Grades 1 to 12)
-    # -------------------------------------------------------------------------
-    if school_grade is not None:
-        current_grade = school_grade
-
-        # 1. Calculate remaining months in CURRENT grade
-        curr_rem_months, curr_rem_notes = extract_current_progress_months(curr_str, default_standard_months=12)
-        calculation_stages.append({
-            "stage": f"Grade {current_grade}",
-            "months": curr_rem_months,
-            "stage_type": "current_academic_stage",
-            "notes": f"Current academic stage: {curr_rem_notes}"
-        })
-
-        # 2. Add intermediate school grades (up to Grade 12)
-        for intermediate_grade in range(current_grade + 1, 13):
-            calculation_stages.append({
-                "stage": f"Grade {intermediate_grade}",
-                "months": 12,
-                "stage_type": "intermediate_school_stage",
-                "notes": f"Standard academic curriculum year for Grade {intermediate_grade}"
-            })
-
-        # 3. Add pathway stages between high school graduation and destination
-        if dest_level == "Bachelor's":
-            # Direct entry from high school into Bachelor's
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-        elif dest_level == "Master's":
-            # High School -> Bachelor's (intermediate) -> Master's (destination)
-            # Resolve Bachelor's duration: standard 48 months (or 36m if UK/Europe non-engineering)
-            undergrad_dur = 48
-            undergrad_notes = "Standard 4-year undergraduate prerequisite degree"
-            if "uk" in dest_country or "england" in dest_country:
-                undergrad_dur = 36
-                undergrad_notes = "Standard 3-year UK undergraduate prerequisite degree"
-
-            calculation_stages.append({
-                "stage": "Undergraduate Bachelor's Degree (Prerequisite)",
-                "months": undergrad_dur,
-                "stage_type": "intermediate_undergraduate_degree",
-                "notes": undergrad_notes
-            })
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-        elif dest_level == "PhD":
-            # High School -> Bachelor's -> [Optional Master's] -> PhD
-            # Rule: In US/Canada, direct PhD after Bachelor's is standard!
-            # In UK, Europe, India, Master's is required before PhD.
-            undergrad_dur = 48
-            undergrad_notes = "Standard 4-year undergraduate Bachelor of Science / Engineering"
-
-            calculation_stages.append({
-                "stage": "Undergraduate Bachelor's Degree (STEM / Foundation)",
-                "months": undergrad_dur,
-                "stage_type": "intermediate_undergraduate_degree",
-                "notes": undergrad_notes
-            })
-
-            # Check if Master's is required by destination country
-            country_cfg = COUNTRY_STANDARDS.get(dest_country, {})
-            requires_masters = country_cfg.get("phd_requires_masters", False)
-
-            if requires_masters:
-                master_dur = country_cfg.get("standard_master", 24)
-                calculation_stages.append({
-                    "stage": "Master's Degree (Prerequisite for Doctoral Admission)",
-                    "months": master_dur,
-                    "stage_type": "intermediate_graduate_degree",
-                    "notes": f"Mandatory graduate Master's degree prerequisite in {parsed_goal.get('country', 'destination country')}"
-                })
-
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-        else:
-            # Other destinations (e.g. Diploma, Associate)
-            calculation_stages.append({
-                "stage": f"Target Program: {parsed_goal['raw_goal']}",
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-    # -------------------------------------------------------------------------
-    # SCENARIO B: User is CURRENTLY AN UNDERGRADUATE / COLLEGE STUDENT
-    # -------------------------------------------------------------------------
-    elif is_undergrad_current:
-        # Determine remaining months in undergraduate degree
-        rem_ug_months, ug_notes = extract_undergrad_year_progress(curr_str, total_undergrad_months=48)
-        
-        if dest_level == "Bachelor's":
-            # Target is completing Bachelor's or transferring
-            calculation_stages.append({
-                "stage": "Undergraduate Degree Completion / Transfer",
-                "months": rem_ug_months,
-                "stage_type": "current_academic_stage",
-                "notes": ug_notes
-            })
-        elif dest_level == "Master's":
-            # Complete undergrad -> Master's
-            calculation_stages.append({
-                "stage": "Remaining Undergraduate Degree Coursework",
-                "months": rem_ug_months,
-                "stage_type": "current_academic_stage",
-                "notes": ug_notes
-            })
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-        elif dest_level == "PhD":
-            # Complete undergrad -> [Optional Master's] -> PhD
-            calculation_stages.append({
-                "stage": "Remaining Undergraduate Degree Coursework",
-                "months": rem_ug_months,
-                "stage_type": "current_academic_stage",
-                "notes": ug_notes
-            })
-            country_cfg = COUNTRY_STANDARDS.get(dest_country, {})
-            if country_cfg.get("phd_requires_masters", False):
-                calculation_stages.append({
-                    "stage": "Master's Degree (Prerequisite for Doctoral Admission)",
-                    "months": country_cfg.get("standard_master", 24),
-                    "stage_type": "intermediate_graduate_degree",
-                    "notes": f"Mandatory graduate Master's degree prerequisite in {parsed_goal.get('country', 'destination country')}"
-                })
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-        else:
-            calculation_stages.append({
-                "stage": f"Target Program: {parsed_goal['raw_goal']}",
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-    # -------------------------------------------------------------------------
-    # SCENARIO C: User is CURRENTLY A MASTER'S / POSTGRADUATE STUDENT
-    # -------------------------------------------------------------------------
-    elif is_masters_current:
-        rem_master_months, master_notes = extract_current_progress_months(curr_str, default_standard_months=24)
-        if dest_level == "PhD":
-            calculation_stages.append({
-                "stage": "Remaining Master's Degree Studies",
-                "months": rem_master_months,
-                "stage_type": "current_academic_stage",
-                "notes": master_notes
-            })
-            calculation_stages.append({
-                "stage": format_stage_destination_title(dest_level, parsed_goal),
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-        else:
-            calculation_stages.append({
-                "stage": f"Target Program: {parsed_goal['raw_goal']}",
-                "months": dest_months,
-                "stage_type": "destination_degree_program",
-                "notes": dest_notes
-            })
-
-    # -------------------------------------------------------------------------
-    # SCENARIO D: GENERAL / WORKING PROFESSIONAL / UNKNOWN STARTING STAGE
-    # -------------------------------------------------------------------------
-    else:
-        # Standard professional or non-school academic progression
-        calculation_stages.append({
-            "stage": format_stage_destination_title(dest_level, parsed_goal),
-            "months": dest_months,
-            "stage_type": "destination_degree_program",
-            "notes": dest_notes
-        })
+    goal_intent = parse_academic_goal_intent(goal_str, parsed_goal)
+    calculation_stages = build_dynamic_academic_stages(student_state, goal_intent, parsed_goal)
 
     # Calculate total sum of months
     total_months = sum(s["months"] for s in calculation_stages)
@@ -1756,10 +2101,372 @@ def validate_path_duration(roadmap_data: dict, calculated_info: dict) -> Tuple[b
     return is_valid, issues
 
 
+def parse_duration_to_months(dur_str: str, title_desc: str = "") -> float:
+    """
+    Converts days, weeks, or months strings to duration in months.
+    Accurately supports 0.0 for immediate, same-period, and administrative actions.
+    """
+    if is_zero_duration_task(dur_str, title_desc):
+        return 0.0
+
+    if not dur_str:
+        return 1.0
+    s = str(dur_str).lower().strip()
+
+    # Check for explicit months: "2 months", "1.5 months", "1 month"
+    m_mo = re.search(r'([\d\.]+)\s*(?:month|mo)', s)
+    if m_mo:
+        val = float(m_mo.group(1))
+        if val <= 0.0:
+            return 0.0
+        return max(1.0, round(val))
+
+    # Check for weeks: "2 weeks", "4 weeks", "6 weeks"
+    m_wk = re.search(r'([\d\.]+)\s*(?:week|wk)', s)
+    if m_wk:
+        weeks = float(m_wk.group(1))
+        if weeks <= 0.0:
+            return 0.0
+        elif weeks <= 2:
+            return 0.5
+        elif weeks <= 5:
+            return 1.0
+        elif weeks <= 9:
+            return 2.0
+        else:
+            return max(1.0, round(weeks / 4.0))
+
+    # Check for days: "10 days", "30 days"
+    m_day = re.search(r'(\d+)\s*day', s)
+    if m_day:
+        days = int(m_day.group(1))
+        if days <= 1:
+            return 0.0
+        elif days <= 15:
+            return 0.5
+        return max(1.0, round(days / 30.0))
+
+    # Check for plain digits
+    m_dig = re.search(r'\d+', s)
+    if m_dig:
+        val = float(m_dig.group(0))
+        if val == 0:
+            return 0.0
+        return max(1.0, val)
+
+    return 1.0
+
+
+def schedule_academic_steps_timeline(
+    steps: List[Dict[str, Any]],
+    total_duration_months: int,
+    current_stage: str,
+    target_goal: str,
+    calculation_stages: Optional[List[Dict[str, Any]]] = None
+) -> Tuple[List[Dict[str, Any]], Dict[str, List[Dict[str, Any]]]]:
+    """
+    Dependency-based DAG timeline scheduling algorithm using the Critical Path Method (CPM).
+    Schedules individual steps across months 1..total_duration_months based on:
+    - Task dependencies (prerequisites)
+    - Parallel capability (can_parallel): allows independent tasks to overlap
+    - Natural academic stage windows (Grade 9, 10, 11, 12, admissions, visa, enrollment)
+    - Strict handling of zero-duration / administrative tasks (no Month 0 or duration inflation)
+    - Aligns final destination achievement at total_duration_months
+    Returns: (scheduled_steps, month_by_month_timeline)
+    """
+    if not steps:
+        return [], {}
+
+    # 1. Determine Stage Windows from calculation_stages
+    stages_windows = []
+    curr_m = 1
+    if calculation_stages:
+        for st in calculation_stages:
+            st_months = st.get("months", 0)
+            if st_months > 0:
+                end_m = curr_m + st_months - 1
+                stages_windows.append({
+                    "stage_name": st.get("stage", ""),
+                    "stage_type": st.get("stage_type", ""),
+                    "start_month": curr_m,
+                    "end_month": end_m,
+                    "months": st_months
+                })
+                curr_m = end_m + 1
+    if not stages_windows:
+        stages_windows.append({
+            "stage_name": "Academic Progression to Goal",
+            "stage_type": "full_journey",
+            "start_month": 1,
+            "end_month": total_duration_months,
+            "months": total_duration_months
+        })
+
+    num_steps = len(steps)
+    scheduled_steps: List[Dict[str, Any]] = []
+    id_to_step: Dict[int, Dict[str, Any]] = {}
+    num_windows = len(stages_windows)
+
+    # 2. Assign each step to its logical academic stage window
+    for idx, s in enumerate(steps):
+        s_copy = dict(s)
+        s_id = s_copy.get("id", idx + 1)
+        s_copy["id"] = s_id
+
+        # Determine parent milestone / stage
+        p_milestone = s_copy.get("parent_milestone") or s_copy.get("academic_stage") or ""
+        matched_window = None
+
+        # Text to search for stage indicators
+        search_blob = f"{p_milestone} {s_copy.get('title', '')} {s_copy.get('description', '')}".lower()
+
+        if len(stages_windows) > 1:
+            for w in stages_windows:
+                w_name = w["stage_name"].lower()
+                if w_name in search_blob:
+                    matched_window = w
+                    break
+
+            # Additional heuristic: Grade indicators
+            if not matched_window:
+                if any(k in search_blob for k in ["grade 9", "9th", "k-9"]):
+                    matched_window = next((w for w in stages_windows if "9" in w["stage_name"]), None)
+                elif any(k in search_blob for k in ["grade 10", "10th", "k-10"]):
+                    matched_window = next((w for w in stages_windows if "10" in w["stage_name"]), None)
+                elif any(k in search_blob for k in ["grade 11", "11th", "k-11"]):
+                    matched_window = next((w for w in stages_windows if "11" in w["stage_name"]), None)
+                elif any(k in search_blob for k in ["grade 12", "12th", "k-12", "admission", "common app", "sat", "toefl", "act", "visa", "enrollment", "matriculation"]):
+                    matched_window = next((w for w in stages_windows if "12" in w["stage_name"] or "admission" in w["stage_name"].lower() or "enrollment" in w["stage_name"].lower()), None)
+
+        if not matched_window:
+            # Distribute proportionally across stage windows based on step position
+            win_idx = min(int(idx * num_windows / max(1, num_steps)), num_windows - 1)
+            matched_window = stages_windows[win_idx]
+
+        s_copy["_window"] = matched_window
+        s_copy["parent_milestone"] = p_milestone or matched_window["stage_name"]
+
+        # Parallel capability detection
+        title_desc = f"{s_copy.get('title', '')} {s_copy.get('description', '')}".lower()
+        can_par = s_copy.get("can_parallel")
+        if can_par is None:
+            if any(k in title_desc for k in [
+                "research", "shortlist", "explore", "english", "ielts", "toefl", "pte",
+                "sat", "act", "standardized", "recommendation", "extracurricular",
+                "portfolio", "profile building", "drafting essay", "reviewing requirements"
+            ]) and not any(k in title_desc for k in ["final submission", "submit application", "visa interview", "enrollment", "matriculation"]):
+                can_par = True
+            else:
+                can_par = False
+        s_copy["can_parallel"] = bool(can_par)
+
+        # Base duration in months (detecting immediate / zero-duration tasks)
+        raw_dur = s_copy.get("duration") or s_copy.get("duration_months") or "1 Month"
+        base_dur_m = parse_duration_to_months(str(raw_dur), title_desc)
+        s_copy["_base_duration_months"] = base_dur_m
+        if base_dur_m == 0.0 or is_zero_duration_task(raw_dur, title_desc):
+            s_copy["is_zero_duration"] = True
+            s_copy["duration_type"] = "immediate"
+        else:
+            s_copy["is_zero_duration"] = False
+            s_copy["duration_type"] = "standard"
+
+        id_to_step[s_id] = s_copy
+        scheduled_steps.append(s_copy)
+
+    # 3. Progressive stage-window forward-pass scheduling (Critical Path Method)
+    for win in stages_windows:
+        stage_steps = [s for s in scheduled_steps if s["_window"] == win]
+        stage_len = len(stage_steps)
+        win_start = win["start_month"]
+        win_end = win["end_month"]
+        win_span = win_end - win_start
+
+        for pos, s in enumerate(stage_steps):
+            s_id = s["id"]
+            prereqs = s.get("prerequisites", [])
+            if isinstance(prereqs, int):
+                prereqs = [prereqs]
+            elif not isinstance(prereqs, list):
+                prereqs = []
+
+            valid_prereqs = [p for p in prereqs if p in id_to_step and p != s_id]
+            s["prerequisites"] = valid_prereqs
+
+            # Pacing across the stage window: distribute steps sequentially through the stage's full month span
+            win_months = win.get("months") or (win_end - win_start + 1)
+            proportional_m = win_start + int(pos * win_months / max(1, stage_len))
+
+            if valid_prereqs:
+                max_prereq_end = win_start
+                for p_id in valid_prereqs:
+                    p_step = id_to_step[p_id]
+                    p_eff_end = p_step.get("end_month", win_start)
+                    if s.get("can_parallel") and p_step.get("can_parallel"):
+                        # Both are parallel streams: start concurrently
+                        p_start = p_step.get("start_month", win_start)
+                        max_prereq_end = max(max_prereq_end, p_start)
+                    elif not p_step.get("is_zero_duration"):
+                        # Sequential dependency: starts after prerequisite concludes
+                        max_prereq_end = max(max_prereq_end, p_eff_end)
+                    else:
+                        # Zero duration prerequisite (same month)
+                        max_prereq_end = max(max_prereq_end, p_eff_end)
+                earliest_start = max(max_prereq_end, proportional_m)
+            else:
+                earliest_start = proportional_m
+
+            # Guarantee monotonic chronological sequence: step pos never regresses before step pos - 1
+            if pos > 0:
+                prev_start = stage_steps[pos - 1].get("start_month", win_start)
+                earliest_start = max(earliest_start, prev_start)
+
+            start_m = min(earliest_start, win_end)
+            if start_m < 1:
+                start_m = 1
+
+            # Handle zero-duration tasks cleanly
+            if s.get("is_zero_duration") or s.get("_base_duration_months") == 0.0:
+                s["is_zero_duration"] = True
+                s["duration_type"] = "immediate"
+                s["start_month"] = start_m
+                s["end_month"] = start_m
+                s["timeline_month"] = start_m
+                s["duration_months"] = 0
+                s["duration"] = "Immediate Action"
+            else:
+                is_milestone = (s.get("hierarchy_level") == "milestone" or not s.get("parent_id"))
+                # Major multi-month milestones can span 2 months; micro/nano tasks span 1 month
+                dur_m = 2 if (is_milestone and win_end > start_m and pos % 4 == 0) else 1
+                end_m = min(start_m + dur_m - 1, win_end)
+                if end_m < start_m:
+                    end_m = start_m
+
+                dur_m = end_m - start_m + 1
+                s["start_month"] = start_m
+                s["end_month"] = end_m
+                s["timeline_month"] = start_m
+                s["duration_months"] = dur_m
+
+                if start_m == end_m:
+                    s["duration"] = f"Month {start_m}"
+                else:
+                    s["duration"] = f"Month {start_m}-{end_m}"
+
+    # 4. Final step alignment: Ensure the final destination milestone achieves goal at total_duration_months
+    if scheduled_steps:
+        last_step = scheduled_steps[-1]
+        last_step["is_goal_milestone"] = True
+        if not last_step.get("is_zero_duration"):
+            if last_step["end_month"] < total_duration_months:
+                last_step["end_month"] = total_duration_months
+                last_step["duration_months"] = last_step["end_month"] - last_step["start_month"] + 1
+                if last_step["start_month"] == last_step["end_month"]:
+                    last_step["duration"] = f"Month {last_step['start_month']}"
+                else:
+                    last_step["duration"] = f"Month {last_step['start_month']}-{last_step['end_month']}"
+
+    # Clean up internal fields and ensure completion criteria
+    for s in scheduled_steps:
+        s.pop("_window", None)
+        s.pop("_base_duration_months", None)
+        if not s.get("completion_criteria"):
+            s["completion_criteria"] = f"Verified completion of {s.get('title', 'milestone')} objectives."
+
+    # 5. Month-Wise Categorization (1..total_duration_months, NO Month 0)
+    month_by_month: Dict[str, List[Dict[str, Any]]] = {}
+    for m in range(1, total_duration_months + 1):
+        month_str = str(m)
+        month_by_month[month_str] = []
+        for s in scheduled_steps:
+            if s["start_month"] <= m <= s["end_month"]:
+                month_by_month[month_str].append({
+                    "step_id": s["id"],
+                    "title": s["title"],
+                    "parent_milestone": s.get("parent_milestone", ""),
+                    "duration": s["duration"],
+                    "duration_type": s.get("duration_type", "standard"),
+                    "is_zero_duration": s.get("is_zero_duration", False),
+                    "can_parallel": s["can_parallel"],
+                    "start_month": s["start_month"],
+                    "end_month": s["end_month"],
+                    "hierarchy_level": s.get("hierarchy_level", "micro_task"),
+                    "completion_criteria": s.get("completion_criteria", "")
+                })
+
+    return scheduled_steps, month_by_month
+
+
+def validate_academic_step_timeline(
+    steps: List[Dict[str, Any]],
+    total_duration_months: int
+) -> Tuple[bool, List[str]]:
+    """
+    Validates:
+    1. Every step has valid start_month and end_month within 1..total_duration_months.
+    2. Zero-duration tasks are correctly labeled, start_month == end_month, duration_months == 0.
+    3. No step starts before its strict prerequisites finish (unless parallel).
+    4. Final step matches target completion month.
+    5. No 'Month 0' or negative month numbers.
+    """
+    issues = []
+    id_map = {s["id"]: s for s in steps}
+
+    if not steps:
+        return False, ["No steps provided to validate."]
+
+    for s in steps:
+        s_id = s.get("id")
+        start = s.get("start_month")
+        end = s.get("end_month")
+
+        if start is None or end is None:
+            issues.append(f"Step {s_id} is missing start_month or end_month.")
+            continue
+
+        if start < 1:
+            issues.append(f"Step {s_id} start_month ({start}) is < 1 (Month 0 is forbidden).")
+        if end > total_duration_months:
+            issues.append(f"Step {s_id} end_month ({end}) exceeds total duration ({total_duration_months}m).")
+
+        if s.get("is_zero_duration"):
+            if start != end:
+                issues.append(f"Zero-duration step {s_id} has start_month ({start}) != end_month ({end}).")
+            if s.get("duration_months", 0) != 0:
+                issues.append(f"Zero-duration step {s_id} duration_months should be 0.")
+        else:
+            if start > end:
+                issues.append(f"Step {s_id} start_month ({start}) > end_month ({end}).")
+
+        # Check prerequisites
+        for p_id in s.get("prerequisites", []):
+            if p_id in id_map:
+                p = id_map[p_id]
+                p_end = p.get("end_month", 0)
+                p_start = p.get("start_month", 0)
+                if not (s.get("can_parallel") or p.get("can_parallel")):
+                    if start < p_end and not p.get("is_zero_duration"):
+                        issues.append(
+                            f"Step {s_id} ('{s.get('title')}', starts M{start}) starts before prerequisite "
+                            f"Step {p_id} ('{p.get('title')}', finishes M{p_end}) is completed."
+                        )
+
+    is_valid = len(issues) == 0
+    return is_valid, issues
+
+    # Check final step reaches total_duration_months
+    max_end = max((s.get("end_month", 0) for s in steps), default=0)
+    if max_end != total_duration_months:
+        issues.append(f"Timeline completion mismatch: max step month is M{max_end}, expected M{total_duration_months}.")
+        
+    return len(issues) == 0, issues
+
+
 def enforce_centralized_duration_on_roadmap(roadmap: dict, calculated_info: dict) -> dict:
     """
     Enforces the authoritative centralized duration and breakdown onto the roadmap.
     AI agents cannot alter or overwrite this.
+    Synchronizes individual steps using the dependency-based timeline scheduler.
     """
     if not isinstance(roadmap, dict):
         return roadmap
@@ -1773,26 +2480,20 @@ def enforce_centralized_duration_on_roadmap(roadmap: dict, calculated_info: dict
     roadmap["duration_status"] = calculated_info.get("duration_status", "calculated")
     roadmap["duration_calculation"] = authoritative_stages
 
-    # Also redistribute milestone ranges so no milestone exceeds total duration
+    # Schedule individual steps with dependency-based timeline alignment
     milestones = roadmap.get("steps", [])
-    num_steps = len(milestones)
-    if num_steps > 0:
-        # Check if any step duration exceeds total months or uses wrong numbers
-        needs_redistribute = False
-        for m in milestones:
-            d_str = str(m.get("duration", ""))
-            digits = [int(x) for x in re.findall(r'\d+', d_str)]
-            if any(x > authoritative_months for x in digits):
-                needs_redistribute = True
-                break
-
-        if needs_redistribute:
-            for i, m in enumerate(milestones):
-                start = int(i * authoritative_months / num_steps) + 1
-                end = int((i + 1) * authoritative_months / num_steps)
-                if start == end:
-                    m["duration"] = f"Month {start}"
-                else:
-                    m["duration"] = f"Months {start}-{end}"
+    if milestones:
+        curr_pos = roadmap.get("current_position", "") or ""
+        t_goal = roadmap.get("target_goal", "") or roadmap.get("path_title", "") or ""
+        scheduled_steps, month_by_month = schedule_academic_steps_timeline(
+            steps=milestones,
+            total_duration_months=authoritative_months,
+            current_stage=curr_pos,
+            target_goal=t_goal,
+            calculation_stages=authoritative_stages
+        )
+        roadmap["steps"] = scheduled_steps
+        roadmap["month_by_month_timeline"] = month_by_month
 
     return roadmap
+

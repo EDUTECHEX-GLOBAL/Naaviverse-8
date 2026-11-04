@@ -1,0 +1,168 @@
+[
+  {
+    "target": 5,
+    "generated_steps": 5,
+    "time_seconds": 4.73,
+    "total_tokens": 2662,
+    "key_1_calls": 1,
+    "key_2_calls": 0,
+    "duplicates": 0,
+    "rate_limit_errors": 0,
+    "capacity_analysis": {
+      "measured_empirical_metrics": {
+        "steps_evaluated": 5,
+        "tokens_per_step": 532.4,
+        "time_per_step_seconds": 0.946,
+        "total_tokens_consumed": 2662,
+        "total_generation_time_seconds": 4.73,
+        "model_configured": "openai/gpt-oss-120b",
+        "shared_org_tpm_limit": 8000,
+        "shared_org_rpm_limit": 1000
+      },
+      "capacity_estimates_for_targets": {
+        "5_steps": {
+          "target_steps": 5,
+          "projected_total_tokens": 2662,
+          "projected_api_calls": 1,
+          "projected_time_seconds": 20.0,
+          "projected_time_minutes": 0.33,
+          "practical_feasibility": "Measured & Validated",
+          "tpm_saturation_risk": "Low (Within 1-min quota)"
+        },
+        "25_steps": {
+          "target_steps": 25,
+          "projected_total_tokens": 13310,
+          "projected_api_calls": 5,
+          "projected_time_seconds": 99.8,
+          "projected_time_minutes": 1.66,
+          "practical_feasibility": "Highly Practical (< 1 minute, single or dual batch)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "100_steps": {
+          "target_steps": 100,
+          "projected_total_tokens": 43656,
+          "projected_api_calls": 13,
+          "projected_time_seconds": 327.4,
+          "projected_time_minutes": 5.46,
+          "practical_feasibility": "Practical with Batch Pacing (~1.5-2.5 min under 8k TPM)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "250_steps": {
+          "target_steps": 250,
+          "projected_total_tokens": 109142,
+          "projected_api_calls": 33,
+          "projected_time_seconds": 818.6,
+          "projected_time_minutes": 13.64,
+          "practical_feasibility": "Feasible with Multi-Batch Checkpointing (~4-6 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "500_steps": {
+          "target_steps": 500,
+          "projected_total_tokens": 218284,
+          "projected_api_calls": 65,
+          "projected_time_seconds": 1637.1,
+          "projected_time_minutes": 27.29,
+          "practical_feasibility": "Theoretical Maximum with Tiered Fallback (~8-12 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "1000_steps": {
+          "target_steps": 1000,
+          "projected_total_tokens": 436568,
+          "projected_api_calls": 130,
+          "projected_time_seconds": 3274.3,
+          "projected_time_minutes": 54.57,
+          "practical_feasibility": "Requires Enterprise Quota (>8k TPM) or Extended Async Queue (~18-25 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        }
+      },
+      "architecture_analysis": {
+        "key_1_responsibility": "Primary Academic Pathway, Macro Milestones, Dependency Ordering, Prerequisites",
+        "key_2_responsibility": "Parallel Milestone Expansion, Granular Micro/Nano Subtasks, Academic Blindspot Detection",
+        "bottleneck_identified": "Groq 8,000 TPM shared organization token ceiling is the primary constraint. Mitigated via dual-key parallel batching, compact JSON schemas, and fast-model fallback."
+      }
+    }
+  },
+  {
+    "target": 25,
+    "generated_steps": 25,
+    "time_seconds": 38.83,
+    "total_tokens": 10211,
+    "key_1_calls": 1,
+    "key_2_calls": 5,
+    "duplicates": 0,
+    "rate_limit_errors": 1,
+    "capacity_analysis": {
+      "measured_empirical_metrics": {
+        "steps_evaluated": 25,
+        "tokens_per_step": 408.44,
+        "time_per_step_seconds": 1.553,
+        "total_tokens_consumed": 10211,
+        "total_generation_time_seconds": 38.83,
+        "model_configured": "openai/gpt-oss-120b",
+        "shared_org_tpm_limit": 8000,
+        "shared_org_rpm_limit": 1000
+      },
+      "capacity_estimates_for_targets": {
+        "5_steps": {
+          "target_steps": 5,
+          "projected_total_tokens": 2042,
+          "projected_api_calls": 2,
+          "projected_time_seconds": 15.3,
+          "projected_time_minutes": 0.26,
+          "practical_feasibility": "Measured & Validated",
+          "tpm_saturation_risk": "Low (Within 1-min quota)"
+        },
+        "25_steps": {
+          "target_steps": 25,
+          "projected_total_tokens": 10211,
+          "projected_api_calls": 6,
+          "projected_time_seconds": 76.6,
+          "projected_time_minutes": 1.28,
+          "practical_feasibility": "Measured & Validated",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "100_steps": {
+          "target_steps": 100,
+          "projected_total_tokens": 33492,
+          "projected_api_calls": 16,
+          "projected_time_seconds": 251.2,
+          "projected_time_minutes": 4.19,
+          "practical_feasibility": "Practical with Batch Pacing (~1.5-2.5 min under 8k TPM)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "250_steps": {
+          "target_steps": 250,
+          "projected_total_tokens": 83730,
+          "projected_api_calls": 39,
+          "projected_time_seconds": 628.0,
+          "projected_time_minutes": 10.47,
+          "practical_feasibility": "Feasible with Multi-Batch Checkpointing (~4-6 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "500_steps": {
+          "target_steps": 500,
+          "projected_total_tokens": 167460,
+          "projected_api_calls": 78,
+          "projected_time_seconds": 1256.0,
+          "projected_time_minutes": 20.93,
+          "practical_feasibility": "Theoretical Maximum with Tiered Fallback (~8-12 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        },
+        "1000_steps": {
+          "target_steps": 1000,
+          "projected_total_tokens": 334920,
+          "projected_api_calls": 156,
+          "projected_time_seconds": 2511.9,
+          "projected_time_minutes": 41.87,
+          "practical_feasibility": "Requires Enterprise Quota (>8k TPM) or Extended Async Queue (~18-25 min)",
+          "tpm_saturation_risk": "High (Pacing required)"
+        }
+      },
+      "architecture_analysis": {
+        "key_1_responsibility": "Primary Academic Pathway, Macro Milestones, Dependency Ordering, Prerequisites",
+        "key_2_responsibility": "Parallel Milestone Expansion, Granular Micro/Nano Subtasks, Academic Blindspot Detection",
+        "bottleneck_identified": "Groq 8,000 TPM shared organization token ceiling is the primary constraint. Mitigated via dual-key parallel batching, compact JSON schemas, and fast-model fallback."
+      }
+    }
+  }
+]

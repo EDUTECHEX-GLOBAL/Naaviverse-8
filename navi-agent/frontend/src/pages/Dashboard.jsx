@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import './Dashboard.scss';
 import {
-  IconArrowRight, IconBrain, IconNavigation, IconRoute, IconCheck, IconEye,
+  IconArrowRight, IconBrain, IconNavigation, IconRoute, IconCheck, IconEye, IconUser, IconSparkles,
 } from "./Icons";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -437,6 +437,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
   const [showObserverAudit, setShowObserverAudit] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
   const [customAuditReport, setCustomAuditReport] = useState(null);
+  const [customAuditKey, setCustomAuditKey] = useState(null);
 
   const handleReAudit = async () => {
     if (!activePath) return;
@@ -457,6 +458,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
       if (res.ok) {
         const auditData = await res.json();
         setCustomAuditReport(auditData);
+        setCustomAuditKey(`${activePath?._id || activePath?.id || selectedAltIdx}`);
         setShowObserverAudit(true);
       }
     } catch (auditErr) {
@@ -1382,22 +1384,24 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
               </div>
             </div>
 
-            {/* Alternatives selector tabs */}
-            <div className="db-alt-tabs">
-              {(pathData?.alternatives || []).map((alt, idx) => {
-                const name = typeof alt === "string" ? alt : (alt.option_name || `Option ${idx + 1}`);
-                return (
-                  <button
-                    key={idx}
-                    className={`db-alt-tab-btn ${selectedAltIdx === idx ? 'active' : ''}`}
-                    onClick={() => { setSelectedAltIdx(idx); setActiveStep(null); }}
-                  >
-                    <span className="tab-indicator" />
-                    {name}
-                  </button>
-                );
-              })}
-            </div>
+            {/* Single path focus: only display alternative selector tabs when multiple distinct routes exist */}
+            {pathData?.alternatives && pathData.alternatives.length > 1 && (
+              <div className="db-alt-tabs">
+                {pathData.alternatives.map((alt, idx) => {
+                  const name = typeof alt === "string" ? alt : (alt.option_name || `Option ${idx + 1}`);
+                  return (
+                    <button
+                      key={idx}
+                      className={`db-alt-tab-btn ${selectedAltIdx === idx ? 'active' : ''}`}
+                      onClick={() => { setSelectedAltIdx(idx); setActiveStep(null); }}
+                    >
+                      <span className="tab-indicator" />
+                      {name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Route header */}
             <div className="db-route-header">
@@ -1523,56 +1527,72 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                     </div>
                   )}
 
-                  {/* ── PATH ACCURACY SCORE CARD ── */}
+                  {/* ── PATH ACCURACY EVALUATION (HUMAN REVIEW VS OBSERVER AGENT) ── */}
                   {(() => {
-                    const hasAccuracy = activePath.accuracy_score !== undefined;
-                    const score = hasAccuracy ? activePath.accuracy_score : activePath.readiness_score;
-                    const label = activePath.accuracy_label || activePath.readiness_label || "Needs Verification";
-                    const breakdown = activePath.accuracy_breakdown || {
-                      structural_score: Math.round(score * 0.30),
-                      content_score: Math.round(score * 0.40),
-                      market_score: Math.round(score * 0.30)
-                    };
-
-                    const activeReport = customAuditReport || activePath.observer_report;
+                    const pathUniqueKey = `${activePath?._id || activePath?.id || selectedAltIdx}`;
+                    const activeReport = (customAuditReport && customAuditKey === pathUniqueKey)
+                      ? customAuditReport
+                      : (activePath.observer_report || activePath.observer_evaluation);
+                    const obsScore = activeReport ? activeReport.overall_quality_score : (activePath.accuracy_score || activePath.readiness_score || 0);
+                    const obsLabel = activeReport ? activeReport.status_label : (activePath.accuracy_label || "Verified");
+                    const obsColor = activeReport ? activeReport.status_color : "#137333";
+                    
+                    const humanRev = activePath.human_review || (activeReport && activeReport.human_review);
+                    const hasHumanReview = humanRev && humanRev.status === "reviewed" && humanRev.overall_score !== null && humanRev.overall_score !== undefined;
+                    const humanScore = hasHumanReview ? humanRev.overall_score : null;
+                    const scoreDiff = hasHumanReview ? Math.abs(humanScore - obsScore) : null;
 
                     return (
                       <div className="db-accuracy-card">
                         <div className="db-accuracy-card-header">
-                          <span className="db-accuracy-card-title">Path Accuracy Model</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                            <span className="db-accuracy-card-title">Pathway Accuracy Evaluation</span>
+                            
+                            {/* Human Review Score */}
+                            <span className={`db-eval-pill ${hasHumanReview ? "human-reviewed" : "not-reviewed"}`}>
+                              <IconUser size={12} />
+                              <span>Human Review: {hasHumanReview ? `${humanScore}/100` : "Not Reviewed"}</span>
+                            </span>
+
+                            {/* Observer Agent AI Score */}
+                            <span className="db-eval-pill ai-verified" style={{ borderColor: obsColor }}>
+                              <IconBrain size={12} />
+                              <span>Observer AI: {obsScore}/100</span>
+                              <span style={{ opacity: 0.85, fontSize: "10px" }}>· {obsLabel}</span>
+                            </span>
+
+                            {/* Difference */}
+                            {hasHumanReview && (
+                              <span className={`db-eval-pill diff ${scoreDiff <= 5 ? "match" : "diff"}`}>
+                                <span>{scoreDiff === 0 ? "Exact Match" : `${scoreDiff} pts diff`}</span>
+                              </span>
+                            )}
+                          </div>
+
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <button
                               type="button"
                               onClick={() => setShowObserverAudit(p => !p)}
                               style={{
-                                background: showObserverAudit ? "#e8f0fe" : "var(--bg-hover, #f3f4f6)",
+                                background: showObserverAudit ? "#0f172a" : "var(--bg-hover, #f3f4f6)",
                                 border: "1px solid var(--border, #d1d5db)",
-                                color: showObserverAudit ? "#1a73e8" : "var(--text, #374151)",
+                                color: showObserverAudit ? "#ffffff" : "var(--text, #374151)",
                                 fontSize: "11px",
                                 fontWeight: 700,
-                                padding: "4px 9px",
-                                borderRadius: "6px",
+                                padding: "6px 12px",
+                                borderRadius: "8px",
                                 cursor: "pointer",
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: "5px"
+                                gap: "6px",
+                                transition: "all 0.15s ease"
                               }}
                             >
-                              <IconCheck size={13} />
-                              <span>Quality Check</span>
+                              <IconSparkles size={13} />
+                              <span>{showObserverAudit ? "Hide Audit Details" : "Inspect 9-Dimension Audit"}</span>
                               <span style={{ fontSize: "10px", opacity: 0.8 }}>{showObserverAudit ? "▲" : "▼"}</span>
                             </button>
-                            <span className={`db-accuracy-badge ${label.toLowerCase().replace(/\s+/g, '-')}`}>
-                              {label} ({score}/100)
-                            </span>
                           </div>
-                        </div>
-                        <div className="db-accuracy-meter">
-                          <div className="db-accuracy-meter-fill" style={{ width: `${score}%` }} />
-                        </div>
-                        <div className="db-accuracy-summary-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "2px", fontSize: "12px", color: "var(--text2, #6b7280)" }}>
-                          <span>Overall accuracy verified across academic prerequisites, curriculum progression, and profile alignment.</span>
-                          <strong style={{ color: "var(--text, #111827)", fontWeight: 700, fontSize: "13px", marginLeft: "12px", whiteSpace: "nowrap" }}>{score}/100</strong>
                         </div>
 
                         {showObserverAudit && (
@@ -1582,6 +1602,21 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                             auditLoading={auditLoading}
                             pathTitle={activePath.path_title}
                             totalDuration={activePath.total_duration}
+                            pathId={activePath._id || activePath.id}
+                            onHumanReviewUpdated={(newRev) => {
+                              if (onPathGenerated && pathData) {
+                                if (pathData.alternatives) {
+                                  const newAlts = [...pathData.alternatives];
+                                  newAlts[selectedAltIdx] = {
+                                    ...newAlts[selectedAltIdx],
+                                    human_review: newRev,
+                                  };
+                                  onPathGenerated({ ...pathData, alternatives: newAlts }, userInput);
+                                } else {
+                                  onPathGenerated({ ...pathData, human_review: newRev }, userInput);
+                                }
+                              }
+                            }}
                           />
                         )}
                       </div>

@@ -9,6 +9,7 @@ import {
   IconSearch, IconNavigation, IconBrain, IconBulb
 } from "./Icons";
 import { cleanLocationText } from "../utils/textUtils";
+import ObserverInspector from "../components/ObserverInspector";
 import { MOCK_DATA, getPriceForView } from "./Marketplace";
 
 const API = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://127.0.0.1:8001" : "");
@@ -422,6 +423,47 @@ export default function AdminReview() {
   const [confirmModal, setConfirmModal] = useState(null);
   const [activeMarketplaceCategories, setActiveMarketplaceCategories] = useState({});
   const [regeneratingMarketplaceKey, setRegeneratingMarketplaceKey] = useState("");
+
+  // Observer Agent Audit state
+  const [observerReport, setObserverReport] = useState(null);
+  const [observerLoading, setObserverLoading] = useState(false);
+  const [showObserverAudit, setShowObserverAudit] = useState(false);
+
+  const runObserverAudit = async () => {
+    if (!selectedPath) return;
+    setObserverLoading(true);
+    try {
+      const res = await fetch(`${API}/api/observer/paths/${selectedPath.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setObserverReport(data);
+        setShowObserverAudit(true);
+      } else {
+        const inlineRes = await fetch(`${API}/api/observer/observe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roadmap_data: activeRoadmap || selectedPath.roadmap_data,
+            current_position: selectedPath.current_position || "",
+            target_goal: selectedPath.target_goal || "",
+            profile: selectedPath.profile || {},
+            category: selectedPath.profile?.activeSegment || "academic",
+            human_review: selectedPath.human_review,
+            path_id: selectedPath.id
+          })
+        });
+        if (inlineRes.ok) {
+          const inlineData = await inlineRes.json();
+          setObserverReport(inlineData);
+          setShowObserverAudit(true);
+        }
+      }
+    } catch (err) {
+      console.error("Admin Observer Audit error:", err);
+    } finally {
+      setObserverLoading(false);
+    }
+  };
 
   // Alternatives index state
   const [activeAltIdx, setActiveAltIdx] = useState(0);
@@ -1506,6 +1548,66 @@ export default function AdminReview() {
               </div>
             </div>
           )}
+
+          {/* ── Pathway Accuracy & AI Observer Evaluation Card ─────────── */}
+          <div className="ar-editor-stats-card card" style={{ marginBottom: 16 }}>
+            <div className="stats-card-header">
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div className="section-label" style={{ marginBottom: 0 }}>Pathway Accuracy Evaluation</div>
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 6,
+                  background: selectedPath?.human_review?.status === "reviewed" ? "#f1f5f9" : "#fef3c7",
+                  color: selectedPath?.human_review?.status === "reviewed" ? "#0f172a" : "#b45309"
+                }}>
+                  Human: {selectedPath?.human_review?.status === "reviewed" ? `${selectedPath.human_review.overall_score}/100` : "Not Reviewed"}
+                </span>
+                {observerReport && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 6,
+                    background: "#eff6ff", color: "#1e40af"
+                  }}>
+                    Observer AI: {observerReport.overall_quality_score}/100 ({observerReport.status_label})
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn-edit-section"
+                onClick={runObserverAudit}
+                disabled={observerLoading}
+                style={{ gap: 6 }}
+              >
+                <IconBrain size={13} />
+                <span>{observerLoading ? "Auditing..." : (showObserverAudit ? "Re-Audit Pathway" : "Run Observer Audit")}</span>
+              </button>
+            </div>
+
+            {showObserverAudit && observerReport && (
+              <div style={{ marginTop: 12 }}>
+                <ObserverInspector
+                  report={observerReport}
+                  onReAudit={runObserverAudit}
+                  auditLoading={observerLoading}
+                  pathTitle={activeRoadmap?.path_title || selectedPath?.target_goal}
+                  totalDuration={activeRoadmap?.total_duration}
+                  pathId={selectedPath?.id}
+                  onHumanReviewUpdated={(newRev, newComp) => {
+                    setSelectedPath(prev => ({
+                      ...prev,
+                      human_review: newRev
+                    }));
+                    if (observerReport) {
+                      setObserverReport(prev => ({
+                        ...prev,
+                        human_review: newRev,
+                        comparison: newComp || prev?.comparison
+                      }));
+                    }
+                  }}
+                />
+              </div>
+            )}
+          </div>
 
           {/* ── Global Metrics ──────────────────────────────────────────── */}
           <div className="ar-editor-stats-card card">

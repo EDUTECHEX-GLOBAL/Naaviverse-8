@@ -1,0 +1,1652 @@
+{
+  "path_title": "Academic Pathway: High School Graduate (Senior Secondary) to Bachelor of Science in Computer Science",
+  "category": "academic",
+  "academic_domain_strictly_enforced": true,
+  "student_input": {
+    "academic_stage": "High School Graduate (Senior Secondary)",
+    "current_grade_or_qualification": "Grade 12 Distinction (88%)",
+    "academic_goal": "Bachelor of Science in Computer Science",
+    "target_degree": "Bachelor of Science",
+    "target_institution": "Accredited University",
+    "target_country": "Global Higher Education Institution",
+    "academic_background": "Mathematics and Science Foundation",
+    "target_steps_requested": 100
+  },
+  "total_duration": "48 Months",
+  "readiness_score": 70,
+  "readiness_label": "Foundational Track",
+  "academic_stages_summary": "The pathway guides the student from post\u2011secondary preparation through university admission, foundational coursework, core computer\u2011science studies, research/project work, and final graduation. Each stage builds on verified academic achievements, ensuring prerequisite knowledge before advancing. The sequence aligns with typical global accreditation standards for a B.Sc. in Computer Science.",
+  "total_steps_generated": 100,
+  "hierarchy_breakdown": {
+    "milestones_count": 6,
+    "subtasks_count": 94,
+    "total_steps": 100
+  },
+  "steps": [
+    {
+      "id": 1,
+      "hierarchy_level": "milestone",
+      "title": "Standardized Entrance Exam Preparation",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Prepare for and sit the required university entrance examinations (e.g., SAT, ACT, or national university entrance test). Focus on strengthening quantitative reasoning, analytical writing, and problem\u2011solving skills. Review high\u2011school mathematics, physics, and introductory programming concepts. Achieve scores that meet or exceed the target institution's minimum thresholds.",
+      "prerequisites": [],
+      "duration": "Months 1-2",
+      "completion_criteria": "Obtain a minimum composite score of 1300 (SAT) or equivalent national exam percentile of 85% and secure official score reports.",
+      "key_academic_activities": [
+        "Intensive SAT/ACT practice tests",
+        "Advanced mathematics review (Calculus, Linear Algebra)",
+        "Problem\u2011solving workshops and timed writing exercises"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 2,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Baseline Diagnostic Full-Length SAT/ACT Test",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Administer an official full-length SAT or ACT under timed conditions to establish a performance baseline across all sections.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Test completed and raw scores recorded; baseline percentile documented.",
+      "category": "academic"
+    },
+    {
+      "id": 3,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Algebra I & II Concept Review",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Systematically review linear equations, quadratic functions, systems of equations, and polynomial operations using textbook chapters and problem sets.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Weeks 1-2",
+      "completion_criteria": "Complete assigned problem set with \u2265 85% correct answers on graded rubric.",
+      "category": "academic"
+    },
+    {
+      "id": 4,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Geometry and Trigonometry Refresher",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Cover Euclidean geometry proofs, coordinate geometry, and basic trigonometric identities through guided worksheets.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Weeks 2-3",
+      "completion_criteria": "Score \u2265 80% on geometry quiz and submit a proof worksheet approved by instructor.",
+      "category": "academic"
+    },
+    {
+      "id": 5,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Pre\u2011Calculus and Calculus Fundamentals",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Study limits, derivatives, integrals, and function transformations with emphasis on SAT/ACT applicable topics.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Weeks 3-4",
+      "completion_criteria": "Complete calculus problem set with \u2265 85% accuracy and pass a short timed quiz.",
+      "category": "academic"
+    },
+    {
+      "id": 6,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Linear Algebra Basics Module",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Introduce vectors, matrices, and systems of linear equations, focusing on conceptual understanding for quantitative sections.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Submit a worksheet solving three matrix problems with \u2265 90% correctness.",
+      "category": "academic"
+    },
+    {
+      "id": 7,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Physics Fundamentals for Problem Solving",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Review mechanics concepts (kinematics, forces) that appear in quantitative reasoning passages.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Complete a set of 15 physics word\u2011problem questions with \u2265 80% correct.",
+      "category": "academic"
+    },
+    {
+      "id": 8,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Introductory Programming Concepts Review (Python)",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Refresh basic programming constructs\u2014variables, loops, functions\u2014to support logical reasoning in test scenarios.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Write and successfully run three short scripts solving arithmetic puzzles.",
+      "category": "academic"
+    },
+    {
+      "id": 9,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Timed Quantitative Reasoning Practice Set 1",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Complete a 35\u2011minute timed set of mixed quantitative questions mirroring SAT/ACT difficulty.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 6",
+      "completion_criteria": "Achieve \u2265 75% correct under timed conditions; submit answer sheet for review.",
+      "category": "academic"
+    },
+    {
+      "id": 10,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Timed Quantitative Reasoning Practice Set 2",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Another 35\u2011minute timed quantitative set focusing on advanced algebra and data analysis items.",
+      "prerequisites": [
+        2,
+        3
+      ],
+      "duration": "Week 7",
+      "completion_criteria": "Score \u2265 78% accuracy; error analysis report completed.",
+      "category": "academic"
+    },
+    {
+      "id": 11,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Analytical Writing Workshop: Essay Structure",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Study the SAT/ACT essay rubric, learn thesis development, evidence integration, and concluding strategies through guided examples.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 6",
+      "completion_criteria": "Draft an outline for a sample prompt that meets all rubric criteria.",
+      "category": "academic"
+    },
+    {
+      "id": 12,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Timed Analytical Writing Practice Test",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Write a complete analytical essay within the 40\u2011minute limit on a provided prompt.",
+      "prerequisites": [
+        5
+      ],
+      "duration": "Week 8",
+      "completion_criteria": "Essay scored \u2265 4 on the official rubric by a certified evaluator.",
+      "category": "academic"
+    },
+    {
+      "id": 13,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Problem\u2011Solving Workshop: Combinatorics & Probability",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Engage in interactive problem\u2011solving sessions covering permutations, combinations, and basic probability models.",
+      "prerequisites": [
+        3,
+        4
+      ],
+      "duration": "Week 8",
+      "completion_criteria": "Complete workshop worksheet with \u2265 85% correct solutions.",
+      "category": "academic"
+    },
+    {
+      "id": 14,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Full\u2011Length Practice Test #1 with Review",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Take a complete official practice test under exam conditions, then conduct a detailed item\u2011by\u2011item review.",
+      "prerequisites": [
+        4,
+        6,
+        7
+      ],
+      "duration": "Week 9",
+      "completion_criteria": "Overall score \u2265 90% of target threshold; review document highlighting at least three improvement areas.",
+      "category": "academic"
+    },
+    {
+      "id": 15,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Full\u2011Length Practice Test #2 with Review",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Second full official practice test to measure progress, followed by a comparative analysis against Test #1.",
+      "prerequisites": [
+        8
+      ],
+      "duration": "Week 10",
+      "completion_criteria": "Score improvement of \u2265 5 points over Test #1; submit comparative analysis chart.",
+      "category": "academic"
+    },
+    {
+      "id": 16,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 1,
+      "title": "Score Analysis and Target Adjustment Plan",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Analyze cumulative test data to refine target scores and allocate remaining study time to weakest sections.",
+      "prerequisites": [
+        9
+      ],
+      "duration": "Week 11",
+      "completion_criteria": "Produce a written study plan with specific weekly goals approved by mentor.",
+      "category": "academic"
+    },
+    {
+      "id": 17,
+      "hierarchy_level": "micro_task",
+      "parent_id": 1,
+      "title": "Final Mock Exam Under Real Conditions",
+      "academic_stage": "Foundational Prerequisites",
+      "description": "Administer a final full-length SAT/ACT mock exam in a quiet environment, replicating test day timing, breaks, and materials.",
+      "prerequisites": [
+        10
+      ],
+      "duration": "Week 12",
+      "completion_criteria": "Achieve score meeting or exceeding the institution\u2019s minimum threshold; submit official score report.",
+      "category": "academic"
+    },
+    {
+      "id": 18,
+      "hierarchy_level": "milestone",
+      "title": "University Application Portfolio Development",
+      "academic_stage": "Admission Preparation",
+      "description": "Compile a comprehensive application package that includes academic transcripts, personal statement, letters of recommendation, and any required supplemental essays. Align the portfolio with the target university's admission criteria for Computer Science. Incorporate evidence of extracurricular academic activities such as coding clubs or science fairs. Submit applications before all deadlines.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Months 3-4",
+      "completion_criteria": "Submission of complete applications to at least three accredited universities with confirmation receipts.",
+      "key_academic_activities": [
+        "Drafting and revising personal statement",
+        "Securing two academic recommendation letters",
+        "Preparing a concise portfolio of coding projects or research abstracts"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 19,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Analyze target university CS admission criteria",
+      "academic_stage": "Admission Preparation",
+      "description": "Examine the official admissions webpage and program handbook to extract GPA thresholds, required coursework, and supplemental essay prompts specific to the Computer Science major.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Compiled a criteria matrix document covering all academic requirements and essay topics",
+      "category": "academic"
+    },
+    {
+      "id": 20,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Obtain and verify official high school transcripts",
+      "academic_stage": "Admission Preparation",
+      "description": "Request sealed transcripts from the high school registrar, confirm that all grades and course titles are accurately recorded, and calculate cumulative GPA using the university's weighting system.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Received official transcripts and a GPA verification sheet signed by a counselor",
+      "category": "academic"
+    },
+    {
+      "id": 21,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Complete diagnostic assessment of math and CS fundamentals",
+      "academic_stage": "Admission Preparation",
+      "description": "Take a timed practice test covering calculus, linear algebra, discrete mathematics, and introductory programming concepts to benchmark readiness for CS coursework.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Score of \u226585% on each subject area as recorded in the assessment report",
+      "category": "academic"
+    },
+    {
+      "id": 22,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Draft outline for personal statement",
+      "academic_stage": "Admission Preparation",
+      "description": "Create a structured outline that aligns personal motivations, academic achievements, and future goals with the values and strengths of the target CS program.",
+      "prerequisites": [
+        1
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Approved outline document containing at least four major sections",
+      "category": "academic"
+    },
+    {
+      "id": 23,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Write first full draft of personal statement",
+      "academic_stage": "Admission Preparation",
+      "description": "Expand the approved outline into a 500\u2011word narrative, integrating specific examples of coding experiences and leadership in technical clubs.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Submitted draft meeting the 500\u2011word count and covering all outline sections",
+      "category": "academic"
+    },
+    {
+      "id": 24,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Revise personal statement using rubric scoring",
+      "academic_stage": "Admission Preparation",
+      "description": "Apply a university\u2011provided personal statement rubric to evaluate clarity, relevance, and impact; edit the draft to achieve a rubric score of at least 90%.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Final statement version with rubric score \u226590% documented in a scoring sheet",
+      "category": "academic"
+    },
+    {
+      "id": 25,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Identify and request two academic recommendation letters",
+      "academic_stage": "Admission Preparation",
+      "description": "Select two teachers who can attest to STEM performance, draft a formal request email, and confirm their willingness to submit letters by the deadline.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Received written confirmation from both recommenders with agreed submission dates",
+      "category": "academic"
+    },
+    {
+      "id": 26,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Provide recommenders with achievement summary and CV",
+      "academic_stage": "Admission Preparation",
+      "description": "Prepare a concise academic summary and updated CV highlighting GPA, AP/IB scores, coding club leadership, and competition results; send to each recommender.",
+      "prerequisites": [
+        2
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Both recommenders acknowledge receipt of the summary and CV",
+      "category": "academic"
+    },
+    {
+      "id": 27,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Collect signed recommendation letters",
+      "academic_stage": "Admission Preparation",
+      "description": "Follow up with recommenders, obtain the final sealed letters (digital PDFs or hard copies), and verify that each letter is on official letterhead and signed.",
+      "prerequisites": [
+        3
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Two complete recommendation letters stored in the application folder",
+      "category": "academic"
+    },
+    {
+      "id": 28,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Curate coding project portfolio",
+      "academic_stage": "Admission Preparation",
+      "description": "Select three most relevant coding projects, write a one\u2011page summary for each detailing problem statement, technologies used, algorithms implemented, and outcomes or metrics.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Weeks 3-4",
+      "completion_criteria": "Portfolio PDF containing three project summaries with screenshots and GitHub links",
+      "category": "academic"
+    },
+    {
+      "id": 29,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Draft research abstract for science fair participation",
+      "academic_stage": "Admission Preparation",
+      "description": "Compose a 250\u2011word abstract describing the hypothesis, methodology, data analysis, and conclusions of the recent science fair project related to computational modeling.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Abstract approved by science fair advisor and saved as a PDF",
+      "category": "academic"
+    },
+    {
+      "id": 30,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Write supplemental essay on diversity in tech",
+      "academic_stage": "Admission Preparation",
+      "description": "Respond to the university\u2019s prompt about fostering diversity, drawing on personal experiences in coding clubs and outreach initiatives.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Essay of 300\u2011400 words completed and edited for grammar",
+      "category": "academic"
+    },
+    {
+      "id": 31,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Peer\u2011review supplemental essay with study group",
+      "academic_stage": "Admission Preparation",
+      "description": "Share the draft essay with a peer group of at least three students, collect feedback using a structured review form, and incorporate suggested improvements.",
+      "prerequisites": [
+        7
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Revised essay reflecting at least three actionable peer suggestions",
+      "category": "academic"
+    },
+    {
+      "id": 32,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Assemble complete application package PDF",
+      "academic_stage": "Admission Preparation",
+      "description": "Combine verified transcripts, final personal statement, supplemental essay, recommendation letters, project portfolio, and research abstract into a single, ordered PDF following the university\u2019s formatting guidelines.",
+      "prerequisites": [
+        1,
+        18,
+        4,
+        5,
+        6,
+        8
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Single PDF file size \u2264 10\u202fMB that passes the university\u2019s upload validation test",
+      "category": "academic"
+    },
+    {
+      "id": 33,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 18,
+      "title": "Conduct final checklist audit against university application list",
+      "academic_stage": "Admission Preparation",
+      "description": "Use the official checklist to verify that every required document, essay prompt, and supplemental item is present and correctly labeled in the assembled PDF.",
+      "prerequisites": [
+        9
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Signed audit sheet confirming 100\u202f% checklist compliance",
+      "category": "academic"
+    },
+    {
+      "id": 34,
+      "hierarchy_level": "micro_task",
+      "parent_id": 18,
+      "title": "Submit application via university portal before deadline",
+      "academic_stage": "Admission Preparation",
+      "description": "Log into the admissions portal, upload the final PDF, fill out required fields, pay any application fees, and capture the confirmation receipt.",
+      "prerequisites": [
+        10
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Official submission confirmation email with timestamp before the posted deadline",
+      "category": "academic"
+    },
+    {
+      "id": 35,
+      "hierarchy_level": "milestone",
+      "title": "Admission Acceptance and Enrollment",
+      "academic_stage": "Formal Admission",
+      "description": "Review admission offers, evaluate scholarship or financial aid packages, and accept the most suitable offer. Complete enrollment paperwork, tuition deposit, and registration for the first semester. Attend orientation sessions to become familiar with university policies, academic advising, and support services. Ensure all pre\u2011enrollment health and residency documentation is filed.",
+      "prerequisites": [
+        18
+      ],
+      "duration": "Month 5",
+      "completion_criteria": "Receipt of official enrollment confirmation and registration for at least 12 credit hours for Semester 1.",
+      "key_academic_activities": [
+        "Comparative analysis of admission offers",
+        "Submission of enrollment forms and tuition deposit",
+        "Orientation and academic advising meetings"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 36,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Conduct comparative analysis of admission offers",
+      "academic_stage": "Formal Admission",
+      "description": "Gather all admission letters, extract tuition, credit requirements, and program specifics. Populate a side\u2011by\u2011side spreadsheet to quantify costs, scholarship amounts, and academic resources.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Completed spreadsheet with all offers ranked and documented, saved in university\u2011approved format.",
+      "category": "academic"
+    },
+    {
+      "id": 37,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Evaluate scholarship and financial aid packages",
+      "academic_stage": "Formal Admission",
+      "description": "Review each financial aid award letter, calculate net cost after scholarships, grants, and loans. Prepare a cost\u2011benefit summary for each institution.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 1",
+      "completion_criteria": "Cost\u2011benefit summary approved by personal financial advisor and saved as PDF.",
+      "category": "academic"
+    },
+    {
+      "id": 38,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "Create decision matrix and select optimal offer",
+      "academic_stage": "Formal Admission",
+      "description": "Combine the comparative analysis and financial evaluation into a weighted decision matrix reflecting academic fit, cost, and support services.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Decision matrix with final selected institution highlighted and rationale documented.",
+      "category": "academic"
+    },
+    {
+      "id": 39,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Submit formal acceptance of chosen admission offer",
+      "academic_stage": "Formal Admission",
+      "description": "Complete the official acceptance form on the university portal, sign electronically, and request confirmation of enrollment status.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Confirmation email from university indicating accepted status.",
+      "category": "academic"
+    },
+    {
+      "id": 40,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Complete university enrollment portal forms",
+      "academic_stage": "Formal Admission",
+      "description": "Enter personal data, emergency contacts, and intended major into the enrollment system. Upload required identification documents.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "All enrollment fields marked complete and system-generated receipt saved.",
+      "category": "academic"
+    },
+    {
+      "id": 41,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "Submit official transcript verification",
+      "academic_stage": "Formal Admission",
+      "description": "Order sealed transcripts from previous institutions, upload scanned copies, and request verification through the registrar\u2019s office.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 2",
+      "completion_criteria": "Verification status shown as 'Approved' in enrollment portal.",
+      "category": "academic"
+    },
+    {
+      "id": 42,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Pay tuition deposit and obtain receipt",
+      "academic_stage": "Formal Admission",
+      "description": "Process the required deposit via the university\u2019s payment gateway, selecting appropriate payment method and confirming transaction.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Official deposit receipt PDF stored in student account and email confirmation received.",
+      "category": "academic"
+    },
+    {
+      "id": 43,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Register for first\u2011semester core Computer Science courses",
+      "academic_stage": "Formal Admission",
+      "description": "Log into the course registration system, select required CS101, CS102, and introductory mathematics courses, and submit the schedule for approval.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Course registration status displayed as 'Enrolled' for all selected classes.",
+      "category": "academic"
+    },
+    {
+      "id": 44,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "Complete prerequisite placement assessment for Mathematics 101",
+      "academic_stage": "Formal Admission",
+      "description": "Take the online diagnostic exam covering algebra and pre\u2011calculus topics to determine appropriate math placement.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Placement score posted with recommended Math 101 section and saved screenshot.",
+      "category": "academic"
+    },
+    {
+      "id": 45,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Attend mandatory new\u2011student orientation session",
+      "academic_stage": "Formal Admission",
+      "description": "Participate in the live orientation webcast, complete all interactive polls, and download the orientation handbook.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Orientation attendance certificate downloaded and saved.",
+      "category": "academic"
+    },
+    {
+      "id": 46,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Meet with academic advisor to draft first\u2011year degree plan",
+      "academic_stage": "Formal Admission",
+      "description": "Schedule a one\u2011on\u2011one meeting, discuss major requirements, and co\u2011create a semester\u2011by\u2011semester course map in the advising portal.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Approved degree plan PDF exported from advising system.",
+      "category": "academic"
+    },
+    {
+      "id": 47,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "Review and sign university policies and code of conduct",
+      "academic_stage": "Formal Admission",
+      "description": "Read the student handbook, acknowledge understanding of academic integrity, and electronically sign the compliance form.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Signed policy document timestamped and stored in student portal.",
+      "category": "academic"
+    },
+    {
+      "id": 48,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Submit pre\u2011enrollment health immunization records",
+      "academic_stage": "Formal Admission",
+      "description": "Obtain up\u2011to\u2011date immunization proof from healthcare provider, scan, and upload to the campus health services portal.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Health record status updated to 'Verified' in portal.",
+      "category": "academic"
+    },
+    {
+      "id": 49,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "File residency documentation for tuition classification",
+      "academic_stage": "Formal Admission",
+      "description": "Gather lease agreement, utility bills, and state ID to prove in\u2011state residency, then submit through the registrar\u2019s residency verification system.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Residency status changed to 'In\u2011State' with confirmation email.",
+      "category": "academic"
+    },
+    {
+      "id": 50,
+      "hierarchy_level": "micro_task",
+      "parent_id": 35,
+      "title": "Set up university email account and LMS access",
+      "academic_stage": "Formal Admission",
+      "description": "Activate the @university.edu email, configure password, and log into the learning management system to enroll in course sites.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Successful login to LMS and receipt of welcome email.",
+      "category": "academic"
+    },
+    {
+      "id": 51,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 35,
+      "title": "Create personal academic calendar with key dates",
+      "academic_stage": "Formal Admission",
+      "description": "Import university academic calendar into personal scheduling app, add registration deadlines, exam periods, and orientation events.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Week 5",
+      "completion_criteria": "Calendar shared with advisor and screenshot of populated events saved.",
+      "category": "academic"
+    },
+    {
+      "id": 52,
+      "hierarchy_level": "milestone",
+      "title": "Foundational University Coursework",
+      "academic_stage": "Core Foundations",
+      "description": "Complete the first-year curriculum covering Calculus I & II, Discrete Mathematics, Introduction to Programming (Python/Java), and Academic Writing for STEM. Achieve mastery of mathematical proof techniques and algorithmic thinking. Maintain a cumulative GPA of at least 3.5 to ensure progression eligibility. Participate in laboratory sessions and tutorial groups for hands\u2011on reinforcement.",
+      "prerequisites": [
+        35
+      ],
+      "duration": "Months 6-17",
+      "completion_criteria": "Earn a minimum of 30 credit hours with a GPA \u2265 3.5 and pass all core foundation exams with \u2265 80% score.",
+      "key_academic_activities": [
+        "Calculus I & II problem sets and exams",
+        "Discrete Mathematics proof assignments",
+        "Introductory programming labs and project submissions"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 53,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Complete Calculus I Weekly Problem Sets",
+      "academic_stage": "Core Foundations",
+      "description": "Solve all assigned problem sets covering limits, derivatives, and basic integration techniques, submitting solutions through the LMS.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 1-3",
+      "completion_criteria": "All problem sets submitted with an average score of at least 85%.",
+      "category": "academic"
+    },
+    {
+      "id": 54,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Calculus I Midterm Exam Preparation",
+      "academic_stage": "Core Foundations",
+      "description": "Attend review sessions, create a formula sheet, and complete a timed practice exam covering all Calculus I topics.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 4-5",
+      "completion_criteria": "Achieve \u2265 80% on the practice exam and attend at least two review sessions.",
+      "category": "academic"
+    },
+    {
+      "id": 55,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Calculus I Final Exam Execution",
+      "academic_stage": "Core Foundations",
+      "description": "Sit for the official Calculus I final exam, applying problem\u2011solving strategies learned throughout the semester.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Week 6",
+      "completion_criteria": "Score \u2265 75% on the final exam as recorded by the registrar.",
+      "category": "academic"
+    },
+    {
+      "id": 56,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Complete Calculus II Weekly Problem Sets",
+      "academic_stage": "Core Foundations",
+      "description": "Work through problem sets on techniques of integration, series, and multivariable concepts, uploading solutions for grading.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 7-10",
+      "completion_criteria": "Average problem\u2011set score of at least 85% across all weeks.",
+      "category": "academic"
+    },
+    {
+      "id": 57,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Calculus II Midterm Exam Preparation",
+      "academic_stage": "Core Foundations",
+      "description": "Form study groups, develop summary notes, and complete a full\u2011length practice midterm covering integration methods and series.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 11-12",
+      "completion_criteria": "Practice midterm score \u2265 80% and participation in at least two group study sessions.",
+      "category": "academic"
+    },
+    {
+      "id": 58,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Calculus II Final Exam Execution",
+      "academic_stage": "Core Foundations",
+      "description": "Take the official Calculus II final exam, demonstrating mastery of advanced integration and series convergence.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Week 13",
+      "completion_criteria": "Achieve a final exam grade of \u2265 75%.",
+      "category": "academic"
+    },
+    {
+      "id": 59,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Discrete Mathematics Proof Assignment 1",
+      "academic_stage": "Core Foundations",
+      "description": "Write a formal proof for the principle of mathematical induction applied to a given sequence, following course formatting guidelines.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 2-3",
+      "completion_criteria": "Proof submitted and graded with at least 85% correctness.",
+      "category": "academic"
+    },
+    {
+      "id": 60,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Discrete Mathematics Proof Assignment 2",
+      "academic_stage": "Core Foundations",
+      "description": "Construct a rigorous proof using combinatorial arguments for a graph theory problem provided in the syllabus.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 5-6",
+      "completion_criteria": "Assignment returned with a minimum of 85% on the rubric.",
+      "category": "academic"
+    },
+    {
+      "id": 61,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Discrete Mathematics Midterm Exam Preparation",
+      "academic_stage": "Core Foundations",
+      "description": "Complete a set of practice problems covering logic, set theory, and proof techniques, and attend a faculty\u2011led review workshop.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 8-9",
+      "completion_criteria": "Practice problem set average \u2265 80% and attendance recorded for the workshop.",
+      "category": "academic"
+    },
+    {
+      "id": 62,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Discrete Mathematics Final Exam Execution",
+      "academic_stage": "Core Foundations",
+      "description": "Sit for the comprehensive final exam, applying proof strategies to novel problems in discrete structures.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Week 14",
+      "completion_criteria": "Final exam score \u2265 75% as posted on the course portal.",
+      "category": "academic"
+    },
+    {
+      "id": 63,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Introductory Programming Lab: Syntax and Control Structures",
+      "academic_stage": "Core Foundations",
+      "description": "Complete hands\u2011on lab exercises in Python (or Java) focusing on variables, loops, and conditional statements, submitting code via Git.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 1-2",
+      "completion_criteria": "All lab scripts pass automated tests with \u2265 90% correctness.",
+      "category": "academic"
+    },
+    {
+      "id": 64,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Introductory Programming Lab: Functions and Data Structures",
+      "academic_stage": "Core Foundations",
+      "description": "Implement functions, lists, dictionaries (or arrays, ArrayLists), and perform unit testing in a series of lab assignments.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 3-4",
+      "completion_criteria": "Lab deliverables receive a grade of at least 85% and all unit tests pass.",
+      "category": "academic"
+    },
+    {
+      "id": 65,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Programming Project Milestone 1: Specification Draft",
+      "academic_stage": "Core Foundations",
+      "description": "Write a detailed project specification for a small software application, including requirements, design diagrams, and timeline.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 5-6",
+      "completion_criteria": "Specification approved by the instructor with no major revisions.",
+      "category": "academic"
+    },
+    {
+      "id": 66,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "Programming Project Milestone 2: Prototype Implementation",
+      "academic_stage": "Core Foundations",
+      "description": "Develop a functional prototype implementing core features, commit code to repository, and conduct peer code review.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 7-9",
+      "completion_criteria": "Prototype passes acceptance tests and receives \u2265 80% in peer review feedback.",
+      "category": "academic"
+    },
+    {
+      "id": 67,
+      "hierarchy_level": "micro_task",
+      "parent_id": 52,
+      "title": "Academic Writing for STEM: Research Essay Draft",
+      "academic_stage": "Core Foundations",
+      "description": "Compose a 1500\u2011word essay on a current topic in computer science, integrating scholarly sources and adhering to APA style.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 10-11",
+      "completion_criteria": "Draft submitted and receives a minimum of 85% on the writing rubric.",
+      "category": "academic"
+    },
+    {
+      "id": 68,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 52,
+      "title": "GPA Monitoring and Progress Review",
+      "academic_stage": "Core Foundations",
+      "description": "Calculate cumulative GPA after each graded component, compare against the 3.5 threshold, and meet with academic advisor if below target.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Weeks 12-13",
+      "completion_criteria": "Documented GPA report showing \u2265 3.5 and advisor meeting minutes filed.",
+      "category": "academic"
+    },
+    {
+      "id": 69,
+      "hierarchy_level": "milestone",
+      "title": "Core Computer Science Major Courses & Capstone Project",
+      "academic_stage": "Major Specialization",
+      "description": "Enroll in upper\u2011division courses such as Data Structures, Algorithms, Computer Architecture, Operating Systems, and Database Systems. Conduct a supervised capstone project that integrates theory and practice, resulting in a documented software solution or research paper. Fulfill elective requirements in areas like AI, Networks, or Software Engineering. Maintain a major\u2011specific GPA of at least 3.3.",
+      "prerequisites": [
+        52
+      ],
+      "duration": "Months 18-41",
+      "completion_criteria": "Complete a minimum of 90 credit hours, achieve a major GPA \u2265 3.3, and successfully defend a capstone project meeting departmental rubric standards.",
+      "key_academic_activities": [
+        "Algorithm design and analysis assignments",
+        "Operating Systems lab experiments",
+        "Capstone project proposal, implementation, and defense"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 70,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Review prerequisite lower\u2011division CS concepts",
+      "academic_stage": "Major Specialization",
+      "description": "Study and self\u2011assess programming fundamentals, discrete mathematics, and introductory computer systems to ensure readiness for upper\u2011division coursework.",
+      "prerequisites": [
+        69
+      ],
+      "duration": "Weeks 1\u20112",
+      "completion_criteria": "Score \u2265 85% on a diagnostic quiz covering loops, recursion, proofs, and binary logic.",
+      "category": "academic"
+    },
+    {
+      "id": 71,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Register for Data Structures (CS 210) and obtain syllabus",
+      "academic_stage": "Major Specialization",
+      "description": "Complete enrollment through the university portal, download the official syllabus, and note assessment dates and required textbooks.",
+      "prerequisites": [
+        69,
+        1
+      ],
+      "duration": "Week 3",
+      "completion_criteria": "Enrollment confirmation receipt and syllabus saved in course folder.",
+      "category": "academic"
+    },
+    {
+      "id": 72,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Complete Data Structures weekly problem sets",
+      "academic_stage": "Major Specialization",
+      "description": "Solve assigned problem sets on linked lists, trees, and hash tables, documenting solutions and complexity analysis.",
+      "prerequisites": [
+        69,
+        18
+      ],
+      "duration": "Weeks 4\u20117",
+      "completion_criteria": "Submit all sets with \u2265 85% average grade as recorded in the LMS.",
+      "category": "academic"
+    },
+    {
+      "id": 73,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Prepare for and pass Data Structures midterm exam",
+      "academic_stage": "Major Specialization",
+      "description": "Review lecture notes, complete practice exams, and attend office\u2011hour review sessions to master core concepts.",
+      "prerequisites": [
+        69,
+        35
+      ],
+      "duration": "Weeks 8\u20119",
+      "completion_criteria": "Achieve \u2265 80% score on the official midterm exam.",
+      "category": "academic"
+    },
+    {
+      "id": 74,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Enroll in Algorithms (CS 311) and attend introductory lectures",
+      "academic_stage": "Major Specialization",
+      "description": "Secure a seat in the Algorithms course, obtain the syllabus, and attend the first three lecture sessions covering asymptotic analysis.",
+      "prerequisites": [
+        69,
+        52
+      ],
+      "duration": "Week 10",
+      "completion_criteria": "Enrollment confirmation and attendance record for lectures 1\u20113.",
+      "category": "academic"
+    },
+    {
+      "id": 75,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Submit Algorithm design assignment on divide\u2011and\u2011conquer",
+      "academic_stage": "Major Specialization",
+      "description": "Design, implement, and analyze a divide\u2011and\u2011conquer algorithm (e.g., mergesort variant) with formal correctness proof.",
+      "prerequisites": [
+        69
+      ],
+      "duration": "Weeks 11\u201113",
+      "completion_criteria": "Assignment graded \u2265 90% for correctness, analysis, and code quality.",
+      "category": "academic"
+    },
+    {
+      "id": 76,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Complete Operating Systems lab experiments",
+      "academic_stage": "Major Specialization",
+      "description": "Perform three hands\u2011on labs: process scheduling simulation, semaphore\u2011based synchronization, and virtual memory paging, each with a written report.",
+      "prerequisites": [
+        69
+      ],
+      "duration": "Weeks 14\u201118",
+      "completion_criteria": "All lab reports submitted with \u2265 85% grade and lab code passes provided test suites.",
+      "category": "academic"
+    },
+    {
+      "id": 77,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Design ER diagram for Database Systems case study",
+      "academic_stage": "Major Specialization",
+      "description": "Create a complete entity\u2011relationship diagram for the given business scenario, normalize to 3NF, and obtain instructor approval.",
+      "prerequisites": [
+        69,
+        2
+      ],
+      "duration": "Weeks 19\u201120",
+      "completion_criteria": "Approved ER diagram uploaded to the course portal.",
+      "category": "academic"
+    },
+    {
+      "id": 78,
+      "hierarchy_level": "micro_task",
+      "parent_id": 69,
+      "title": "Select and register for AI elective (CS 340) with advisor justification",
+      "academic_stage": "Major Specialization",
+      "description": "Choose an AI elective aligned with career goals, complete the elective justification form, and secure advisor signature.",
+      "prerequisites": [
+        69,
+        3
+      ],
+      "duration": "Week 21",
+      "completion_criteria": "Advisor\u2011signed form and enrollment confirmation recorded.",
+      "category": "academic"
+    },
+    {
+      "id": 79,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Draft Capstone project proposal",
+      "academic_stage": "Major Specialization",
+      "description": "Write a detailed proposal outlining problem statement, objectives, methodology, milestones, and required resources for the capstone.",
+      "prerequisites": [
+        69,
+        4
+      ],
+      "duration": "Weeks 22\u201123",
+      "completion_criteria": "Proposal receives faculty approval with no major revisions.",
+      "category": "academic"
+    },
+    {
+      "id": 80,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Conduct literature review and compile annotated bibliography",
+      "academic_stage": "Major Specialization",
+      "description": "Identify, read, and summarize ten peer\u2011reviewed papers relevant to the capstone topic, creating an annotated bibliography.",
+      "prerequisites": [
+        69,
+        5
+      ],
+      "duration": "Weeks 24\u201126",
+      "completion_criteria": "Annotated bibliography submitted and accepted by the capstone supervisor.",
+      "category": "academic"
+    },
+    {
+      "id": 81,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Implement core authentication module of capstone",
+      "academic_stage": "Major Specialization",
+      "description": "Develop, unit\u2011test, and document the authentication component using secure coding practices and framework guidelines.",
+      "prerequisites": [
+        69,
+        6
+      ],
+      "duration": "Weeks 27\u201130",
+      "completion_criteria": "All unit tests pass with \u2265 90% coverage and code review rating \u2265 4/5.",
+      "category": "academic"
+    },
+    {
+      "id": 82,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Perform integration testing and produce test report",
+      "academic_stage": "Major Specialization",
+      "description": "Integrate all capstone modules, execute system\u2011level test cases, log defects, and produce a comprehensive test report.",
+      "prerequisites": [
+        69,
+        7
+      ],
+      "duration": "Weeks 31\u201133",
+      "completion_criteria": "Test report submitted with \u2264 5 critical defects remaining.",
+      "category": "academic"
+    },
+    {
+      "id": 83,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Write final capstone report and prepare presentation slides",
+      "academic_stage": "Major Specialization",
+      "description": "Compose a 10\u2011page technical report describing design, implementation, evaluation, and future work; create a 15\u2011minute slide deck.",
+      "prerequisites": [
+        69,
+        8
+      ],
+      "duration": "Weeks 34\u201136",
+      "completion_criteria": "Report and slides approved by supervisor with no major edits.",
+      "category": "academic"
+    },
+    {
+      "id": 84,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 69,
+      "title": "Defend capstone project before evaluation committee",
+      "academic_stage": "Major Specialization",
+      "description": "Deliver the oral presentation, answer committee questions, and incorporate any required revisions into the final documentation.",
+      "prerequisites": [
+        69,
+        9
+      ],
+      "duration": "Weeks 37\u201138",
+      "completion_criteria": "Receive a passing grade of \u2265 70% and submit final approved documents to the department repository.",
+      "category": "academic"
+    },
+    {
+      "id": 85,
+      "hierarchy_level": "milestone",
+      "title": "Degree Completion and Graduation",
+      "academic_stage": "Finalization",
+      "description": "Finalize all academic requirements, submit graduation application, and clear any outstanding administrative holds. Attend the graduation ceremony and receive the Bachelor of Science in Computer Science degree. Optionally, apply for post\u2011graduation academic recognitions such as honors or dean's list certification. Update academic transcripts and request official degree verification for future pursuits.",
+      "prerequisites": [
+        69
+      ],
+      "duration": "Months 42-48",
+      "completion_criteria": "Official issuance of the B.Sc. in Computer Science degree and receipt of a certified transcript confirming completion of all program requirements.",
+      "key_academic_activities": [
+        "Graduation application submission",
+        "Final transcript audit and clearance",
+        "Participation in commencement ceremony"
+      ],
+      "category": "academic"
+    },
+    {
+      "id": 86,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Review Graduation Eligibility Checklist",
+      "academic_stage": "Finalization",
+      "description": "Examine the university's graduation eligibility criteria, confirming completion of all required credit hours, core courses, and elective requirements for the B.S. in Computer Science.",
+      "prerequisites": [
+        85
+      ],
+      "duration": "Weeks 1-2",
+      "completion_criteria": "Signed eligibility confirmation form uploaded to the student portal with zero outstanding items.",
+      "category": "academic"
+    },
+    {
+      "id": 87,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Finalize Capstone Project Documentation",
+      "academic_stage": "Finalization",
+      "description": "Prepare the final written report, architecture diagrams, and user manual for the senior capstone software project, adhering to the department's formatting standards.",
+      "prerequisites": [
+        85,
+        1
+      ],
+      "duration": "Weeks 2-3",
+      "completion_criteria": "Report PDF approved by the capstone advisor and stored in the designated repository.",
+      "category": "academic"
+    },
+    {
+      "id": 88,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Submit Capstone Code Repository and Demonstration Video",
+      "academic_stage": "Finalization",
+      "description": "Upload the complete source code, build scripts, and a 10\u2011minute demonstration video to the university's code archive system.",
+      "prerequisites": [
+        85,
+        18
+      ],
+      "duration": "Week 4",
+      "completion_criteria": "Repository receives a 'Submission Complete' status and passes automated integrity checks.",
+      "category": "academic"
+    },
+    {
+      "id": 89,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Prepare for Comprehensive Final Exam",
+      "academic_stage": "Finalization",
+      "description": "Create a study schedule covering algorithms, operating systems, databases, and software engineering, and complete practice problem sets from prior semesters.",
+      "prerequisites": [
+        85,
+        1
+      ],
+      "duration": "Weeks 3-5",
+      "completion_criteria": "Achieve \u2265 85% average on three timed practice exams.",
+      "category": "academic"
+    },
+    {
+      "id": 90,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Take Comprehensive Final Exam",
+      "academic_stage": "Finalization",
+      "description": "Sit for the department\u2011administered comprehensive exam that tests mastery of core computer science concepts required for graduation.",
+      "prerequisites": [
+        85,
+        52
+      ],
+      "duration": "Week 6",
+      "completion_criteria": "Receive a final exam score of at least 70% as recorded in the exam results portal.",
+      "category": "academic"
+    },
+    {
+      "id": 91,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Request Academic Reference Letters from Advisors",
+      "academic_stage": "Finalization",
+      "description": "Contact the undergraduate advisor and capstone supervisor to obtain two formal reference letters supporting post\u2011graduation opportunities.",
+      "prerequisites": [
+        85,
+        1
+      ],
+      "duration": "Weeks 5-6",
+      "completion_criteria": "Both letters received as PDF files signed and uploaded to the career services portal.",
+      "category": "academic"
+    },
+    {
+      "id": 92,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Submit Graduation Application via Student Portal",
+      "academic_stage": "Finalization",
+      "description": "Complete the online graduation application, confirming personal information, degree intent, and ceremony attendance preferences.",
+      "prerequisites": [
+        85,
+        1,
+        69
+      ],
+      "duration": "Week 7",
+      "completion_criteria": "Application status changes to 'Submitted' with a confirmation email receipt.",
+      "category": "academic"
+    },
+    {
+      "id": 93,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Conduct Final Transcript Audit with Registrar",
+      "academic_stage": "Finalization",
+      "description": "Schedule a meeting with the registrar's office to verify that all courses, grades, and transfer credits are accurately reflected on the official transcript.",
+      "prerequisites": [
+        85,
+        2
+      ],
+      "duration": "Weeks 7-8",
+      "completion_criteria": "Registrar issues an 'Audit Cleared' certificate attached to the student record.",
+      "category": "academic"
+    },
+    {
+      "id": 94,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Resolve Outstanding Grade Appeals",
+      "academic_stage": "Finalization",
+      "description": "File any necessary grade appeal forms for courses with disputed marks and attend the required review meetings.",
+      "prerequisites": [
+        85,
+        3
+      ],
+      "duration": "Weeks 8-9",
+      "completion_criteria": "All appealed grades are finalized and reflected in the transcript audit report.",
+      "category": "academic"
+    },
+    {
+      "id": 95,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Clear Financial and Library Holds",
+      "academic_stage": "Finalization",
+      "description": "Pay any remaining tuition balances, settle library fines, and verify that the student account shows a zero\u2011balance status.",
+      "prerequisites": [
+        85,
+        3
+      ],
+      "duration": "Weeks 9-10",
+      "completion_criteria": "Student account status displays 'No Holds' in the financial services portal.",
+      "category": "academic"
+    },
+    {
+      "id": 96,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Obtain Dean's List Certification (if eligible)",
+      "academic_stage": "Finalization",
+      "description": "Submit a request for official Dean's List recognition based on cumulative GPA meeting the honors threshold.",
+      "prerequisites": [
+        85,
+        1
+      ],
+      "duration": "Week 10",
+      "completion_criteria": "Dean's List certificate issued and added to the academic record.",
+      "category": "academic"
+    },
+    {
+      "id": 97,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Apply for Honors Distinction (cum laude, magna, summa)",
+      "academic_stage": "Finalization",
+      "description": "Complete the honors application form, providing GPA evidence and a brief reflective essay on academic achievements.",
+      "prerequisites": [
+        85,
+        6
+      ],
+      "duration": "Week 11",
+      "completion_criteria": "Honors designation confirmed and recorded on the official transcript.",
+      "category": "academic"
+    },
+    {
+      "id": 98,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Order Official Diploma and Verify Printing Details",
+      "academic_stage": "Finalization",
+      "description": "Enter name spelling, degree title, and honors notation into the diploma ordering system, then review the proof for accuracy.",
+      "prerequisites": [
+        85,
+        2,
+        5
+      ],
+      "duration": "Week 12",
+      "completion_criteria": "Printed diploma order receives 'Approved' status and expected delivery date.",
+      "category": "academic"
+    },
+    {
+      "id": 99,
+      "hierarchy_level": "nano_subtask",
+      "parent_id": 85,
+      "title": "Attend Commencement Rehearsal",
+      "academic_stage": "Finalization",
+      "description": "Participate in the mandatory rehearsal, learning the procession order, seating arrangement, and diploma receipt protocol.",
+      "prerequisites": [
+        85,
+        8
+      ],
+      "duration": "Week 13",
+      "completion_criteria": "Rehearsal attendance logged and signed off by the ceremony coordinator.",
+      "category": "academic"
+    },
+    {
+      "id": 100,
+      "hierarchy_level": "micro_task",
+      "parent_id": 85,
+      "title": "Participate in Graduation Ceremony and Collect Diploma",
+      "academic_stage": "Finalization",
+      "description": "Walk the commencement stage, receive the diploma from the university official, and attend the post\u2011ceremony reception.",
+      "prerequisites": [
+        85,
+        9
+      ],
+      "duration": "Week 14",
+      "completion_criteria": "Diploma physically received and ceremony participation recorded in the graduation registry.",
+      "category": "academic"
+    }
+  ],
+  "token_and_capacity_analysis": {
+    "measured_empirical_metrics": {
+      "steps_evaluated": 100,
+      "tokens_per_step": 198.51,
+      "time_per_step_seconds": 0.893,
+      "total_tokens_consumed": 19851,
+      "total_generation_time_seconds": 89.31,
+      "model_configured": "openai/gpt-oss-120b",
+      "shared_org_tpm_limit": 8000,
+      "shared_org_rpm_limit": 1000
+    },
+    "capacity_estimates_for_targets": {
+      "5_steps": {
+        "target_steps": 5,
+        "projected_total_tokens": 992,
+        "projected_api_calls": 1,
+        "projected_time_seconds": 7.4,
+        "projected_time_minutes": 0.12,
+        "practical_feasibility": "Measured & Validated",
+        "tpm_saturation_risk": "Low (Within 1-min quota)"
+      },
+      "25_steps": {
+        "target_steps": 25,
+        "projected_total_tokens": 4962,
+        "projected_api_calls": 2,
+        "projected_time_seconds": 37.2,
+        "projected_time_minutes": 0.62,
+        "practical_feasibility": "Measured & Validated",
+        "tpm_saturation_risk": "Low (Within 1-min quota)"
+      },
+      "100_steps": {
+        "target_steps": 100,
+        "projected_total_tokens": 16277,
+        "projected_api_calls": 5,
+        "projected_time_seconds": 122.1,
+        "projected_time_minutes": 2.03,
+        "practical_feasibility": "Measured & Validated",
+        "tpm_saturation_risk": "High (Pacing required)"
+      },
+      "250_steps": {
+        "target_steps": 250,
+        "projected_total_tokens": 40694,
+        "projected_api_calls": 12,
+        "projected_time_seconds": 305.2,
+        "projected_time_minutes": 5.09,
+        "practical_feasibility": "Feasible with Multi-Batch Checkpointing (~4-6 min)",
+        "tpm_saturation_risk": "High (Pacing required)"
+      },
+      "500_steps": {
+        "target_steps": 500,
+        "projected_total_tokens": 81389,
+        "projected_api_calls": 23,
+        "projected_time_seconds": 610.4,
+        "projected_time_minutes": 10.17,
+        "practical_feasibility": "Theoretical Maximum with Tiered Fallback (~8-12 min)",
+        "tpm_saturation_risk": "High (Pacing required)"
+      },
+      "1000_steps": {
+        "target_steps": 1000,
+        "projected_total_tokens": 162778,
+        "projected_api_calls": 46,
+        "projected_time_seconds": 1220.8,
+        "projected_time_minutes": 20.35,
+        "practical_feasibility": "Requires Enterprise Quota (>8k TPM) or Extended Async Queue (~18-25 min)",
+        "tpm_saturation_risk": "High (Pacing required)"
+      }
+    },
+    "architecture_analysis": {
+      "key_1_responsibility": "Primary Academic Pathway, Macro Milestones, Dependency Ordering, Prerequisites",
+      "key_2_responsibility": "Parallel Milestone Expansion, Granular Micro/Nano Subtasks, Academic Blindspot Detection",
+      "bottleneck_identified": "Groq 8,000 TPM shared organization token ceiling is the primary constraint. Mitigated via dual-key parallel batching, compact JSON schemas, and fast-model fallback."
+    }
+  },
+  "execution_metrics": {
+    "model_used": "openai/gpt-oss-120b",
+    "api_keys_active": [
+      "Key_1 (Primary Blueprint & Milestones)",
+      "Key_2 (Milestone Detail Expansion)"
+    ],
+    "total_api_requests": 7,
+    "key_1_requests": 1,
+    "key_2_requests": 6,
+    "input_tokens": 4387,
+    "output_tokens": 15464,
+    "total_tokens": 19851,
+    "key_1_tokens": 2432,
+    "key_2_tokens": 17419,
+    "successfully_generated_steps": 100,
+    "duplicate_steps_removed": 0,
+    "rejected_steps": 0,
+    "generation_time_seconds": 89.31,
+    "rate_limit_errors_encountered": 1,
+    "retries_performed": 1,
+    "call_logs": [
+      {
+        "key_id": "Key_1",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 716,
+        "output_tokens": 1716,
+        "total_tokens": 2432,
+        "latency_seconds": 4.601,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 619,
+        "output_tokens": 2082,
+        "total_tokens": 2701,
+        "latency_seconds": 4.81,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 606,
+        "output_tokens": 2390,
+        "total_tokens": 2996,
+        "latency_seconds": 5.448,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 603,
+        "output_tokens": 2332,
+        "total_tokens": 2935,
+        "latency_seconds": 5.242,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 623,
+        "output_tokens": 2560,
+        "total_tokens": 3183,
+        "latency_seconds": 28.962,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 603,
+        "output_tokens": 2359,
+        "total_tokens": 2962,
+        "latency_seconds": 20.321,
+        "status": "success",
+        "error": null
+      },
+      {
+        "key_id": "Key_2",
+        "model": "openai/gpt-oss-120b",
+        "input_tokens": 617,
+        "output_tokens": 2025,
+        "total_tokens": 2642,
+        "latency_seconds": 28.877,
+        "status": "success",
+        "error": null
+      }
+    ]
+  }
+}

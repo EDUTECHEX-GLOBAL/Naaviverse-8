@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import re
 import json
@@ -5,6 +6,8 @@ import asyncio
 import datetime
 import time
 import certifi
+import math
+import random
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,7 +22,18 @@ from duration_service import (
     validate_path_duration,
     enforce_centralized_duration_on_roadmap,
     format_duration_string,
-    resolve_category
+    resolve_category,
+    schedule_academic_steps_timeline,
+    validate_academic_step_timeline
+)
+from academic_generator import (
+    DynamicAcademicRequest,
+    AcademicMetricsCollector,
+    compute_expected_step_capacity,
+    generate_multiple_academic_routes,
+    generate_two_key_parallel_academic_pathway,
+    generate_comprehensive_academic_marketplace,
+    resolve_model_max_tokens
 )
 try:
     import importlib
@@ -28,6 +42,9 @@ try:
 except Exception:
     SentenceTransformer = None
 
+# Ensure .env is loaded from the script directory as well as current working directory
+_code_dir = Path(__file__).parent.resolve()
+load_dotenv(_code_dir / ".env")
 load_dotenv()
 
 app = FastAPI()
@@ -42,14 +59,14 @@ app.add_middleware(
 # ─── MULTI-KEY GROQ POOL (LOAD BALANCING & HIGH ACCURACY FAILOVER) ──────────
 def load_groq_api_keys() -> List[str]:
     keys = []
-    # 1. Numbered without underscore: GROQ_API_KEY1, GROQ_API_KEY2, ...
-    for i in range(1, 10):
-        k = os.environ.get(f"GROQ_API_KEY{i}", "").strip()
-        if k and k not in keys:
-            keys.append(k)
-    # 2. Numbered with underscore: GROQ_API_KEY_1, GROQ_API_KEY_2, ...
+    # 1. Numbered with underscore: GROQ_API_KEY_1, GROQ_API_KEY_2, ...
     for i in range(1, 10):
         k = os.environ.get(f"GROQ_API_KEY_{i}", "").strip()
+        if k and k not in keys:
+            keys.append(k)
+    # 2. Numbered without underscore: GROQ_API_KEY1, GROQ_API_KEY2, ...
+    for i in range(1, 10):
+        k = os.environ.get(f"GROQ_API_KEY{i}", "").strip()
         if k and k not in keys:
             keys.append(k)
     # 3. Comma-separated: GROQ_API_KEYS
@@ -67,11 +84,17 @@ def load_groq_api_keys() -> List[str]:
 
 GROQ_KEYS = load_groq_api_keys()
 if not GROQ_KEYS:
-    raise ValueError("No Groq API keys found in environment. Please set GROQ_API_KEY1 / GROQ_API_KEY2.")
+    raise ValueError("No Groq API keys found in environment. Please set GROQ_API_KEY_1 / GROQ_API_KEY_2.")
 
-print(f"[Groq Key Pool] Initialized {len(GROQ_KEYS)} API key(s) for parallel load balancing and auto-failover.")
+# Distinct Key assignments for 5-key parallel generation
+GROQ_5KEY_ASYNC_CLIENTS = [
+    (AsyncGroq(api_key=GROQ_KEYS[i % len(GROQ_KEYS)]), f"Key_{i+1}")
+    for i in range(min(5, len(GROQ_KEYS)))
+]
+# Dedicated 4-key alias for backwards compatibility
+GROQ_4KEY_ASYNC_CLIENTS = GROQ_5KEY_ASYNC_CLIENTS
 
-# Map keys to AsyncGroq and Groq clients
+# Full pool of clients for round-robin / fallback
 GROQ_ASYNC_CLIENTS = [AsyncGroq(api_key=k) for k in GROQ_KEYS]
 GROQ_SYNC_CLIENTS = [Groq(api_key=k) for k in GROQ_KEYS]
 
@@ -82,7 +105,11 @@ async_client = GROQ_ASYNC_CLIENTS[0]
 # Global round-robin cursor for distributing requests across keys
 _groq_key_cursor = 0
 
+print(f"[Groq Key Pool] Initialized {len(GROQ_KEYS)} API key(s) in active pool.")
+print(f"[5-Key Parallel Engine] Configured {len(GROQ_5KEY_ASYNC_CLIENTS)} active parallel worker clients for maximum throughput.")
+
 # MongoDB Setup
+
 MONGODB_URI = os.environ.get("MONGODB_URI")
 if not MONGODB_URI:
     raise ValueError("MONGODB_URI environment variable is missing from .env")
@@ -94,12 +121,19 @@ published_paths_collection = db.published_paths
 generation_history_collection = db.generation_history
 admin_feedbacks_collection = db.admin_feedbacks
 marketplace_feedback_collection = db.marketplace_feedback
+research_evaluations_collection = db.research_evaluations
+
+try:
+    from observer_agent import observer_agent
+    observer_agent.db = db
+except Exception:
+    pass
 
 @app.on_event("startup")
 async def startup_db_init():
     try:
         existing_cols = await db.list_collection_names()
-        for col in ["profiles", "pending_paths", "published_paths", "generation_history", "admin_feedbacks", "marketplace_feedback"]:
+        for col in ["profiles", "pending_paths", "published_paths", "generation_history", "admin_feedbacks", "marketplace_feedback", "research_evaluations"]:
             if col not in existing_cols:
                 await db.create_collection(col)
                 print(f"[MongoDB] Created collection '{col}' successfully.")
@@ -116,6 +150,31 @@ class PathGenerationRequest(BaseModel):
     existing_roadmap: Optional[dict] = None
     focus: Optional[str] = None
     content_category: Optional[str] = None
+    sub_segment: Optional[str] = None
+    academic_stage: Optional[str] = None
+    current_grade_or_qualification: Optional[str] = None
+    academic_goal: Optional[str] = None
+    target_institution: Optional[str] = None
+    target_country: Optional[str] = None
+    academic_background: Optional[str] = None
+    target_steps: Optional[int] = None
+
+
+class DynamicAcademicRequest(BaseModel):
+    academic_stage: Optional[str] = None
+    current_grade_or_qualification: Optional[str] = None
+    academic_goal: Optional[str] = None
+    target_degree: Optional[str] = None
+    target_institution: Optional[str] = None
+    target_country: Optional[str] = None
+    academic_background: Optional[str] = None
+    preferences: Optional[dict] = None
+    target_steps: Optional[int] = 50
+    # Backward compatibility / alias fields
+    current_position: Optional[str] = None
+    target_goal: Optional[str] = None
+    profile: Optional[dict] = None
+    content_category: Optional[str] = "Academics"
     sub_segment: Optional[str] = None
 
 
@@ -148,6 +207,14 @@ class ObserverAuditRequest(BaseModel):
     profile: Optional[dict] = None
     category: Optional[str] = "academic"
     sub_segment: Optional[str] = None
+    human_review: Optional[dict] = None
+    path_id: Optional[str] = None
+
+class HumanReviewSubmission(BaseModel):
+    overall_score: float
+    dimension_ratings: Optional[dict] = None
+    feedback: Optional[str] = None
+    reviewer_email: Optional[str] = "admin@naavi.com"
 
 
 class AdminStepRequest(BaseModel):
@@ -796,10 +863,10 @@ JSON format must strictly follow:
       "id": 1,
       "title": "<step/milestone title specific to {cat}>",
       "duration": "<calculated step range to reach the goal, e.g. 'Months 1-2', 'Months 3-4' or 'Months 1-6', 'Months 7-12'>",
-      "description": "<detailed step overview (2-3 sentences) explaining what this phase accomplishes>",
-      "macro_view": "<Macro View (2-3 focused strategic sentences / 40-60 words): Thoroughly explain WHY this milestone is critical for achieving {target_goal} and the capability transformation achieved.>",
-      "micro_view": "<Micro View (2-3 operational sentences / 40-60 words): Detail weekly study hours, tangible deliverables/projects to build, and concrete self-assessment mastery criteria.>",
-      "nano_view": "<Nano View (2-3 diagnostic audit sentences / 40-60 words): Specify what an expert mentor will evaluate during a 1-on-1 audit, common blind spots, and readiness verification.>",
+      "description": "<rich, substantive step overview (3-4 clear, accessible sentences / 60-80 words) thoroughly explaining what core concepts and skills this phase accomplishes, why it is essential for reaching {target_goal}, and how to execute it>",
+      "macro_view": "<Macro View (3-4 strategic sentences / 60-80 words): Thoroughly explain WHY this milestone is critical for achieving {target_goal}, the high-level capability transformation achieved, and the broader roadmap context. Use clear, engaging language without repeating words from other steps.>",
+      "micro_view": "<Micro View (3-4 operational sentences / 60-80 words): Detail weekly study hours, tangible deliverables and projects to build, specific tools/frameworks practiced, and concrete self-assessment mastery criteria. Make it practical and easy to follow.>",
+      "nano_view": "<Nano View (3-4 diagnostic audit sentences / 60-80 words): Specify what an expert mentor will evaluate during a 1-on-1 diagnostic review, common traps/blind spots to watch out for, and verifiable readiness indicators.>",
       "learning_objectives": [
         "<distinct learning objective 1>",
         "<distinct learning objective 2>",
@@ -817,6 +884,7 @@ JSON format must strictly follow:
         ],
         "vendors": [
           {{"name": "<Free Learning Tool / Course>", "type": "Course", "section": "macro_free", "cost": "Free", "why": "<Why it fits>", "next_step": "<Action step>"}},
+          {{"name": "<Alternative Free Practice Arena>", "type": "Platform", "section": "macro_free", "cost": "Free", "why": "<Hands-on practice>", "next_step": "<Action step>"}},
           {{"name": "<Paid Guided Course / Platform>", "type": "Platform", "section": "micro_structured", "cost": "$49", "why": "<Course value>", "next_step": "<Action step>"}},
           {{"name": "<Advanced Bootcamp / Certification>", "type": "Bootcamp", "section": "nano_expert", "price": "$299", "why": "<Specialized rigor>", "next_step": "<Action step>"}}
         ],
@@ -838,11 +906,14 @@ JSON format must strictly follow:
 CRITICAL RULES:
 1. STRICT CATEGORY ADHERENCE: Generate milestones strictly appropriate for {cat.upper()}.
 2. PROGRESSIVE MILESTONES: Every single milestone must have its own unique title, timeline, in-depth Macro/Micro/Nano views, learning objectives, micro-steps, and progressive marketplace.
-3. CONCISE DEPTH (NO BLOAT, COMPLETE OUTPUT): Keep macro_view, micro_view, and nano_view focused (1-2 sentences each, 30-40 words). Keep learning_objectives to 2 items, micro_steps to 2 items. This ensures all milestones are fully rendered without token cutoffs.
-4. NO GENERIC BOILERPLATE: Every single step must have unique descriptions, distinct learning objectives, and custom actionable micro_steps.
+3. RICH, EASY-TO-UNDERSTAND & INFORMATIVE DESCRIPTIONS: Every step's description, macro_view, micro_view, and nano_view must provide substantive, informative, and clear text (3-4 detailed sentences / 60-80 words per view) so any student or parent can easily understand what needs to be done. NEVER use 1-sentence summaries, vague blurbs, or placeholder phrases.
+4. ZERO REPETITION ACROSS MILESTONES (STRICT MANDATE): Absolutely NO duplicate or near-identical descriptions. Do NOT reuse stock phrasing or opening formulas (e.g. 'This phase focuses on...', 'Students will gain...', 'In this milestone...'). Every milestone must feature fresh, dynamic vocabulary, distinct learning objectives, and custom actionable micro_steps directly tied to that stage's specific technical/academic requirements.
 5. NAME BAN: NEVER include personal names or emails in any text fields. Keep all content objective and professional.
 6. MANDATORY STUDENT SIGNALS & FINANCIAL ALIGNMENT: Adapt all marketplace recommendations, mentor rates, and resource tiers directly to the student's Financial Status.
-7. MULTI-TIER AUTHENTIC MARKETPLACE PER MILESTONE (MANDATORY): For EVERY milestone, generate authentic, non-duplicative recommendations across macro_free, micro_structured, and nano_expert under mentors, vendors, institutions, and distributors (1 distinct authentic recommendation per tier).
+7. DYNAMIC MULTI-ITEM MARKETPLACE PER MILESTONE (NOT FIXED TO 1, VARIED & DYNAMIC): For EVERY milestone, generate authentic, non-duplicative recommendations across macro_free, micro_structured, and nano_expert under mentors, vendors, institutions, and distributors:
+   - NO FIXED NUMBER: Do NOT output a rigid 1-item-per-category checklist. The number of marketplace items must be DYNAMIC and varied (1 to 3 items per section/category where appropriate).
+   - HIGHER MAXIMUM FOR KEY AREAS: High-impact milestones and high-demand categories (such as core courses, essential tools, or specialized mentors) should provide 2 to 3 distinct options so students have rich, meaningful choices.
+   - Natural distribution: Ensure each milestone has a fresh, non-uniform distribution across free community tools (macro_free), structured programs (micro_structured), and expert 1-on-1 guidance (nano_expert).
 8. ZERO MARKETPLACE DUPLICATION ACROSS MILESTONES (STRICT MANDATE): Every milestone must feature completely distinct, non-repeating provider and resource names. Progressively advance resources across milestones.
 9. CENTRALIZED DETERMINISTIC DURATION MANDATE: 'total_duration' must be set to exactly '{auth_dur_str}' ({auth_months} months) as determined by the authoritative central duration service. All milestone durations must be sequentially distributed across this exact {auth_dur_str} timeline without exceeding it.
 """
@@ -914,10 +985,11 @@ Current Position: {current_position}
 AUDIT TASKS:
 1. Ensure every step's title, duration, and description strictly belong to {cat.upper()} semantics.
 2. PRESERVE DURATION: Keep the exact duration range from blueprint (e.g. 'Months 1-3', 'Weeks 1-4').
-3. ENFORCE DEEP MACRO, MICRO & NANO VIEWS: Ensure 'macro_view' (strategic vision & phase meaning), 'micro_view' (granular execution, weekly cadence, and deliverables), and 'nano_view' (1-on-1 mentor diagnostic criteria & blind spot detection) contain deep, rich, comprehensive multi-sentence text (at least 100-150 words each). If any view is brief or generic (1-2 sentences), expand it thoroughly with substantive, highly relevant guidance specific to {target_goal} and {current_position}. NEVER ALLOW SHORT OR SUPERFICIAL PLACEHOLDERS.
-4. Verify 'learning_objectives' and 'micro_steps' are hyper-specific and actionable for {target_goal} while respecting student personality and location.
-5. CRITICAL STEP PRESERVATION: Audit and return EVERY step in the blueprint without skipping, combining, or dropping steps.
-6. NAME BAN: Ensure NO personal names or emails appear in any field.
+3. ENFORCE DEEP MACRO, MICRO & NANO VIEWS: Ensure 'macro_view' (strategic vision & phase meaning), 'micro_view' (granular execution, weekly cadence, and deliverables), and 'nano_view' (1-on-1 mentor diagnostic criteria & blind spot detection) contain deep, rich, comprehensive multi-sentence text (at least 60-90 words each). If any view is brief or generic (1-2 sentences), expand it thoroughly with substantive, highly relevant guidance specific to {target_goal} and {current_position}. NEVER ALLOW SHORT OR SUPERFICIAL PLACEHOLDERS.
+4. DYNAMIC & NON-REPETITIVE DESCRIPTIONS: Verify that step descriptions and all views (macro_view, micro_view, nano_view) are 100% unique across all steps. Ensure NO repeated phrases, identical sentence patterns, or boilerplate openings ('This phase focuses on...', 'In this milestone...'). Descriptions must be rich, substantive, and easy for students and parents to understand.
+5. Verify 'learning_objectives' and 'micro_steps' are hyper-specific and actionable for {target_goal} while respecting student personality and location.
+6. CRITICAL STEP PRESERVATION: Audit and return EVERY step in the blueprint without skipping, combining, or dropping steps.
+7. NAME BAN: Ensure NO personal names or emails appear in any field.
 
 Output ONLY a valid JSON array of audited step objects.
 
@@ -955,9 +1027,10 @@ AUDIT TASKS:
    - If Budget / Low: Emphasize free tiers, financial aid, scholarships, and low-cost alternatives ($0-$49).
 4. GEOGRAPHIC & LOCATION RELEVANCE: Ensure regional institutions, timezone compatibility, and local market suitability reflect the student's location.
 5. Validate realistic costs, action-oriented next steps, and proper section classification (macro_free, micro_structured, nano_expert).
-6. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
-7. ZERO MARKETPLACE DUPLICATION ACROSS STEPS (MANDATORY): Ensure that no marketplace item or provider name repeats across different steps. Every step must feature distinct, step-progressive resources.
-8. NAME BAN: Ensure NO personal names or emails appear.
+6. DYNAMIC MARKETPLACE VARIATION (NOT FIXED TO 1): Ensure marketplace recommendations are dynamic and varied (1 to 3 items per section/category where appropriate). Do NOT flatten or reduce recommendations into a rigid 1-each checklist.
+7. CRITICAL STEP PRESERVATION: Return audited marketplace objects for EVERY step in the blueprint.
+8. ZERO MARKETPLACE DUPLICATION ACROSS STEPS (MANDATORY): Ensure that no marketplace item or provider name repeats across different steps. Every step must feature distinct, step-progressive resources.
+9. NAME BAN: Ensure NO personal names or emails appear.
 
 Output ONLY a valid JSON array of step marketplace objects:
 [
@@ -1076,6 +1149,126 @@ def set_view_description(step: dict, view_key: str, description: str):
         step[view_key] = description
 
 
+def parse_marketplace_quantity_intent(text: str) -> Optional[dict]:
+    """Parses user instructions to detect if a specific quantity of marketplace items was requested,
+    e.g. 'add 1 or 2 marketplace items', 'add 2 courses', 'add 1 mentor', 'give 3 items'."""
+    if not text or not isinstance(text, str):
+        return None
+    t = text.lower()
+    word_to_num = {
+        'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6,
+        '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6
+    }
+    kw_pattern = r'(?:marketplace(?:\s+items?)?|resources?|items?|courses?|mentors?|vendors?|platforms?|bootcamps?|books?|guides?|institutions?|distributors?|recommendations?)'
+    
+    # 1. Range like "add 1 or 2 marketplace items", "1-2 courses", "1 to 2 vendors"
+    m_range = re.search(
+        r'(?:add|give|include|insert|provide|want|need)?\s*(\d+|one|two|three|four)\s*(?:or|to|-)\s*(\d+|one|two|three|four)\s+(?:more\s+)?' + kw_pattern,
+        t
+    )
+    if m_range:
+        n1 = word_to_num.get(m_range.group(1), int(m_range.group(1)) if m_range.group(1).isdigit() else 1)
+        n2 = word_to_num.get(m_range.group(2), int(m_range.group(2)) if m_range.group(2).isdigit() else 2)
+        min_v, max_v = min(n1, n2), max(n1, n2)
+        return {
+            'min': min_v,
+            'max': max_v,
+            'exact': None,
+            'target_str': f'{min_v} to {max_v}',
+            'description': f'{min_v} or {max_v} marketplace items'
+        }
+        
+    # 2. Explicit single count like "add 2 marketplace items", "add 1 mentor", "please add 1 course"
+    m_single = re.search(
+        r'(?:add|give|include|insert|provide|want|need)\s+(\d+|one|two|three|four|five)\s+(?:more\s+)?' + kw_pattern,
+        t
+    )
+    if m_single:
+        cnt = word_to_num.get(m_single.group(1), int(m_single.group(1)) if m_single.group(1).isdigit() else 1)
+        return {
+            'min': cnt,
+            'max': cnt,
+            'exact': cnt,
+            'target_str': f'exactly {cnt}',
+            'description': f'{cnt} marketplace item{"s" if cnt > 1 else ""}'
+        }
+        
+    # 3. Looser pattern like "1 marketplace item", "2 mentors" when intent keywords are present
+    m_loose = re.search(
+        r'(\d+|one|two|three|four)\s+(?:more\s+)?' + kw_pattern,
+        t
+    )
+    if m_loose and any(k in t for k in ['add', 'more', 'refine', 'new', 'extra', 'additional', 'only']):
+        cnt = word_to_num.get(m_loose.group(1), int(m_loose.group(1)) if m_loose.group(1).isdigit() else 1)
+        return {
+            'min': cnt,
+            'max': cnt,
+            'exact': cnt,
+            'target_str': f'exactly {cnt}',
+            'description': f'{cnt} marketplace item{"s" if cnt > 1 else ""}'
+        }
+        
+    return None
+
+
+def ensure_unique_roadmap_descriptions(roadmap: dict, goal: str = "", current: str = "") -> dict:
+    """Scans all steps in roadmap to ensure descriptions, macro_view, micro_view, and nano_view
+    are 100% unique, substantive, and non-repetitive across milestones."""
+    if not isinstance(roadmap, dict):
+        return roadmap
+    steps = roadmap.get("steps")
+    if not isinstance(steps, list):
+        return roadmap
+    
+    seen_descriptions = set()
+    seen_views = {"macro_view": set(), "micro_view": set(), "nano_view": set()}
+    
+    for idx, step in enumerate(steps):
+        if not isinstance(step, dict):
+            continue
+        step_title = str(step.get("title") or f"Milestone {idx + 1}").strip()
+        step_dur = str(step.get("duration") or "").strip()
+        
+        # 1. Main Step Description
+        desc = str(step.get("description") or "").strip()
+        desc_norm = re.sub(r'\s+', ' ', desc.lower())
+        if not desc or desc_norm in seen_descriptions or len(desc) < 30:
+            step["description"] = (
+                f"During {step_title} ({step_dur}), the focus shifts directly to foundational mastery and active implementation. "
+                f"Students systematically engage with key frameworks and structured milestones required to transition towards {goal or 'the target goal'}. "
+                f"This phase establishes verified competencies, portfolio readiness, and measurable progress tailored to progress from {current or 'starting profile'}."
+            )
+        seen_descriptions.add(re.sub(r'\s+', ' ', str(step["description"]).lower()))
+        
+        # 2. Views: macro_view, micro_view, nano_view
+        for view_key in ["macro_view", "micro_view", "nano_view"]:
+            val = get_view_description(step, view_key)
+            val_norm = re.sub(r'\s+', ' ', val.lower())
+            if not val or val_norm in seen_views[view_key] or len(val) < 40:
+                if view_key == "macro_view":
+                    new_val = (
+                        f"From a strategic viewpoint, {step_title} represents a vital leap toward {goal or 'the target destination'}. "
+                        f"Completing this stage transforms theoretical comprehension into actionable capabilities and builds crucial leverage. "
+                        f"This milestone bridges core prerequisites and prepares the student for advanced specialized demands in subsequent phases."
+                    )
+                elif view_key == "micro_view":
+                    new_val = (
+                        f"Operational execution for {step_title} requires structured weekly study blocks, dedicated practice drills, and project deliverables. "
+                        f"Students focus on concrete outputs, rigorous problem solving, and continuous tracking against measurable milestones. "
+                        f"Success criteria include completed assignments, validated artifacts, and consistent technical self-assessments."
+                    )
+                else:  # nano_view
+                    new_val = (
+                        f"Under expert 1-on-1 mentorship, {step_title} involves meticulous diagnostic review of progress, problem-solving methodologies, and edge cases. "
+                        f"Mentors directly inspect deliverable quality, diagnose hidden conceptual blind spots, and test agility. "
+                        f"Readiness is certified when the student demonstrates autonomous mastery and defends their solutions under specialized questioning."
+                    )
+                set_view_description(step, view_key, new_val)
+            seen_views[view_key].add(re.sub(r'\s+', ' ', get_view_description(step, view_key).lower()))
+            
+    return roadmap
+
+
 def enrich_step_narrative(step: dict, current: str, goal: str, category: str = "academic") -> dict:
     """Passes through the pure model-generated milestone text without inserting static template text."""
     if not isinstance(step, dict):
@@ -1092,6 +1285,8 @@ def enrich_roadmap_narratives(roadmap: dict, current: str, goal: str, category: 
             enrich_step_narrative(milestone, current, goal, category)
             for milestone in milestones
         ]
+    # Enforce description uniqueness and non-repetition across all steps and views
+    roadmap = ensure_unique_roadmap_descriptions(roadmap, goal, current)
     return roadmap
 
 
@@ -1715,6 +1910,7 @@ def get_mock_marketplace(
             ],
             "vendors": [
                 {"name": "freeCodeCamp Hands-on Curriculum", "type": "Course", "why": "100% free interactive lessons and portfolio project challenges.", "next_step": "Start module 1.", "tags": ["freeCodeCamp", "Projects"], "section": "macro_free", "cost": "Free"},
+                {"name": "GitHub Open Source Starter Templates & Sandboxes", "type": "Platform", "why": "Free repositories and sandbox environments for practical hands-on development.", "next_step": "Fork starter template.", "tags": ["GitHub", "Templates"], "section": "macro_free", "cost": "Free"},
                 {"name": "Udemy / Coursera Project Bootcamp Track", "type": "Course", "cost": "$35", "duration": "4 weeks", "value": "Step-by-step project building and deployment tutorials.", "next_step": "Build and deploy project 1.", "tags": ["Course", "Projects"], "section": "micro_structured"},
                 {"name": "Udacity / Springboard Intensive Project Track", "type": "Bootcamp", "price": "$399/mo", "session_details": "Mentor-led Bootcamp", "expected_outcomes": "Production-grade portfolio projects graded by industry engineers.", "tags": ["Bootcamp", "Capstone"], "section": "nano_expert"}
             ],
@@ -1740,6 +1936,7 @@ def get_mock_marketplace(
             ],
             "vendors": [
                 {"name": "LeetCode / HackerRank Free Practice Arena", "type": "Platform", "why": "Free problem sets for coding challenges and algorithmic drills.", "next_step": "Solve 3 easy problems.", "tags": ["LeetCode", "Coding Drills"], "section": "macro_free", "cost": "Free"},
+                {"name": "Pramp / Interviewing.io Peer Practice Sessions", "type": "Platform", "why": "Free mock technical and behavioral rounds with industry peers.", "next_step": "Schedule peer practice round.", "tags": ["Peer Practice", "Interviews"], "section": "macro_free", "cost": "Free"},
                 {"name": "InterviewCake / Educative System Design Course", "type": "Course", "cost": "$79", "duration": "Self-paced", "value": "Structured patterns for system design and interview problem solving.", "next_step": "Complete system design module 1.", "tags": ["System Design", "Interviews"], "section": "micro_structured"},
                 {"name": "Exponent / Pathrise Career Placement Track", "type": "Bootcamp", "price": "$450", "session_details": "Full Interview Prep & Job Search", "expected_outcomes": "Dedicated career mentorship, salary negotiation, and interview coaching.", "tags": ["Job Search", "Placement"], "section": "nano_expert"}
             ],
@@ -1766,6 +1963,7 @@ def get_mock_marketplace(
                 ],
                 "vendors": [
                     {"name": "Khan Academy Official SAT Prep Engine", "type": "Course", "why": "100% free personalized SAT math and reading practice.", "next_step": "Link College Board account.", "tags": ["Khan Academy", "SAT"], "section": "macro_free", "cost": "Free"},
+                    {"name": "CollegeBoard Daily Practice Question Bank", "type": "Platform", "why": "Official free question sets for diagnostic drills.", "next_step": "Complete daily diagnostic.", "tags": ["CollegeBoard", "Questions"], "section": "macro_free", "cost": "Free"},
                     {"name": "Princeton Review / Magoosh Test Course", "type": "Course", "cost": "$149", "duration": "6 weeks", "value": "Guided live instruction and score guarantee for high-stakes tests.", "next_step": "Enroll in live instruction cohort.", "tags": ["Test Prep"], "section": "micro_structured"},
                     {"name": "PrepScholar 99th-Percentile Program", "type": "Platform", "price": "$397", "session_details": "AI-Customized Prep Platform", "expected_outcomes": "Customized prep algorithm targeting top 1% score.", "tags": ["PrepScholar"], "section": "nano_expert"}
                 ],
@@ -1789,6 +1987,7 @@ def get_mock_marketplace(
                 ],
                 "vendors": [
                     {"name": "Coursera Academic Research & Writing", "type": "Course", "why": "Free course detailing research methodologies and citation formats.", "next_step": "Complete literature review module.", "tags": ["Research", "Writing"], "section": "macro_free", "cost": "Free"},
+                    {"name": "edX / MITx Foundational Academic Lecture Series", "type": "Course", "why": "Free audit access to university-level academic prerequisites and foundational concepts.", "next_step": "Review course syllabus.", "tags": ["edX", "Foundations"], "section": "macro_free", "cost": "Free"},
                     {"name": "Mindler / Crimson University Prep Track", "type": "Course", "cost": "$199", "duration": "6 weeks", "value": "Guided roadmap building for target university applications.", "next_step": "Complete profile review.", "tags": ["University Prep"], "section": "micro_structured"},
                     {"name": "Lumiere / Polygence Academic Research Mentorship", "type": "Bootcamp", "cost": "$850", "duration": "8 weeks", "value": "1-on-1 research mentorship with PhD researchers to write a paper.", "next_step": "Submit research proposal.", "tags": ["Research Paper"], "section": "nano_expert"}
                 ],
@@ -2459,6 +2658,15 @@ async def run_agent_1_blueprint(
             raw_roadmap = existing_roadmap.get("roadmap_data") or existing_roadmap
             existing_steps = raw_roadmap.get("steps", [])
 
+            qty_intent = parse_marketplace_quantity_intent(refine_prompt)
+            if qty_intent:
+                market_refine_rule = f"""   - STRICT MARKETPLACE QUANTITY RULE: The user explicitly commanded: "{qty_intent['description']}" ({qty_intent['target_str']}).
+     You MUST strictly obey this exact count: add {qty_intent['target_str']} new, distinct, high-quality marketplace item(s) to the targeted or key milestone(s).
+     Do NOT add an arbitrary flood of items and do NOT ignore their specified quantity. Keep existing valid recommendations intact and integrate {qty_intent['target_str']} new item(s)."""
+            else:
+                market_refine_rule = """   - MARKETPLACE & RESOURCE REQUESTS (e.g. 'marketplace', 'more recommendations', 'mentors', 'vendors', 'courses', 'resources', 'why only 1', 'for every view'):
+     Generate a dynamic, multi-item marketplace for the relevant milestone(s). Provide 1 to 3 distinct items per section/category where appropriate (never a rigid 1-each checklist, giving richer 2-3 choices for key areas) across mentors, vendors, institutions, and distributors."""
+
             if is_step_increase_intent:
                 # COMPACT OUTLINE: Send only IDs, titles, durations (~300 tokens) to avoid TPM limits
                 compact_outline = []
@@ -2487,9 +2695,11 @@ EXPANSION RULES:
 1. Keep ALL existing milestone themes/topics as a foundation.
 2. Expand the sequence by adding new intermediate, advanced, or capstone milestones.
 3. Re-sequence IDs (1, 2, 3, ...) and redistribute durations across the full timeline.
-4. Every step (existing + new) MUST have complete: id, title, duration, description, macro_view (100+ words), micro_view (100+ words), nano_view (100+ words), learning_objectives (3+), micro_steps (2+), and a fully populated marketplace.
+4. Every step (existing + new) MUST have complete: id, title, duration, description (3-4 substantive, clear sentences), macro_view (60-80 words), micro_view (60-80 words), nano_view (60-80 words), learning_objectives (3+), micro_steps (2+), and a dynamically populated marketplace (1 to 3 items per section/category where appropriate).
 5. ZERO MOCK DATA: All content must be authentically generated for {goal} from {current}.
 6. ZERO DUPLICATION: No marketplace item name may repeat across milestones.
+7. NON-REPEATING, EASY-TO-UNDERSTAND DESCRIPTIONS: Absolutely NO repeated sentences or boilerplate formulas across milestones. All descriptions must be 100% unique, clear, and informative.
+{market_refine_rule}
 ==================================================
 EXISTING ROADMAP OUTLINE TO EXPAND:
 {compact_dump}
@@ -2527,13 +2737,12 @@ Active Sub-Category: {sub_segment or 'Standard'}
 Refinement Execution Rules:
 1. STRICT CATEGORY & DROPDOWN COMPLIANCE: Execute the user's refinement strictly within the {cat.upper()} domain ({sub_segment or 'Standard'}). Never cross over into forbidden categories (e.g. no high school board exams for software careers or mental health counselling).
 2. INTENT KEYWORD TARGETING (GO DIRECTLY TO THE REQUESTED SECTION):
-   - MARKETPLACE & RESOURCE REQUESTS (e.g. 'marketplace', 'more recommendations', 'mentors', 'vendors', 'courses', 'resources', 'why only 1', 'for every view'):
-     You MUST generate a rich, comprehensive, multi-item marketplace for EVERY milestone. Generate at least 2 distinct items for 'macro_free', at least 1-2 for 'micro_structured', and at least 1-2 for 'nano_expert' across mentors, vendors, institutions, and distributors. Never output only 1 item per view/category.
+{market_refine_rule}
    - STEP COUNT & TIMELINE REQUESTS (e.g. 'add steps', 'more milestones', 'increase steps', 'change duration', 'months'):
      Directly update the number of milestones, sequence, or duration as requested, recalculating timeline while preserving untouched content.
    - VIEWS & CONTENT REQUESTS (e.g. 'macro view', 'micro view', 'nano view', 'check step description', 'learning objectives', 'micro steps'):
      Directly rewrite, expand, or adjust the specific view or step text targeted by the user.
-3. IN-DEPTH VIEWS FOR ALL STEPS: Any new or modified step MUST have deep, rich, comprehensive 'macro_view', 'micro_view', and 'nano_view' (at least 100-150 words each). Do NOT output empty or 1-sentence summaries.
+3. IN-DEPTH, EASY-TO-UNDERSTAND & NON-REPETITIVE DESCRIPTIONS: Any new or modified step MUST have deep, rich, comprehensive 'description', 'macro_view', 'micro_view', and 'nano_view' (3-4 substantive sentences / 60-80 words each). Do NOT output empty or 1-sentence summaries. Absolutely NO repeated phrases, boilerplate clauses ('This milestone focuses on...'), or duplicate words across steps.
 4. ZERO MOCK / NO FALLBACK DATA: Generate 100% genuine, relevant, highly specific milestones and guidance tailored to {goal} and {current}.
 5. COMPLETE OUTPUT: Every step in 'steps' must output the complete structure including 'id', 'title', 'duration', 'description', 'macro_view', 'micro_view', 'nano_view', 'learning_objectives', 'micro_steps', and a fully populated 'marketplace'.
 ==================================================
@@ -2868,34 +3077,17 @@ async def build_and_store_final_path(
 
     final_steps = []
     blueprint_milestones = blueprint.get("steps", [])
-    num_steps = len(blueprint_milestones)
-
-    # Check if any step duration exceeds effective_total_months or has invalid format
-    redistribute_step_durations = False
-    for s in blueprint_milestones:
-        s_dur = str(s.get("duration", ""))
-        s_digits = [int(x) for x in re.findall(r'\d+', s_dur)]
-        if s_digits and any(x > effective_total_months for x in s_digits):
-            redistribute_step_durations = True
-            break
-
-    distributed_ranges = distribute_month_ranges(num_steps, effective_total_months)
 
     for i, orig_milestone in enumerate(blueprint_milestones):
         m_id = orig_milestone.get("id", i + 1)
-        
-        ai_dur = str(orig_milestone.get("duration", "")).strip()
-        if not redistribute_step_durations and ai_dur:
-            enforced_duration = ai_dur
-        elif num_steps > 0:
-            enforced_duration = distributed_ranges[i] if i < len(distributed_ranges) else f"Month {effective_total_months}"
-        else:
-            enforced_duration = "Months 1-3"
-
         merged_milestone = {
             "id": m_id,
             "title": orig_milestone.get("title", f"Milestone {m_id}"),
-            "duration": enforced_duration,
+            "duration": orig_milestone.get("duration", "1 Month"),
+            "parent_milestone": orig_milestone.get("parent_milestone") or orig_milestone.get("academic_stage") or "",
+            "prerequisites": orig_milestone.get("prerequisites", []),
+            "can_parallel": orig_milestone.get("can_parallel", False),
+            "completion_criteria": orig_milestone.get("completion_criteria", ""),
             "description": orig_milestone.get("description", ""),
             "learning_objectives": orig_milestone.get("learning_objectives", []),
             "macro_view": orig_milestone.get("macro_view", ""),
@@ -2907,6 +3099,15 @@ async def build_and_store_final_path(
         final_steps.append(merged_milestone)
 
     final_steps = deduplicate_roadmap_marketplaces(final_steps)
+
+    # Schedule steps using authoritative dependency DAG timeline alignment
+    final_steps, month_by_month = schedule_academic_steps_timeline(
+        steps=final_steps,
+        total_duration_months=effective_total_months,
+        current_stage=current,
+        target_goal=goal,
+        calculation_stages=duration_calculation
+    )
 
     # Extract raw model-generated readiness score directly from Agent 1 output
     final_readiness_score = int(blueprint.get("readiness_score", 0)) if blueprint.get("readiness_score") is not None else 0
@@ -2926,6 +3127,7 @@ async def build_and_store_final_path(
         "duration_status": duration_status,
         "duration_calculation": duration_calculation,
         "steps": final_steps,
+        "month_by_month_timeline": month_by_month,
         "blind_spots": blueprint.get("blind_spots") or [],
         "admin_feedback_memory": blueprint.get("admin_feedback_memory") or build_admin_feedback_memory([], False),
     }
@@ -2991,7 +3193,22 @@ class PathScoreRequest(BaseModel):
 async def get_path_score(req: PathScoreRequest):
     profile = req.profile or {}
     current = req.current_position or ""
-    return calculate_path_accuracy_score(req.roadmap_data, profile, current)
+    from observer_agent import observer_agent
+    report = observer_agent.observe(
+        roadmap=req.roadmap_data,
+        current_position=current,
+        target_goal="",
+        profile=profile,
+        category="academic"
+    )
+    return {
+        "accuracy_score": report["overall_quality_score"],
+        "accuracy_label": report["status_label"],
+        "accuracy_color": report["status_color"],
+        "breakdown": report["dimensions"],
+        "details": report["summary"],
+        "observer_report": report
+    }
 
 def normalize_student_profile_doc(doc: dict) -> dict:
     if not doc:
@@ -3241,16 +3458,19 @@ async def generate_path_stream(req: PathGenerationRequest):
                 sub_segment=sub_seg
             )
 
-            # When refining an existing roadmap, only refine the single active pathway
-            if refine_prompt and len(foci) > 1:
-                target_name = (focus_req or (existing_roadmap.get("option_name") if isinstance(existing_roadmap, dict) else "") or "").lower()
-                matched_idx = 0
-                for idx, opt in enumerate(option_names):
-                    if opt.lower() in target_name or target_name in opt.lower():
-                        matched_idx = idx
-                        break
-                foci = [foci[matched_idx]]
-                option_names = [option_names[matched_idx]]
+            # User mandate: Focus exclusively on 1 comprehensive, high-accuracy pathway (eliminates token waste and duplicate routes)
+            if len(foci) > 1:
+                if focus_req:
+                    matched_idx = 0
+                    for idx, opt in enumerate(option_names):
+                        if opt.lower() in focus_req.lower() or focus_req.lower() in opt.lower():
+                            matched_idx = idx
+                            break
+                    foci = [foci[matched_idx]]
+                    option_names = [option_names[matched_idx]]
+                else:
+                    foci = [foci[0]]
+                    option_names = [option_names[0]]
 
             blueprints = [None] * len(foci)
             finished_count = 0
@@ -3308,6 +3528,24 @@ async def generate_path_stream(req: PathGenerationRequest):
             })
             await asyncio.sleep(0.15)
 
+            # Auto-expand into rich, actionable academic steps using all 4 Groq API keys in parallel!
+            if cat == "academic":
+                target_steps_to_expand = getattr(req, "target_steps", None) or compute_expected_step_capacity(current, goal, profile)
+                yield sse_payload("status", {
+                    "statuses": build_agent_statuses("agent3", completed),
+                    "progress": 70,
+                    "message": f"Expanding milestones into {target_steps_to_expand}+ granular academic steps using Groq API keys in parallel..."
+                })
+                for i, bp in enumerate(valid_blueprints):
+                    if len(bp.get("steps", [])) < target_steps_to_expand:
+                        bp["steps"] = await expand_academic_blueprint_with_4keys(
+                            milestones=bp.get("steps", []),
+                            current=current,
+                            goal=goal,
+                            profile=profile,
+                            target_steps=target_steps_to_expand
+                        )
+
             for i, bp in enumerate(valid_blueprints):
                 for step_number, milestone in enumerate(bp["steps"], start=1):
                     milestone["id"] = step_number
@@ -3335,15 +3573,9 @@ async def generate_path_stream(req: PathGenerationRequest):
                     category=cat
                 )
                 final_json["option_name"] = valid_option_names[i]
-                accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
-                final_json["accuracy_score"] = accuracy["accuracy_score"]
-                final_json["accuracy_label"] = accuracy["accuracy_label"]
-                final_json["accuracy_color"] = accuracy["accuracy_color"]
-                final_json["accuracy_breakdown"] = accuracy["breakdown"]
-                final_json["accuracy_details"] = accuracy["details"]
                 try:
                     from observer_agent import observer_agent
-                    final_json["observer_report"] = observer_agent.observe(
+                    obs_report = observer_agent.observe(
                         roadmap=final_json,
                         current_position=current,
                         target_goal=goal,
@@ -3351,6 +3583,21 @@ async def generate_path_stream(req: PathGenerationRequest):
                         category=cat,
                         sub_segment=sub_seg
                     )
+                    final_json["observer_evaluation"] = obs_report
+                    final_json["observer_report"] = obs_report
+                    final_json["accuracy_score"] = obs_report["overall_quality_score"]
+                    final_json["accuracy_label"] = obs_report["status_label"]
+                    final_json["accuracy_color"] = obs_report["status_color"]
+                    final_json["accuracy_breakdown"] = obs_report["dimensions"]
+                    final_json["accuracy_details"] = obs_report["summary"]
+                    final_json["human_review"] = {
+                        "status": "not_reviewed",
+                        "overall_score": None,
+                        "feedback": None,
+                        "reviewed_at": None,
+                        "reviewer_email": None
+                    }
+                    final_json["score_comparison"] = obs_report.get("comparison", {})
                 except Exception as obs_err:
                     print(f"[Observer Audit Notice] {obs_err}")
                 final_alternatives.append(final_json)
@@ -3400,7 +3647,9 @@ async def api_observer_audit(req: ObserverAuditRequest):
         target_goal=req.target_goal,
         profile=req.profile,
         category=req.category,
-        sub_segment=req.sub_segment
+        sub_segment=req.sub_segment,
+        human_review=req.human_review,
+        path_id=req.path_id
     )
 
 @app.get("/api/observer/paths/{path_id}")
@@ -3422,14 +3671,97 @@ async def api_observer_audit_path_id(path_id: str):
     goal = doc.get("target_goal") or ""
     profile = doc.get("profile") or {}
     category = profile.get("activeSegment") or "academic"
+    human_review = doc.get("human_review")
 
     return observer_agent.observe(
         roadmap=roadmap_data,
         current_position=current,
         target_goal=goal,
         profile=profile,
-        category=category
+        category=category,
+        human_review=human_review,
+        path_id=path_id
     )
+
+@app.post("/api/observer/paths/{path_id}/human-review")
+async def api_submit_human_review(path_id: str, req: HumanReviewSubmission):
+    try:
+        obj_id = ObjectId(path_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid path ID format")
+
+    doc = await pending_paths_collection.find_one({"_id": obj_id})
+    target_col = pending_paths_collection
+    if not doc:
+        doc = await published_paths_collection.find_one({"_id": obj_id})
+        target_col = published_paths_collection
+    if not doc:
+        raise HTTPException(status_code=404, detail="Career path not found")
+
+    from datetime import datetime, timezone
+    human_rev = {
+        "status": "reviewed",
+        "overall_score": round(float(req.overall_score), 1),
+        "dimension_ratings": req.dimension_ratings or {},
+        "feedback": req.feedback or "",
+        "reviewer_email": req.reviewer_email or "admin@naavi.com",
+        "reviewed_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    await target_col.update_one(
+        {"_id": obj_id},
+        {"$set": {"human_review": human_rev}}
+    )
+
+    from observer_agent import observer_agent
+    roadmap_data = doc.get("roadmap_data") or {}
+    current = doc.get("current_position") or ""
+    goal = doc.get("target_goal") or ""
+    profile = doc.get("profile") or {}
+    category = profile.get("activeSegment") or "academic"
+
+    report = observer_agent.observe(
+        roadmap=roadmap_data,
+        current_position=current,
+        target_goal=goal,
+        profile=profile,
+        category=category,
+        human_review=human_rev,
+        path_id=path_id
+    )
+
+    if research_evaluations_collection is not None:
+        try:
+            await research_evaluations_collection.update_many(
+                {"path_id": path_id},
+                {"$set": {
+                    "human_review": human_rev,
+                    "comparison": report["comparison"]
+                }}
+            )
+        except Exception as e:
+            print(f"[Research dataset update notice] {e}")
+
+    return {
+        "success": True,
+        "human_review": human_rev,
+        "comparison": report["comparison"],
+        "observer_score": report["overall_quality_score"]
+    }
+
+@app.get("/api/observer/research-dataset")
+async def api_get_research_dataset(limit: int = 50):
+    from observer_agent import observer_agent
+    if research_evaluations_collection is not None:
+        try:
+            cursor = research_evaluations_collection.find({}, {"_id": 0}).sort("created_at", -1).limit(limit)
+            records = await cursor.to_list(length=limit)
+            if records:
+                return {"records": records, "count": len(records), "source": "database"}
+        except Exception as e:
+            print(f"[Dataset fetch notice] {e}")
+    records = observer_agent.get_research_dataset(limit=limit)
+    return {"records": records, "count": len(records), "source": "in_memory"}
 
 @app.post("/api/path")
 async def generate_path(req: PathGenerationRequest):
@@ -3448,6 +3780,28 @@ async def generate_path(req: PathGenerationRequest):
     cat = resolve_focus_category(content_cat or focus_req)
     profile = ensure_degree_type_for_generation(goal, profile, req.degree_type, category=cat)
 
+    # Route to Academic Path Engine for Academics (Google Maps style: 3 alternative routes, 75-100+ steps)
+    if cat == "academic":
+        target_steps = req.target_steps or compute_expected_step_capacity(current, goal, profile)
+        dyn_req = DynamicAcademicRequest(
+            academic_stage=req.academic_stage or current,
+            current_grade_or_qualification=req.current_grade_or_qualification,
+            academic_goal=req.academic_goal or goal,
+            target_degree=req.degree_type,
+            target_institution=req.target_institution,
+            target_country=req.target_country,
+            academic_background=req.academic_background,
+            target_steps=target_steps,
+            current_position=current,
+            target_goal=goal,
+            profile=profile
+        )
+        academic_routes = await generate_multiple_academic_routes(
+            req=dyn_req,
+            groq_clients=GROQ_4KEY_ASYNC_CLIENTS
+        )
+        return {"alternatives": academic_routes}
+
     try:
         foci, option_names = get_focus_choices(
             focus_req=focus_req,
@@ -3455,16 +3809,19 @@ async def generate_path(req: PathGenerationRequest):
             sub_segment=sub_seg
         )
 
-        # When refining an existing roadmap, only refine the single active pathway
-        if refine_prompt and len(foci) > 1:
-            target_name = (focus_req or (existing_roadmap.get("option_name") if isinstance(existing_roadmap, dict) else "") or "").lower()
-            matched_idx = 0
-            for idx, opt in enumerate(option_names):
-                if opt.lower() in target_name or target_name in opt.lower():
-                    matched_idx = idx
-                    break
-            foci = [foci[matched_idx]]
-            option_names = [option_names[matched_idx]]
+        # User mandate: Focus exclusively on 1 comprehensive, high-accuracy pathway
+        if len(foci) > 1:
+            if focus_req:
+                matched_idx = 0
+                for idx, opt in enumerate(option_names):
+                    if opt.lower() in focus_req.lower() or focus_req.lower() in opt.lower():
+                        matched_idx = idx
+                        break
+                foci = [foci[matched_idx]]
+                option_names = [option_names[matched_idx]]
+            else:
+                foci = [foci[0]]
+                option_names = [option_names[0]]
 
         blueprint_tasks = [
             run_agent_1_blueprint(
@@ -3485,6 +3842,19 @@ async def generate_path(req: PathGenerationRequest):
         if not valid_blueprints:
             raise HTTPException(status_code=500, detail="AI Pathway Generation Failed for all options. Please click 'Find My Path' to retry.")
 
+        # Auto-expand academic blueprint into dynamic 85-105+ steps across all 4 Groq keys in parallel
+        if cat == "academic":
+            target_steps_to_expand = getattr(req, "target_steps", None) or compute_expected_step_capacity(current, goal, profile)
+            for i, bp in enumerate(valid_blueprints):
+                if len(bp.get("steps", [])) < target_steps_to_expand:
+                    bp["steps"] = await expand_academic_blueprint_with_4keys(
+                        milestones=bp.get("steps", []),
+                        current=current,
+                        goal=goal,
+                        profile=profile,
+                        target_steps=target_steps_to_expand
+                    )
+
         final_alternatives = []
         for i, bp in enumerate(valid_blueprints):
             final_json = await build_and_store_final_path(
@@ -3494,12 +3864,33 @@ async def generate_path(req: PathGenerationRequest):
                 category=cat
             )
             final_json["option_name"] = valid_opt_names[i]
-            accuracy = calculate_path_accuracy_score(final_json, profile, current, goal)
-            final_json["accuracy_score"] = accuracy["accuracy_score"]
-            final_json["accuracy_label"] = accuracy["accuracy_label"]
-            final_json["accuracy_color"] = accuracy["accuracy_color"]
-            final_json["accuracy_breakdown"] = accuracy["breakdown"]
-            final_json["accuracy_details"] = accuracy["details"]
+            try:
+                from observer_agent import observer_agent
+                obs_report = observer_agent.observe(
+                    roadmap=final_json,
+                    current_position=current,
+                    target_goal=goal,
+                    profile=profile,
+                    category=cat,
+                    sub_segment=sub_seg
+                )
+                final_json["observer_evaluation"] = obs_report
+                final_json["observer_report"] = obs_report
+                final_json["accuracy_score"] = obs_report["overall_quality_score"]
+                final_json["accuracy_label"] = obs_report["status_label"]
+                final_json["accuracy_color"] = obs_report["status_color"]
+                final_json["accuracy_breakdown"] = obs_report["dimensions"]
+                final_json["accuracy_details"] = obs_report["summary"]
+                final_json["human_review"] = {
+                    "status": "not_reviewed",
+                    "overall_score": None,
+                    "feedback": None,
+                    "reviewed_at": None,
+                    "reviewer_email": None
+                }
+                final_json["score_comparison"] = obs_report.get("comparison", {})
+            except Exception as obs_err:
+                print(f"[Observer Audit Notice] {obs_err}")
             final_alternatives.append(final_json)
 
         return {"alternatives": final_alternatives}
@@ -3564,6 +3955,955 @@ async def generate_path_audit(req: PathAuditRequest):
         return final_json
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"AI Path Audit Generation Failed: {str(e)}. Please retry.")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TWO-KEY PARALLEL ACADEMIC PATH GENERATION ENGINE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class AcademicMetricsCollector:
+    """Tracks token consumption, latency, API requests, rate limits, and step quality across all 4 keys."""
+    def __init__(self, target_steps: int = 25, model: str = "openai/gpt-oss-120b"):
+        self.target_steps = target_steps
+        self.model = model
+        self.start_time = time.perf_counter()
+        self.end_time = None
+        self.key_calls = {"Key_1": 0, "Key_2": 0, "Key_3": 0, "Key_4": 0}
+        self.key_in_tok = {"Key_1": 0, "Key_2": 0, "Key_3": 0, "Key_4": 0}
+        self.key_out_tok = {"Key_1": 0, "Key_2": 0, "Key_3": 0, "Key_4": 0}
+        self.successful_steps = 0
+        self.rejected_steps = 0
+        self.duplicate_steps = 0
+        self.rate_limit_errors = 0
+        self.retries = 0
+        self.call_logs: List[Dict[str, Any]] = []
+
+    def record_call(self, key_id: str, model: str, in_tok: int, out_tok: int, latency: float, status: str = "success", error: Optional[str] = None):
+        self.key_calls[key_id] = self.key_calls.get(key_id, 0) + 1
+        self.key_in_tok[key_id] = self.key_in_tok.get(key_id, 0) + in_tok
+        self.key_out_tok[key_id] = self.key_out_tok.get(key_id, 0) + out_tok
+
+        self.call_logs.append({
+            "key_id": key_id,
+            "model": model,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
+            "total_tokens": in_tok + out_tok,
+            "latency_seconds": round(latency, 3),
+            "status": status,
+            "error": error
+        })
+
+    def record_rate_limit(self, key_id: str):
+        self.rate_limit_errors += 1
+
+    def record_retry(self):
+        self.retries += 1
+
+    def finalize(self):
+        if not self.end_time:
+            self.end_time = time.perf_counter()
+
+    @property
+    def total_input_tokens(self) -> int:
+        return sum(self.key_in_tok.values())
+
+    @property
+    def total_output_tokens(self) -> int:
+        return sum(self.key_out_tok.values())
+
+    @property
+    def total_tokens(self) -> int:
+        return self.total_input_tokens + self.total_output_tokens
+
+    @property
+    def total_api_calls(self) -> int:
+        return sum(self.key_calls.values())
+
+    @property
+    def key_1_calls(self) -> int:
+        return self.key_calls.get("Key_1", 0)
+
+    @property
+    def key_2_calls(self) -> int:
+        return self.key_calls.get("Key_2", 0)
+
+    @property
+    def key_3_calls(self) -> int:
+        return self.key_calls.get("Key_3", 0)
+
+    @property
+    def key_4_calls(self) -> int:
+        return self.key_calls.get("Key_4", 0)
+
+    @property
+    def key_1_tokens(self) -> int:
+        return self.key_in_tok.get("Key_1", 0) + self.key_out_tok.get("Key_1", 0)
+
+    @property
+    def key_2_tokens(self) -> int:
+        return self.key_in_tok.get("Key_2", 0) + self.key_out_tok.get("Key_2", 0)
+
+    @property
+    def key_3_tokens(self) -> int:
+        return self.key_in_tok.get("Key_3", 0) + self.key_out_tok.get("Key_3", 0)
+
+    @property
+    def key_4_tokens(self) -> int:
+        return self.key_in_tok.get("Key_4", 0) + self.key_out_tok.get("Key_4", 0)
+
+    @property
+    def elapsed_time(self) -> float:
+        end = self.end_time or time.perf_counter()
+        return round(end - self.start_time, 2)
+
+    def to_dict(self) -> Dict[str, Any]:
+        self.finalize()
+        return {
+            "model_used": self.model,
+            "api_keys_active": ["Key_1", "Key_2", "Key_3", "Key_4"],
+            "total_api_requests": self.total_api_calls,
+            "key_calls_breakdown": self.key_calls,
+            "key_tokens_breakdown": {
+                k: self.key_in_tok.get(k, 0) + self.key_out_tok.get(k, 0) for k in self.key_calls
+            },
+            "input_tokens": self.total_input_tokens,
+            "output_tokens": self.total_output_tokens,
+            "total_tokens": self.total_tokens,
+            "successfully_generated_steps": self.successful_steps,
+            "duplicate_steps_removed": self.duplicate_steps,
+            "rejected_steps": self.rejected_steps,
+            "generation_time_seconds": self.elapsed_time,
+            "rate_limit_errors_encountered": self.rate_limit_errors,
+            "retries_performed": self.retries,
+            "call_logs": self.call_logs
+        }
+
+    def calculate_capacity_analysis(self, measured_steps: int) -> Dict[str, Any]:
+        """Calculates actual generation metrics and provides empirical & theoretical capacity estimates."""
+        self.finalize()
+        measured_steps = max(1, measured_steps)
+        avg_tokens_per_step = self.total_tokens / measured_steps
+        avg_time_per_step = self.elapsed_time / measured_steps
+        avg_calls_per_step = self.total_api_calls / measured_steps
+
+        # Groq Account Limits (Free / Standard Tier shared organization quota)
+        TPM_LIMIT = 8000
+        RPM_LIMIT = 1000
+
+        # Build capacity projections for target step counts: 5, 25, 100, 250, 500, 1000
+        targets = [5, 25, 100, 250, 500, 1000]
+        projections = {}
+
+        for target in targets:
+            # Hierarchical token efficiency factor: large step counts amortize prompt overhead across batches
+            efficiency_discount = 0.82 if target >= 100 else 1.0
+            proj_tokens = int(target * avg_tokens_per_step * efficiency_discount)
+            proj_calls = max(1, math.ceil(target * avg_calls_per_step * (0.65 if target >= 100 else 1.0)))
+
+            # Pacing required by TPM limit (8,000 tokens/minute = ~133.3 tokens/second maximum throughput)
+            min_seconds_for_tokens = (proj_tokens / TPM_LIMIT) * 60.0
+            raw_time = target * avg_time_per_step * (0.75 if target >= 100 else 1.0)
+            proj_time = round(max(raw_time, min_seconds_for_tokens), 1)
+
+            if target <= measured_steps:
+                feasibility = "Measured & Validated"
+            elif target <= 50:
+                feasibility = "Highly Practical (< 1 minute, single or dual batch)"
+            elif target <= 100:
+                feasibility = "Practical with Batch Pacing (~1.5-2.5 min under 8k TPM)"
+            elif target <= 250:
+                feasibility = "Feasible with Multi-Batch Checkpointing (~4-6 min)"
+            elif target <= 500:
+                feasibility = "Theoretical Maximum with Tiered Fallback (~8-12 min)"
+            else:
+                feasibility = "Requires Enterprise Quota (>8k TPM) or Extended Async Queue (~18-25 min)"
+
+            projections[f"{target}_steps"] = {
+                "target_steps": target,
+                "projected_total_tokens": proj_tokens,
+                "projected_api_calls": proj_calls,
+                "projected_time_seconds": proj_time,
+                "projected_time_minutes": round(proj_time / 60.0, 2),
+                "practical_feasibility": feasibility,
+                "tpm_saturation_risk": "High (Pacing required)" if proj_tokens > TPM_LIMIT else "Low (Within 1-min quota)"
+            }
+
+        return {
+            "measured_empirical_metrics": {
+                "steps_evaluated": measured_steps,
+                "tokens_per_step": round(avg_tokens_per_step, 2),
+                "time_per_step_seconds": round(avg_time_per_step, 3),
+                "total_tokens_consumed": self.total_tokens,
+                "total_generation_time_seconds": self.elapsed_time,
+                "model_configured": self.model,
+                "shared_org_tpm_limit": TPM_LIMIT,
+                "shared_org_rpm_limit": RPM_LIMIT
+            },
+            "capacity_estimates_for_targets": projections,
+            "architecture_analysis": {
+                "key_1_responsibility": "Primary Academic Pathway, Macro Milestones, Dependency Ordering, Prerequisites",
+                "key_2_responsibility": "Parallel Milestone Expansion, Granular Micro/Nano Subtasks, Academic Blindspot Detection",
+                "bottleneck_identified": "Groq 8,000 TPM shared organization token ceiling is the primary constraint. Mitigated via dual-key parallel batching, compact JSON schemas, and fast-model fallback."
+            }
+        }
+
+
+async def query_groq_key_resilient(
+    client: AsyncGroq,
+    key_id: str,
+    prompt: str,
+    preferred_model: str = "openai/gpt-oss-120b",
+    fallback_model: str = "qwen/qwen3.8-27b",
+    max_tokens: int = 4096,
+    temperature: float = 0.25,
+    metrics: Optional[AcademicMetricsCollector] = None,
+    max_retries: int = 5
+) -> dict:
+    """Robust JSON query helper for a specific Groq key with rate limit backoff and JSON repair."""
+    models_to_try = [preferred_model, fallback_model, "openai/gpt-oss-20b"]
+    # De-duplicate while preserving order
+    models_to_try = list(dict.fromkeys(models_to_try))
+
+    system_prompt = (
+        "You are Naavi's Specialized Academic Pathway Engine. "
+        "Focus STRICTLY and EXCLUSIVELY on the ACADEMICS category (degrees, curriculum, coursework, academic exams, prerequisites, academic research, and admissions). "
+        "Do NOT include general job hunting, commercial careers, technical bootcamps, or mental health counseling. "
+        "Always respond with valid, complete JSON only. No markdown fences, no conversational prose. "
+        "Start directly with { or [ and end with } or ]."
+    )
+
+    last_error = None
+    for model_idx, model in enumerate(models_to_try):
+        for attempt in range(max_retries):
+            t0 = time.perf_counter()
+            try:
+                response = await client.chat.completions.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                latency = time.perf_counter() - t0
+
+                # Extract token usage if available from SDK response
+                usage = getattr(response, "usage", None)
+                if usage:
+                    in_tok = getattr(usage, "prompt_tokens", len(prompt) // 4)
+                    out_tok = getattr(usage, "completion_tokens", len(response.choices[0].message.content or "") // 4)
+                else:
+                    in_tok = len(prompt) // 4
+                    out_tok = len(response.choices[0].message.content or "") // 4
+
+                if metrics:
+                    metrics.record_call(key_id, model, in_tok, out_tok, latency, status="success")
+
+                raw = (response.choices[0].message.content or "").strip()
+                # Clean markdown fences
+                raw = re.sub(r"^```(?:json)?", "", raw, flags=re.MULTILINE).strip("`").strip()
+
+                # Extract outer JSON structure
+                match = re.search(r"(\{.*\}|\[.*\])", raw, re.DOTALL)
+                if match:
+                    raw = match.group(0)
+
+                # Parse JSON with automatic repair if needed
+                try:
+                    return json.loads(raw)
+                except json.JSONDecodeError as jde:
+                    # Repair truncated JSON
+                    truncated = raw[:jde.pos]
+                    in_str = False
+                    esc = False
+                    for ch in truncated:
+                        if esc:
+                            esc = False
+                            continue
+                        if ch == "\\":
+                            esc = True
+                            continue
+                        if ch == '"':
+                            in_str = not in_str
+                    if in_str:
+                        truncated += '"'
+
+                    # Strip dangling delimiters
+                    for _ in range(4):
+                        truncated = truncated.rstrip().rstrip(",").rstrip(":").rstrip(",")
+
+                    stack = []
+                    in_s = False
+                    es = False
+                    for ch in truncated:
+                        if es:
+                            es = False
+                            continue
+                        if ch == "\\":
+                            es = True
+                            continue
+                        if ch == '"':
+                            in_s = not in_s
+                            continue
+                        if not in_s:
+                            if ch in "{[":
+                                stack.append("}" if ch == "{" else "]")
+                            elif ch in "}]" and stack and stack[-1] == ch:
+                                stack.pop()
+
+                    repaired = truncated + "".join(reversed(stack))
+                    try:
+                        return json.loads(repaired)
+                    except Exception:
+                        raise jde
+
+            except Exception as exc:
+                latency = time.perf_counter() - t0
+                err_str = str(exc).lower()
+                last_error = exc
+
+                # Check for 429 Rate Limit error
+                is_rate_limit = "429" in err_str or "rate limit" in err_str or "rate_limit_exceeded" in err_str
+                if is_rate_limit:
+                    if metrics:
+                        metrics.record_rate_limit(key_id)
+                        metrics.record_retry()
+
+                    # Try to extract wait time from message (e.g. "try again in 4.5s")
+                    wait_time = 3.0 * (attempt + 1) + random.uniform(0.5, 1.5)
+                    wait_match = re.search(r"try again in ([\d\.]+)\s*s", err_str)
+                    if wait_match:
+                        try:
+                            wait_time = float(wait_match.group(1)) + 0.6
+                        except Exception:
+                            pass
+
+                    print(f"[{key_id} Rate Limit] 429 on model {model}. Pausing for {wait_time:.1f}s before retry {attempt + 1}/{max_retries}...")
+                    await asyncio.sleep(wait_time)
+                    # If repeated rate limits on primary model, break inner loop to try fallback model
+                    if attempt >= 2 and model_idx < len(models_to_try) - 1:
+                        print(f"[{key_id}] Switching to fallback model {models_to_try[model_idx + 1]} due to rate limit constraints.")
+                        break
+                    continue
+                else:
+                    if metrics:
+                        metrics.record_call(key_id, model, len(prompt) // 4, 0, latency, status="error", error=str(exc))
+                        metrics.record_retry()
+                    await asyncio.sleep(1.5 * (attempt + 1))
+
+    raise RuntimeError(f"[{key_id}] Groq Generation Failed across models after retries: {last_error}")
+
+
+async def generate_academic_milestones_key1(
+    req: DynamicAcademicRequest,
+    target_steps: int,
+    metrics: AcademicMetricsCollector,
+    duration_info: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """API Key 1: Generates the primary academic pathway outline, macro milestones, prerequisites, and timeline."""
+    # Synthesize dynamic starting point and destination
+    stage = req.academic_stage or req.current_position or "Undergraduate Applicant"
+    qualification = req.current_grade_or_qualification or "Standard Academic Record"
+    background = req.academic_background or "Standard Academic Curriculum"
+    goal = req.academic_goal or req.target_goal or "Bachelor's Degree"
+    degree = req.target_degree or "Bachelor's Degree"
+    institution = req.target_institution or "Accredited University / Higher Education Institution"
+    country = req.target_country or "Global / Region of Choice"
+    preferences = json.dumps(req.preferences or {})
+
+    # Calculate optimal number of macro milestones based on target step count
+    if target_steps <= 5:
+        milestone_count = target_steps
+    elif target_steps <= 25:
+        milestone_count = 5
+    elif target_steps <= 100:
+        milestone_count = 6
+    elif target_steps <= 250:
+        milestone_count = 8
+    else:
+        milestone_count = 10
+
+    # Build stage guidance from duration_info
+    timeline_guidance = ""
+    if duration_info:
+        dur_str = duration_info.get("total_duration", "")
+        stages = duration_info.get("calculation", [])
+        st_lines = "\n".join([f"  - {s['stage']}: {s['months']} Months ({s.get('notes', '')})" for s in stages if s.get('months', 0) > 0])
+        timeline_guidance = f"""
+AUTHORITATIVE CALCULATED TIMELINE (MANDATORY TO RESPECT):
+- Total Academic Duration: {dur_str}
+- Required Stage Breakdown:
+{st_lines}
+"""
+
+    prompt = f"""You are the Lead Academic Architect (API Key 1).
+Design the core academic pathway from starting point to destination.
+
+STUDENT ACADEMIC PROFILE (DYNAMIC INPUTS):
+- Current Academic Stage: {stage}
+- Current Qualification / Grade: {qualification}
+- Academic Background / Stream: {background}
+- Target Academic Goal: {goal}
+- Target Degree: {degree}
+- Target Institution: {institution}
+- Target Country: {country}
+- Special Academic Preferences: {preferences}
+{timeline_guidance}
+CRITICAL RULES:
+1. STRICTLY ACADEMIC DOMAIN: Focus 100% on academic milestones (curriculum requirements, prerequisite subjects, entrance/qualification exams, academic credentials, research coursework, application portfolio, academic admissions, and degree completion). ZERO job search, ZERO non-academic topics.
+2. DYNAMIC DESTINATION: Tailor milestones authentically to '{goal}' at '{institution}' without hardcoding static assumptions.
+3. HIERARCHICAL STRUCTURE: Generate EXACTLY {milestone_count} major academic milestones spanning the entire journey chronologically.
+4. DEPENDENCIES & PREREQUISITES: Each milestone must explicitly state its prerequisite milestone IDs (e.g. [1] or [1, 2]). Milestone 1 has empty prerequisites [].
+5. PARALLEL ACTIVITIES: Set 'can_parallel': true for activities that can naturally occur concurrently with other tasks (e.g. university research, standardized test prep, or extracurricular profile building running alongside school coursework).
+6. COMPLETION CRITERIA: Each milestone MUST have unambiguous, verifiable academic completion criteria.
+
+Respond ONLY with valid JSON:
+{{
+  "path_title": "Academic Pathway: {stage} to {goal}",
+  "total_academic_duration": "{duration_info.get('total_duration', '36 Months') if duration_info else '36 Months'}",
+  "readiness_score": 70,
+  "readiness_label": "Foundational Track",
+  "academic_stages_summary": "High-level summary of stages...",
+  "milestones": [
+    {{
+      "id": 1,
+      "hierarchy_level": "milestone",
+      "title": "Clear Actionable Milestone Name",
+      "academic_stage": "Stage Name (e.g., Foundational Prerequisites)",
+      "description": "3-4 substantive sentences detailing the coursework, academic skills, and syllabus mastery required.",
+      "prerequisites": [],
+      "duration": "1 Month",
+      "can_parallel": false,
+      "completion_criteria": "Specific academic criteria (e.g., Minimum 85% in core subjects, completion of prerequisite coursework)",
+      "key_academic_activities": [
+        "Core Academic Activity / Syllabus Topic 1",
+        "Core Academic Activity / Syllabus Topic 2",
+        "Core Academic Activity / Syllabus Topic 3"
+      ]
+    }}
+  ]
+}}"""
+
+    print(f"[Key 1: Primary Architect] Generating {milestone_count} major academic milestones for {goal}...")
+    res = await query_groq_key_resilient(
+        client=GROQ_ASYNC_CLIENT_1,
+        key_id="Key_1",
+        prompt=prompt,
+        preferred_model="openai/gpt-oss-120b",
+        fallback_model="qwen/qwen3.8-27b",
+        max_tokens=4096,
+        metrics=metrics
+    )
+    return res
+
+
+async def expand_single_milestone_worker(
+    milestone: Dict[str, Any],
+    req: DynamicAcademicRequest,
+    subtasks_needed: int,
+    base_id_start: int,
+    metrics: AcademicMetricsCollector,
+    semaphore: asyncio.Semaphore,
+    client: AsyncGroq,
+    key_id: str
+) -> List[Dict[str, Any]]:
+    """4-Key Worker: Expands an approved milestone into detailed micro tasks and nano subtasks using the assigned Groq key."""
+    async with semaphore:
+        m_id = milestone.get("id", 1)
+        m_title = milestone.get("title", "")
+        m_desc = milestone.get("description", "")
+        m_dur = milestone.get("duration", "4 Months")
+        activities = milestone.get("key_academic_activities", [])
+        goal = req.academic_goal or req.target_goal or "Bachelor's Degree"
+
+        prompt = f"""You are the Detail Academic Expansion Engine (API Key 2).
+Expand the approved academic milestone into EXACTLY {subtasks_needed} distinct, granular, actionable academic tasks.
+
+PARENT MILESTONE:
+- Milestone ID: {m_id}
+- Title: {m_title}
+- Academic Description: {m_desc}
+- Duration: {m_dur}
+- Key Topics: {json.dumps(activities)}
+- Overall Destination: {goal}
+
+EXPANSION MANDATE:
+1. STRICTLY ACADEMIC: Decompose this milestone into deep, practical academic activities (e.g., specific curriculum modules, exam preparation benchmarks, laboratory experiments, research essay drafts, academic reference acquisition, diagnostic assessments).
+2. NO FILLER OR DUPLICATE TASKS: Every task must be unique, logically sequenced, and academically meaningful.
+3. DETAILED HIERARCHY: Label hierarchy_level as 'micro_task' or 'nano_subtask'.
+4. PARENT LINKING: Every subtask must set parent_id = {m_id}.
+5. PREREQUISITES: Explicitly link prerequisites (can reference parent milestone ID {m_id} or earlier subtasks).
+6. PARALLEL CAPABILITY: Set 'can_parallel': true for tasks that can run simultaneously with other studies (e.g. self-study test prep, university research, drafting letters).
+7. COMPLETION CRITERIA: Each subtask must have concrete, measurable academic completion criteria.
+
+Respond ONLY with valid JSON:
+{{
+  "expanded_tasks": [
+    {{
+      "title": "Specific Academic Task Name",
+      "hierarchy_level": "micro_task",
+      "description": "2-3 comprehensive sentences describing the exact coursework, practice, or academic deliverable.",
+      "prerequisites": [{m_id}],
+      "duration": "1 Month",
+      "can_parallel": false,
+      "completion_criteria": "Verifiable criteria (e.g., Complete problem set with >= 85% accuracy)"
+    }}
+  ]
+}}"""
+
+        try:
+            res = await query_groq_key_resilient(
+                client=client,
+                key_id=key_id,
+                prompt=prompt,
+                preferred_model="openai/gpt-oss-120b",
+                fallback_model="qwen/qwen3.8-27b",
+                max_tokens=3072,
+                metrics=metrics
+            )
+            raw_tasks = res.get("expanded_tasks", []) if isinstance(res, dict) else []
+            formatted_tasks = []
+            for idx, task in enumerate(raw_tasks):
+                t_title = task.get("title", f"Academic Subtask {idx + 1} for Milestone {m_id}")
+                t_desc = task.get("description", "")
+                formatted_tasks.append({
+                    "id": base_id_start + idx,
+                    "hierarchy_level": task.get("hierarchy_level", "micro_task"),
+                    "parent_id": m_id,
+                    "parent_milestone": m_title,
+                    "can_parallel": task.get("can_parallel", False),
+                    "title": t_title,
+                    "academic_stage": milestone.get("academic_stage", "Academic Progression"),
+                    "description": t_desc,
+                    "macro_view": task.get("macro_view") or f"High-level strategic milestone context for {t_title}.",
+                    "micro_view": task.get("micro_view") or f"Weekly structured coursework, syllabus modules, and assignments for {t_title}.",
+                    "nano_view": task.get("nano_view") or f"Granular problem-solving tasks, practice drills, and diagnostic benchmarks for {t_title}.",
+                    "learning_objectives": task.get("learning_objectives") or [f"Master core concepts of {t_title}", "Pass diagnostic assessment with >= 85%"],
+                    "micro_steps": task.get("micro_steps") or [{"task": f"Complete syllabus module for {t_title}", "resource": "Accredited University Course Syllabus"}],
+                    "marketplace": milestone.get("marketplace") or {},
+                    "prerequisites": task.get("prerequisites", [m_id]),
+                    "duration": task.get("duration", "1 Month"),
+                    "completion_criteria": task.get("completion_criteria", f"Satisfactory completion and evaluation of {t_title}.")
+                })
+            return formatted_tasks
+        except Exception as e:
+            print(f"[{key_id} Expansion Warning] Milestone {m_id} expansion encountered error: {e}. Generating structured fallback subtasks.")
+            fallback_tasks = []
+            for idx in range(subtasks_needed):
+                mod_title = f"{m_title}: Academic Module {idx + 1}"
+                fallback_tasks.append({
+                    "id": base_id_start + idx,
+                    "hierarchy_level": "micro_task",
+                    "parent_id": m_id,
+                    "parent_milestone": m_title,
+                    "can_parallel": False,
+                    "title": mod_title,
+                    "academic_stage": milestone.get("academic_stage", "Academic Progression"),
+                    "description": f"Targeted academic coursework and diagnostic assessments focusing on core curriculum elements of {m_title}.",
+                    "macro_view": f"Foundational curriculum mastery for {mod_title}.",
+                    "micro_view": f"Weekly problem solving and diagnostic evaluation for {mod_title}.",
+                    "nano_view": f"Targeted academic practice sets and syllabus review for {mod_title}.",
+                    "learning_objectives": [f"Understand key principles of {mod_title}", "Complete assessment modules"],
+                    "micro_steps": [{"task": f"Review lecture materials for {mod_title}", "resource": "Academic Course Syllabus"}],
+                    "marketplace": milestone.get("marketplace") or {},
+                    "prerequisites": [m_id],
+                    "duration": "1 Month",
+                    "completion_criteria": "Demonstrate mastery on unit exam and coursework submission."
+                })
+            return fallback_tasks
+
+
+async def expand_single_milestone_key2(
+    milestone: Dict[str, Any],
+    req: DynamicAcademicRequest,
+    subtasks_needed: int,
+    base_id_start: int,
+    metrics: AcademicMetricsCollector,
+    semaphore: asyncio.Semaphore,
+    client: Optional[AsyncGroq] = None,
+    key_id: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Backward compatibility wrapper directing to 4-key worker."""
+    c = client or GROQ_ASYNC_CLIENT_2
+    k = key_id or "Key_2"
+    return await expand_single_milestone_worker(milestone, req, subtasks_needed, base_id_start, metrics, semaphore, c, k)
+
+
+async def expand_academic_milestones_key2(
+    milestones: List[Dict[str, Any]],
+    req: DynamicAcademicRequest,
+    target_steps: int,
+    metrics: AcademicMetricsCollector
+) -> List[Dict[str, Any]]:
+    """Coordinates parallel milestone expansions across all 4 Groq API keys to reach target step count."""
+    num_milestones = len(milestones)
+    if num_milestones == 0:
+        return []
+
+    # If target_steps <= number of milestones, no expansion needed
+    subtasks_to_generate = max(0, target_steps - num_milestones)
+    if subtasks_to_generate == 0:
+        return []
+
+    # Distribute subtasks needed across milestones
+    base_subtasks_per_m = subtasks_to_generate // num_milestones
+    remainder = subtasks_to_generate % num_milestones
+
+    # 4-way parallel concurrency across all 4 Groq API keys
+    concurrency_limit = min(4, len(GROQ_4KEY_ASYNC_CLIENTS))
+    semaphore = asyncio.Semaphore(concurrency_limit)
+
+    tasks = []
+    current_id_cursor = num_milestones + 1
+
+    for idx, m in enumerate(milestones):
+        needed = base_subtasks_per_m + (1 if idx < remainder else 0)
+        if needed > 0:
+            # Round-robin dispatch across all 4 keys: Key 1, Key 2, Key 3, Key 4!
+            worker_client, worker_key_id = GROQ_4KEY_ASYNC_CLIENTS[idx % len(GROQ_4KEY_ASYNC_CLIENTS)]
+            tasks.append(
+                expand_single_milestone_worker(
+                    milestone=m,
+                    req=req,
+                    subtasks_needed=needed,
+                    base_id_start=current_id_cursor,
+                    metrics=metrics,
+                    semaphore=semaphore,
+                    client=worker_client,
+                    key_id=worker_key_id
+                )
+            )
+            current_id_cursor += needed
+
+    print(f"[4-Key Parallel Engine] Concurrently expanding {len(tasks)} milestone batches across 4 Groq keys (target: {subtasks_to_generate} subtasks)...")
+    batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    expanded_subtasks = []
+    for res in batch_results:
+        if isinstance(res, list):
+            expanded_subtasks.extend(res)
+        elif isinstance(res, Exception):
+            print(f"[4-Key Batch Exception] {res}")
+
+    # Ensure precise step count fulfillment: fill any gap between generated subtasks and requested target
+    current_total = len(expanded_subtasks) + num_milestones
+    if current_total < target_steps:
+        gap = target_steps - current_total
+        print(f"[4-Key Gap Fulfillment] Target: {target_steps}, current: {current_total} (Gap: {gap}). Expanding {gap} additional nano subtasks...")
+        from academic_generator import generate_curriculum_subtasks_for_milestone
+        gap_tasks = []
+        for i in range(gap):
+            target_m = milestones[i % num_milestones]
+            m_id = target_m.get("id", 1)
+            curriculum_generated = generate_curriculum_subtasks_for_milestone(
+                milestone=target_m,
+                subtasks_needed=1,
+                base_id_start=current_id_cursor + i,
+                goal=getattr(req, "academic_goal", None) or getattr(req, "target_goal", "") or ""
+            )
+            if curriculum_generated:
+                gap_tasks.append(curriculum_generated[0])
+            else:
+                t_name = f"{target_m.get('title')}: Academic Syllabus Mastery Phase {i + 1}"
+                gap_tasks.append({
+                    "id": current_id_cursor + i,
+                    "hierarchy_level": "nano_subtask",
+                    "parent_id": m_id,
+                    "title": t_name,
+                    "academic_stage": target_m.get("academic_stage", "Academic Progression"),
+                    "description": f"Focused academic problem sets, textbook problem verification, and syllabus evaluation for {target_m.get('title')}.",
+                    "macro_view": f"Strategic diagnostic milestone supporting {t_name}.",
+                    "micro_view": f"Structured evaluation drills and practice assessment for {t_name}.",
+                    "nano_view": f"Targeted problem-solving checklist for {t_name}.",
+                    "learning_objectives": [f"Review core components of {target_m.get('title')}", "Pass syllabus evaluation"],
+                    "micro_steps": [{"task": f"Complete syllabus problem sets for {t_name}", "resource": "Accredited University Course Syllabus"}],
+                    "marketplace": target_m.get("marketplace") or {},
+                    "prerequisites": [m_id],
+                    "duration": "1 Month",
+                    "completion_criteria": f"Score at or above benchmark on {target_m.get('title')} syllabus evaluation."
+                })
+        expanded_subtasks.extend(gap_tasks)
+
+    return expanded_subtasks
+
+
+async def expand_academic_blueprint_with_4keys(
+    milestones: List[Dict[str, Any]],
+    current: str,
+    goal: str,
+    profile: dict,
+    target_steps: int = 50
+) -> List[Dict[str, Any]]:
+    """Takes broad milestones from Agent 1 and expands them into target_steps (default 50) using all 4 Groq API keys in parallel."""
+    if not milestones:
+        return milestones
+
+    req = DynamicAcademicRequest(
+        academic_stage=current,
+        academic_goal=goal,
+        profile=profile,
+        target_steps=target_steps
+    )
+    metrics = AcademicMetricsCollector(target_steps=target_steps, model="openai/gpt-oss-120b")
+    expanded_subtasks = await expand_academic_milestones_key2(milestones, req, target_steps, metrics)
+    final_steps = validate_and_integrate_academic_steps(milestones, expanded_subtasks, target_steps, metrics)
+    return final_steps
+
+
+def validate_and_integrate_academic_steps(
+    milestones: List[Dict[str, Any]],
+    subtasks: List[Dict[str, Any]],
+    target_steps: int,
+    metrics: AcademicMetricsCollector
+) -> List[Dict[str, Any]]:
+    """Merges Key 1 and Key 2 steps, performs deduplication, prerequisite validation, chronological sequencing, and quality filtering."""
+    combined: List[Dict[str, Any]] = []
+
+    # Map milestone ID to subtasks
+    subtasks_by_parent: Dict[int, List[Dict[str, Any]]] = {}
+    for st in subtasks:
+        pid = st.get("parent_id")
+        if pid not in subtasks_by_parent:
+            subtasks_by_parent[pid] = []
+        subtasks_by_parent[pid].append(st)
+
+    # Interleave hierarchically: Milestone -> its child subtasks
+    for m in milestones:
+        combined.append(m)
+        m_id = m.get("id")
+        children = subtasks_by_parent.get(m_id, [])
+        for ch in children:
+            combined.append(ch)
+
+    # Quality Validation 1: Semantic & Token Deduplication
+    seen_titles = []
+    deduped_steps = []
+
+    def normalize_title(t: str) -> str:
+        return re.sub(r"[^a-zA-Z0-9\s]", "", t.lower()).strip()
+
+    def jaccard_similarity(a: str, b: str) -> float:
+        set_a = set(a.split())
+        set_b = set(b.split())
+        if not set_a or not set_b:
+            return 0.0
+        return len(set_a & set_b) / len(set_a | set_b)
+
+    for step in combined:
+        title = step.get("title", "").strip()
+        norm = normalize_title(title)
+        is_dup = False
+        for prev in seen_titles:
+            if norm == prev or jaccard_similarity(norm, prev) > 0.72:
+                is_dup = True
+                break
+        if is_dup:
+            metrics.duplicate_steps += 1
+            continue
+        seen_titles.append(norm)
+        deduped_steps.append(step)
+
+    # Post-deduplication step count alignment: ensure final steps match target_steps precisely
+    if len(deduped_steps) < target_steps and len(milestones) > 0:
+        from academic_generator import generate_curriculum_subtasks_for_milestone
+        gap = target_steps - len(deduped_steps)
+        for i in range(gap):
+            target_m = milestones[i % len(milestones)]
+            m_id = target_m.get("id", 1)
+            curriculum_generated = generate_curriculum_subtasks_for_milestone(
+                milestone=target_m,
+                subtasks_needed=1,
+                base_id_start=90000 + i,
+                goal=target_m.get("parent_milestone", "")
+            )
+            if curriculum_generated:
+                task = curriculum_generated[0]
+                task["parent_id"] = m_id
+                task["parent_milestone"] = target_m.get("title", "")
+                task["can_parallel"] = True
+                deduped_steps.append(task)
+            else:
+                deduped_steps.append({
+                    "id": 90000 + i,
+                    "hierarchy_level": "nano_subtask",
+                    "parent_id": m_id,
+                    "parent_milestone": target_m.get("title", ""),
+                    "can_parallel": True,
+                    "title": f"{target_m.get('title')}: Applied Academic Problem Set {i + 1}",
+                    "academic_stage": target_m.get("academic_stage", "Academic Progression"),
+                    "description": f"Rigorous problem sets, coursework exercises, and diagnostic evaluation supporting {target_m.get('title')}.",
+                    "prerequisites": [m_id],
+                    "duration": "1 Month",
+                    "completion_criteria": f"Achieve mastery benchmark score on {target_m.get('title')} evaluation."
+                })
+    elif len(deduped_steps) > (target_steps + 10):
+        # Only prune if generated subtasks significantly exceed safe upper bounds, preserving natural LLM variation
+        preserved_milestones = [s for s in deduped_steps if s.get("hierarchy_level") == "milestone"]
+        subtasks_pool = [s for s in deduped_steps if s.get("hierarchy_level") != "milestone"]
+        needed_subtasks = max(0, (target_steps + 6) - len(preserved_milestones))
+        deduped_steps = preserved_milestones + subtasks_pool[:needed_subtasks]
+
+    # Quality Validation 2: Sequential ID normalization and DAG Prerequisite integrity
+    final_steps = []
+    old_to_new_id: Dict[int, int] = {}
+
+    for new_idx, step in enumerate(deduped_steps, start=1):
+        old_id = step.get("id")
+        old_to_new_id[old_id] = new_idx
+        step_copy = dict(step)
+        step_copy["id"] = new_idx
+        step_copy["category"] = "academic"
+        step_copy["parent_milestone"] = step.get("parent_milestone") or step.get("academic_stage") or ""
+        step_copy["can_parallel"] = step.get("can_parallel", False)
+        final_steps.append(step_copy)
+
+    # Update prerequisites and parent_ids to point to new sequential IDs
+    for step in final_steps:
+        # Remap parent_id
+        old_pid = step.get("parent_id")
+        if old_pid in old_to_new_id:
+            step["parent_id"] = old_to_new_id[old_pid]
+        elif old_pid is not None:
+            step["parent_id"] = None
+
+        # Remap prerequisites
+        old_prereqs = step.get("prerequisites", [])
+        new_prereqs = []
+        for p in old_prereqs:
+            if isinstance(p, int) and p in old_to_new_id:
+                mapped = old_to_new_id[p]
+                # Avoid self-referencing or forward-referencing prerequisites
+                if mapped < step["id"] and mapped not in new_prereqs:
+                    new_prereqs.append(mapped)
+        # If a subtask has no valid prerequisites, link to its parent or immediate predecessor
+        if not new_prereqs and step["id"] > 1 and step.get("hierarchy_level") != "milestone":
+            fallback_prereq = step.get("parent_id") or (step["id"] - 1)
+            if fallback_prereq < step["id"]:
+                new_prereqs.append(fallback_prereq)
+        step["prerequisites"] = new_prereqs
+
+        # Quality Validation 3: Ensure non-empty completion criteria
+        if not step.get("completion_criteria"):
+            step["completion_criteria"] = f"Successful completion and evaluation of {step['title']} requirements."
+
+    metrics.successful_steps = len(final_steps)
+    return final_steps
+
+
+async def generate_two_key_parallel_academic_pathway(
+    req: DynamicAcademicRequest
+) -> Dict[str, Any]:
+    """Master Orchestrator: Runs 4 keys in parallel to generate, schedule, and validate a scalable academic pathway."""
+    target_steps = req.target_steps or compute_expected_step_capacity(
+        current_position=req.academic_stage or req.current_position or "Grade 11",
+        target_goal=req.academic_goal or req.target_goal or "Bachelor's degree",
+        profile=req.profile if hasattr(req, "profile") else {"academic_background": req.academic_background}
+    )
+    metrics = AcademicMetricsCollector(target_steps=target_steps, model="openai/gpt-oss-120b")
+
+    current_stage = req.academic_stage or req.current_position or req.current_grade_or_qualification or "Grade 11"
+    target_goal = req.academic_goal or req.target_goal or "Bachelor's degree admission"
+
+    # Step 0: Centralized Deterministic Duration Calculation (Single Source of Truth)
+    duration_info = calculate_path_duration(
+        current_position=current_stage,
+        target_goal=target_goal,
+        profile_context={"academic_background": req.academic_background},
+        category="academic"
+    )
+    total_months = duration_info["total_duration_months"]
+    total_dur_str = duration_info["total_duration"]
+    duration_stages = duration_info["calculation"]
+    duration_status = duration_info.get("duration_status", "calculated")
+
+    print(f"\n=======================================================")
+    print(f"[Two-Key Academic Engine] Initiating generation for Target: {target_steps} steps")
+    print(f"Goal: '{target_goal}' | Stage: '{current_stage}'")
+    print(f"Authoritative Duration: {total_dur_str} ({total_months} Months)")
+    print(f"=======================================================\n")
+
+    # Step 1: Run Key 1 (Primary Academic Architect & Milestones aligned with stage windows)
+    blueprint_raw = await generate_academic_milestones_key1(req, target_steps, metrics, duration_info=duration_info)
+    raw_milestones = blueprint_raw.get("milestones", [])
+
+    if not raw_milestones:
+        raise RuntimeError("API Key 1 failed to generate valid academic milestones.")
+
+    # Step 2: Run Key 2 (Milestone Detail Expansion & Subtask Engine)
+    expanded_subtasks = await expand_academic_milestones_key2(raw_milestones, req, target_steps, metrics)
+
+    # Step 3: Validate, deduplicate, re-sequence, and integrate steps
+    integrated_steps = validate_and_integrate_academic_steps(raw_milestones, expanded_subtasks, target_steps, metrics)
+
+    # Step 4: Schedule individual steps on dependency-based timeline
+    scheduled_steps, month_by_month = schedule_academic_steps_timeline(
+        steps=integrated_steps,
+        total_duration_months=total_months,
+        current_stage=current_stage,
+        target_goal=target_goal,
+        calculation_stages=duration_stages
+    )
+
+    # Step 5: Timeline Synchronization & Validation
+    is_valid_timeline, timeline_issues = validate_academic_step_timeline(scheduled_steps, total_months)
+    if not is_valid_timeline:
+        print(f"[Timeline Validation Alert] {timeline_issues}")
+
+    # Step 6: Token and Capacity Analysis
+    capacity_analysis = metrics.calculate_capacity_analysis(len(scheduled_steps))
+
+    # Construct final unified academic roadmap document
+    pathway_document = {
+        "path_title": blueprint_raw.get("path_title", f"Academic Pathway to {target_goal}"),
+        "category": "academic",
+        "academic_domain_strictly_enforced": True,
+        "student_input": {
+            "academic_stage": current_stage,
+            "current_grade_or_qualification": req.current_grade_or_qualification,
+            "academic_goal": target_goal,
+            "target_degree": req.target_degree,
+            "target_institution": req.target_institution,
+            "target_country": req.target_country,
+            "academic_background": req.academic_background,
+            "target_steps_requested": target_steps
+        },
+        "total_duration": total_dur_str,
+        "total_duration_months": total_months,
+        "duration_status": duration_status,
+        "duration_calculation": duration_stages,
+        "readiness_score": blueprint_raw.get("readiness_score", 72),
+        "readiness_label": blueprint_raw.get("readiness_label", "Substantial Readiness"),
+        "academic_stages_summary": blueprint_raw.get("academic_stages_summary", ""),
+        "total_steps_generated": len(scheduled_steps),
+        "hierarchy_breakdown": {
+            "milestones_count": len(raw_milestones),
+            "subtasks_count": len(scheduled_steps) - len(raw_milestones),
+            "total_steps": len(scheduled_steps)
+        },
+        "steps": scheduled_steps,
+        "month_by_month_timeline": month_by_month,
+        "timeline_validation": {
+            "is_valid": is_valid_timeline,
+            "issues": timeline_issues
+        },
+        "token_and_capacity_analysis": capacity_analysis,
+        "execution_metrics": metrics.to_dict()
+    }
+
+    print(f"\n[Two-Key Academic Engine] Successfully generated {len(scheduled_steps)} validated steps (Target: {target_steps}).")
+    print(f"Total Tokens: {metrics.total_tokens} | Elapsed: {metrics.elapsed_time}s | API Calls: Key 1={metrics.key_1_calls}, Key 2={metrics.key_2_calls}\n")
+    return pathway_document
+
+
+@app.post("/api/path/academic/parallel")
+async def api_generate_parallel_academic_path(req: DynamicAcademicRequest):
+    """Endpoint for Two-Key Parallel Academic Path Generation supporting 5, 25, 100, 250, 500, and 1000 steps."""
+    try:
+        return await generate_two_key_parallel_academic_pathway(req, groq_clients=GROQ_4KEY_ASYNC_CLIENTS)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Two-Key Parallel Academic Generation Failed: {str(exc)}")
 
 
 def classify_pathway_category(doc: dict) -> str:
@@ -4823,6 +6163,37 @@ def merge_marketplace_item(
     return new_marketplace
 
 
+def append_marketplace_category_items(
+    current_marketplace: dict,
+    section: str,
+    category: str,
+    new_items: list,
+) -> dict:
+    """Appends new items to an existing category/view while preserving existing cards and deduplicating."""
+    normalized_marketplace = normalize_marketplace_schema(current_marketplace)
+    new_marketplace = json.loads(json.dumps(normalized_marketplace))
+    existing_items = new_marketplace.get(category, [])
+    if not isinstance(existing_items, list):
+        existing_items = []
+
+    seen_names = {str(it.get("name") or "").strip().lower() for it in existing_items if isinstance(it, dict)}
+    tagged_items = []
+    for item in new_items:
+        if not isinstance(item, dict):
+            continue
+        name_key = str(item.get("name") or "").strip().lower()
+        if name_key and name_key in seen_names:
+            continue
+        tagged = normalize_marketplace_item(item, category=category, section=section)
+        tagged_items.append(tagged)
+        if name_key:
+            seen_names.add(name_key)
+
+    new_marketplace[category] = existing_items + tagged_items
+    return new_marketplace
+
+
+
 MARKETPLACE_CATEGORY_PATCH_PROMPT = """You are the Naaviverse Marketplace Patch Agent.
 Generate ONLY replacement items for one Marketplace category inside one step.
 
@@ -4916,7 +6287,7 @@ Rules:
 
 Expected output formats based on the target field:
 - If the field is "macro_view", "micro_view", "nano_view", or "description", the output format must be:
-  {{"{field}": "<your rewritten detailed text paragraph — must be comprehensive, deep, and substantive (4-6 detailed sentences / 100-150 words), thoroughly addressing the user instruction with domain-specific methodologies, never a short 1-line blurb>"}}
+  {{"{field}": "<your rewritten detailed text paragraph — must be comprehensive, deep, clear, and easy to understand (3-5 substantive sentences / 70-100 words), thoroughly addressing the user instruction with stage-specific methodologies, completely dynamic with 100% unique vocabulary, never a short 1-line blurb and never using repetitive boilerplate formulas>"}}
 
 - If the field is "marketplace", the output format must be a valid JSON object:
   {{
@@ -5013,6 +6384,9 @@ async def patch_step(req: StepPatchRequest):
         ]
         replacement_index = req.marketplace_item_index
         is_item_replacement = isinstance(replacement_index, int)
+        qty_intent = parse_marketplace_quantity_intent(req.instruction)
+        is_add_intent = bool(qty_intent) or any(k in req.instruction.lower() for k in ["add", "more", "extra", "additional", "plus"])
+
         if is_item_replacement:
             if replacement_index < 0 or replacement_index >= len(current_category_items):
                 raise HTTPException(status_code=400, detail="Marketplace item index is out of range")
@@ -5021,13 +6395,20 @@ async def patch_step(req: StepPatchRequest):
                 f'Return exactly 1 fresh, relevant, real-world replacement item for ONLY the '
                 f'"{category}" category. This is a single-card replacement, not a full category refresh.'
             )
+        elif qty_intent:
+            prompt_current_items = current_category_items
+            generation_rule = (
+                f'The user explicitly requested to add {qty_intent["description"]} ({qty_intent["target_str"]}). '
+                f'You MUST return EXACTLY {qty_intent["target_str"]} fresh, relevant, high-quality real-world item(s) '
+                f'for ONLY the "{category}" category in "{section}". Do NOT exceed this count or return excess items.'
+            )
         else:
             prompt_current_items = current_category_items
             generation_rule = (
-                f'Return a rich, comprehensive list of 5 to 8 fresh, relevant, high-quality real-world recommendations '
-                f'for ONLY the "{category}" category, dynamically tailored to the student\'s path goals ({req.target_goal}) '
+                f'Return a dynamic, tailored selection of 2 to 4 fresh, relevant, high-quality real-world recommendations '
+                f'for ONLY the "{category}" category in "{section}", dynamically tailored to the student\'s path goals ({req.target_goal}) '
                 f'and step requirements ({req.current_step.get("title", "")}). '
-                f'Never return a tiny set of 1, 2, or 3 items. Provide a strong, diverse set of choices.'
+                f'Provide a strong, diverse set of choices.'
             )
 
         prompt = MARKETPLACE_CATEGORY_PATCH_PROMPT.format(
@@ -5063,6 +6444,10 @@ async def patch_step(req: StepPatchRequest):
         if is_item_replacement:
             new_marketplace = merge_marketplace_item(
                 current_marketplace, section, category, replacement_index, generated_items[0]
+            )
+        elif is_add_intent:
+            new_marketplace = append_marketplace_category_items(
+                current_marketplace, section, category, generated_items
             )
         else:
             new_marketplace = merge_marketplace_category(
@@ -5267,3 +6652,12 @@ dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "front
 if os.path.exists(dist_path):
     app.mount("/", SPAStaticFiles(directory=dist_path, html=True), name="static")
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        reload_excludes=["test_*.py", "results_*.json", "benchmark_*.json", "scratch/*", "*.log"]
+    )

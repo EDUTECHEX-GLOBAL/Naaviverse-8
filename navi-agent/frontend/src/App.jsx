@@ -159,6 +159,22 @@ export default function App() {
     window.location.replace("/login");
   }
 
+  useEffect(() => {
+    if (!activeEmail || !pathData) return;
+
+    let canceled = false;
+    removeStaleSavedIds(pathData).then((checkedPathData) => {
+      if (canceled || checkedPathData === pathData) return;
+      console.log("[Naavi App] Removed stale saved DB reference from cached path data.");
+      setPathData(checkedPathData);
+      localStorage.setItem(`nv_path_data_${activeEmail.toLowerCase()}`, JSON.stringify(checkedPathData));
+    });
+
+    return () => {
+      canceled = true;
+    };
+  }, [activeEmail, pathData]);
+
   if (!authed) {
     return (
       <Routes>
@@ -226,21 +242,7 @@ export default function App() {
     }
   };
 
-  useEffect(() => {
-    if (!activeEmail || !pathData) return;
 
-    let canceled = false;
-    removeStaleSavedIds(pathData).then((checkedPathData) => {
-      if (canceled || checkedPathData === pathData) return;
-      console.log("[Naavi App] Removed stale saved DB reference from cached path data.");
-      setPathData(checkedPathData);
-      localStorage.setItem(`nv_path_data_${activeEmail.toLowerCase()}`, JSON.stringify(checkedPathData));
-    });
-
-    return () => {
-      canceled = true;
-    };
-  }, [activeEmail, pathData]);
 
   const handleProfileUpdated = (newProfile) => {
     console.log("[Naavi App] Student Signals profile updated. New profile:", newProfile);
