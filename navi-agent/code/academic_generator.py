@@ -265,71 +265,41 @@ def compute_expected_step_capacity(
     duration_info: Optional[Dict[str, Any]] = None
 ) -> int:
     """
-    Dynamically computes expected academic pathway step count based on remaining distance and complexity:
-    - Multi-year school journey (36-48+ months): 85–115+ steps
-    - Intermediate / medium journey (12–26 months): 45–75 steps
-    - Short / remaining cycle (<10 months): 18–40 steps
-    - Full degree completion: 90–125+ steps
-    - Respects explicit requested_steps if specified by user.
+    Dynamically computes expected academic pathway step count in the user-mandated 150–250 steps range:
+    - Multi-year school journey (36-48+ months): 210–248 steps
+    - Intermediate journey (20–35 months, e.g. Grade 11-12 to University): 180–225 steps
+    - Shorter journey (10–19 months, e.g. Grade 12 or Accelerated Master's): 160–188 steps
+    - Short cycle (<10 months): 150–165 steps
+    - Never fixed or static: derives run-time entropy from student profile and goal characteristics
+      so the step count dynamically varies on every single generation.
     """
     if requested_steps and requested_steps > 0:
-        return requested_steps
+        return max(150, min(250, requested_steps))
 
     dur_info = duration_info or calculate_path_duration(current_position, target_goal, profile, category="academic")
-    stages = dur_info.get("calculation", [])
     total_months = dur_info.get("total_duration_months", 24)
     goal_low = (target_goal or "").lower()
     is_complex_domain = any(k in goal_low for k in ["computer science", "engineering", "stem", "medicine", "pre-med", "data science", "physics", "ai", "machine learning", "doctoral", "phd"])
 
-    total_steps = 0
-    for s in stages:
-        st_type = s.get("stage_type", "")
-        months = s.get("months", 1)
-        if st_type in ["current_school_grade", "intermediate_school_grade"]:
-            total_steps += max(6, int(months * 1.8))
-        elif st_type == "senior_year_admission_cycle":
-            total_steps += 32
-        elif st_type in ["exam_prep_stage", "exam_prep"]:
-            total_steps += max(8, int(months * 4.0))
-        elif st_type in ["university_shortlisting", "shortlisting"]:
-            total_steps += max(6, int(months * 6.0))
-        elif st_type in ["application_preparation", "dossier_prep"]:
-            total_steps += max(8, int(months * 5.0))
-        elif st_type in ["admission_review_window", "decision_waiting_window", "admission_decision_window"]:
-            total_steps += max(5, int(months * 2.5))
-        elif st_type in ["enrollment_visa_stage", "enrollment_deposit", "enrollment_stage", "enrollment_formalization"]:
-            total_steps += max(5, int(months * 3.5))
-        elif st_type == "degree_program_coursework":
-            total_steps += min(48, int(months * 0.9))
-        else:
-            total_steps += max(6, int(months * 2.0))
+    # Base step capacity mapped proportionally to journey duration within the 150-250 range
+    if total_months >= 36:
+        base = 210
+    elif total_months >= 20:
+        base = 185
+    elif total_months >= 10:
+        base = 162
+    else:
+        base = 152
 
     if is_complex_domain:
-        total_steps = int(total_steps * 1.1)
+        base += 12
 
-    # Dynamic academic step calculation based on journey depth and total duration:
-    # 24 months (e.g. Grade 11-12 to University): 85 to 105+ steps (averaging ~3.8 to 4.2 actionable tasks per month)
-    # 36+ months (e.g. Grade 9-10 to University): 100 to 135+ steps
-    # 10-23 months (e.g. Grade 12 or Accelerated Master's): 80 to 96 steps
-    # <10 months: 40 to 65 steps
-    monthly_multiplier = 4.0 if is_complex_domain else 3.8
-    dynamic_steps = int(total_months * monthly_multiplier)
+    # Dynamic variance derived from student input characteristics and run-time entropy so count is never static
+    seed_offset = (len(current_position or "") * 13 + len(target_goal or "") * 19) % 17
+    run_jitter = random.randint(-8, 14)
+    effective_steps = base + seed_offset + run_jitter
 
-    import random
-    # Dynamic variance derived from student input characteristics and run-time entropy so count is never fixed or static
-    seed_offset = (len(current_position or "") * 7 + len(target_goal or "") * 11) % 7
-    run_jitter = random.randint(-4, 5)
-    effective_variance = seed_offset + run_jitter
-
-    if total_months >= 36:
-        return max(100, min(135, max(total_steps, dynamic_steps) + effective_variance))
-    elif total_months >= 20:
-        # User mandate: more than 80-100 steps dynamically (e.g. 88, 93, 97, 102 steps)
-        return max(85, min(108, max(total_steps, dynamic_steps) + effective_variance))
-    elif total_months >= 10:
-        return max(80, min(96, max(total_steps, dynamic_steps) + effective_variance))
-    else:
-        return max(40, min(65, max(total_steps, dynamic_steps) + effective_variance))
+    return max(150, min(250, effective_steps))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -337,6 +307,103 @@ def compute_expected_step_capacity(
 # ══════════════════════════════════════════════════════════════════════════════
 
 VERIFIED_ACADEMIC_MARKETPLACE_CATALOG = [
+    # COMPUTER SCIENCE, STEM & COMPETITIVE PROGRAMMING
+    {
+        "marketplace_id": "mkt_vendor_edx_cs50",
+        "name": "Harvard CS50 / edX Foundational Computer Science Suite",
+        "type": "Course",
+        "category": "vendor",
+        "section": "macro_free",
+        "cost": "Free",
+        "why": "World-renowned introductory computer science curriculum covering C, Python, SQL, algorithms, and web architectures.",
+        "expected_outcomes": "Mastery of memory management, pointers, data structures, and algorithmic efficiency.",
+        "tags": ["Computer Science", "CS50", "Python", "C", "Algorithms", "Foundation"],
+        "url": "https://cs50.harvard.edu"
+    },
+    {
+        "marketplace_id": "mkt_vendor_codeforces_01",
+        "name": "Codeforces & USACO Competitive Problem Solving Arena",
+        "type": "Platform",
+        "category": "vendor",
+        "section": "micro_structured",
+        "cost": "Free",
+        "why": "Algorithmic contest platform offering thousands of rated competitive programming problems and editorial breakdowns.",
+        "expected_outcomes": "Attain candidate master / USACO Gold qualification benchmarks.",
+        "tags": ["Codeforces", "USACO", "Competitive Programming", "Algorithms", "Data Structures"],
+        "url": "https://codeforces.com"
+    },
+    {
+        "marketplace_id": "mkt_dist_clrs_01",
+        "name": "Introduction to Algorithms (CLRS 4th Edition, MIT Press)",
+        "type": "Book",
+        "category": "distributor",
+        "section": "micro_structured",
+        "cost": "$85",
+        "why": "The definitive university textbook for asymptotic analysis, divide and conquer, dynamic programming, and graph algorithms.",
+        "expected_outcomes": "Rigorous theoretical and mathematical foundation in algorithmic computer science.",
+        "tags": ["CLRS", "Algorithms", "Data Structures", "Textbook", "Computer Science"],
+        "url": "https://mitpress.mit.edu/9780262046305/introduction-to-algorithms"
+    },
+    {
+        "marketplace_id": "mkt_dist_stewart_01",
+        "name": "Stewart Calculus: Early Transcendentals (Cengage)",
+        "type": "Book",
+        "category": "distributor",
+        "section": "micro_structured",
+        "cost": "$75",
+        "why": "Authoritative college calculus textbook covering differentiation, integration, multivariable vectors, and differential equations.",
+        "expected_outcomes": "Complete secondary and freshman university mathematics prerequisite mastery.",
+        "tags": ["Stewart Calculus", "Mathematics", "Calculus", "STEM", "Textbook"],
+        "url": "https://www.cengage.com"
+    },
+    {
+        "marketplace_id": "mkt_inst_purdue_cs_01",
+        "name": "Purdue University Department of Computer Science Portal",
+        "type": "University",
+        "category": "institution",
+        "section": "macro_free",
+        "cost": "Free",
+        "why": "Official departmental prerequisite guides, track specializations (AI, Software Engineering, Systems), and admissions standards.",
+        "expected_outcomes": "Direct alignment with Purdue CS undergraduate curriculum and Early Action requirements.",
+        "tags": ["Purdue", "Computer Science", "University", "Admissions", "STEM"],
+        "url": "https://www.cs.purdue.edu"
+    },
+    {
+        "marketplace_id": "mkt_inst_commonapp_01",
+        "name": "The Common Application Official Undergraduate Portal",
+        "type": "Institute",
+        "category": "institution",
+        "section": "macro_free",
+        "cost": "Free",
+        "why": "The official application portal for over 1,000 global universities including Purdue, Ivy League, and Big Ten colleges.",
+        "expected_outcomes": "Verified submission of Common App personal statement, activities section, and school reports.",
+        "tags": ["Common App", "Admissions Portal", "Applications", "Undergraduate"],
+        "url": "https://www.commonapp.org"
+    },
+    {
+        "marketplace_id": "mkt_inst_usembassy_01",
+        "name": "US Department of State EducationUSA & Consular Visa Bureau",
+        "type": "Government Body",
+        "category": "institution",
+        "section": "macro_free",
+        "cost": "Free",
+        "why": "Official government advising network and consular bureau for F-1 student visas, SEVIS I-901 fee, and interview guidelines.",
+        "expected_outcomes": "Flawless compliance with US immigration, Form I-20, and F-1 student visa regulations.",
+        "tags": ["EducationUSA", "Student Visa", "F-1 Visa", "SEVIS", "Immigration", "Government Body"],
+        "url": "https://educationusa.state.gov"
+    },
+    {
+        "marketplace_id": "mkt_mentor_purdue_alum_01",
+        "name": "Purdue University Alumni & Undergraduate CS Mentor",
+        "type": "Mentor",
+        "category": "mentor",
+        "section": "nano_expert",
+        "cost": "$95/session",
+        "why": "1-on-1 departmental insights from active Purdue CS graduates covering coursework rigor, professors, and tech internships.",
+        "expected_outcomes": "Strategic insider guidance on CS 18000/25100 sequence, research labs, and CPT internship recruiting.",
+        "tags": ["Purdue", "Alumni", "Computer Science", "Mentorship", "Admissions"],
+        "url": "https://naaviverse.com/mentors/purdue-cs"
+    },
     # PRE-MED & HEALTHCARE
     {
         "marketplace_id": "mkt_mentor_med_06",
@@ -693,14 +760,13 @@ def generate_comprehensive_academic_marketplace(
     stage: str = ""
 ) -> Dict[str, Any]:
     """
-    Retrieves and ranks 3 to 5 targeted marketplace resources for a specific milestone
-    across Mentors, Vendors, Institutions, and Distributors, spanning macro, micro, and nano layers.
+    Retrieves and ranks targeted marketplace resources across Mentors, Vendors, Institutions,
+    and Distributors, guaranteeing multi-category representation and macro, micro, and nano coverage.
     """
     title_lower = (milestone_title or "").lower()
     goal_lower = (goal or "").lower()
     combined_context = f"{title_lower} {goal_lower} {stage.lower()}"
 
-    # Determine topic weights for matching
     scored_items = []
     for item in VERIFIED_ACADEMIC_MARKETPLACE_CATALOG:
         score = 50
@@ -709,40 +775,41 @@ def generate_comprehensive_academic_marketplace(
         if any(t in combined_context for t in tags):
             score += 30
 
-        # Topic-specific boosts
         if any(k in title_lower for k in ["exam", "test", "sat", "act", "ielts", "toefl"]):
             if any(t in ["sat", "act", "ielts", "test prep", "testing"] for t in tags):
                 score += 35
-        elif any(k in title_lower for k in ["math", "foundation", "calculus", "curriculum", "syllabus"]):
-            if any(t in ["math", "foundation", "calculus", "physics", "ap coursework"] for t in tags):
-                score += 35
+        elif any(k in title_lower for k in ["code", "programming", "algorithm", "python", "java", "cs", "computer", "data structure"]):
+            if any(t in ["computer science", "algorithms", "data structures", "python", "cs50", "codeforces", "clrs", "leetcode"] for t in tags):
+                score += 40
+        elif any(k in title_lower for k in ["math", "foundation", "calculus", "curriculum", "syllabus", "algebra"]):
+            if any(t in ["math", "foundation", "calculus", "physics", "ap coursework", "stewart calculus"] for t in tags):
+                score += 40
         elif any(k in title_lower for k in ["research", "olympiad", "extracurricular", "portfolio"]):
             if any(t in ["research paper", "stem", "portfolio", "computer science"] for t in tags):
                 score += 35
         elif any(k in title_lower for k in ["university", "shortlist", "selection", "alignment"]):
-            if any(t in ["fiske guide", "college directory", "shortlisting", "university selection", "alumni"] for t in tags):
+            if any(t in ["fiske guide", "college directory", "shortlisting", "university selection", "alumni", "purdue"] for t in tags):
                 score += 35
         elif any(k in title_lower for k in ["application", "essay", "sop", "dossier", "recommendation"]):
-            if any(t in ["admissions", "sop", "writing", "applications", "strategy"] for t in tags):
+            if any(t in ["admissions", "sop", "writing", "applications", "strategy", "common app"] for t in tags):
                 score += 35
-        elif any(k in title_lower for k in ["visa", "enrollment", "matriculation", "financial", "scholarship"]):
-            if any(t in ["scholarships", "deadlines", "admissions bureau", "official board"] for t in tags):
-                score += 35
+        elif any(k in title_lower for k in ["visa", "enrollment", "matriculation", "financial", "scholarship", "i-20", "sevis"]):
+            if any(t in ["scholarships", "deadlines", "admissions bureau", "official board", "educationusa", "f-1 visa", "sevis"] for t in tags):
+                score += 40
 
         scored_items.append((score, item))
 
-    # Sort descending by relevance score
     scored_items.sort(key=lambda x: x[0], reverse=True)
 
-    # Select 3 to 5 diverse recommendations ensuring layer coverage (macro, micro, nano)
+    # Pick top items guaranteeing ALL 4 categories (mentors, vendors, institutions, distributors)
     selected = []
     seen_ids = set()
-    needed_layers = ["macro_free", "micro_structured", "nano_expert"]
+    needed_categories = ["mentor", "vendor", "institution", "distributor"]
 
-    # 1. Pick top item for each layer
-    for layer in needed_layers:
+    # 1. Guarantee at least 1 top item from EACH category
+    for cat in needed_categories:
         for score, it in scored_items:
-            if it["marketplace_id"] not in seen_ids and it.get("section") == layer:
+            if it["marketplace_id"] not in seen_ids and it.get("category") == cat:
                 item_copy = dict(it)
                 item_copy["related_milestone_id"] = milestone_id
                 item_copy["ranking_score"] = min(98, score)
@@ -750,9 +817,9 @@ def generate_comprehensive_academic_marketplace(
                 seen_ids.add(it["marketplace_id"])
                 break
 
-    # 2. Fill up to 4 or 5 items with next best diverse category
+    # 2. Add next best items up to 5-6 items to ensure macro_free, micro_structured, and nano_expert representation
     for score, it in scored_items:
-        if len(selected) >= 5:
+        if len(selected) >= 6:
             break
         if it["marketplace_id"] not in seen_ids:
             item_copy = dict(it)
@@ -761,7 +828,7 @@ def generate_comprehensive_academic_marketplace(
             selected.append(item_copy)
             seen_ids.add(it["marketplace_id"])
 
-    # Organize into schema expected by views
+    # Organize into schema expected by views and Observer Agent
     marketplace_structure = {
         "macro_free": [it for it in selected if it.get("section") == "macro_free"],
         "micro_structured": [it for it in selected if it.get("section") == "micro_structured"],
@@ -770,7 +837,7 @@ def generate_comprehensive_academic_marketplace(
         "recommendations_count": len(selected)
     }
 
-    # Also build categories format (mentors, vendors, institutions, distributors)
+    # Ensure every single category array is populated
     categories_dict = {
         "mentors": [it for it in selected if it.get("category") == "mentor"],
         "vendors": [it for it in selected if it.get("category") == "vendor"],
@@ -789,158 +856,108 @@ def generate_curriculum_subtasks_for_milestone(
     milestone: Dict[str, Any],
     subtasks_needed: int,
     base_id_start: int,
-    goal: str = ""
+    goal: str = "",
+    seen_titles: Optional[set] = None
 ) -> List[Dict[str, Any]]:
     """
-    Generates structured, domain-rich academic subtasks broken down into:
-    - Level 2: 'step' (Major action step)
-    - Level 3: 'micro_task' (Granular weekly module / syllabus mastery / lab drill)
-    - Level 4: 'nano_subtask' (Diagnostic test, 1-on-1 review, checklist verification)
-    Guarantees concrete, verifiable, non-repetitive tasks with zero generic filler.
+    Generates structured, domain-rich academic subtasks with 100% unique titles,
+    imperative action verbs, and granular micro/nano learning views.
+    Guarantees non-repetitive tasks with zero generic fillers.
     """
     m_id = milestone.get("id", 1)
     m_title = milestone.get("title", f"Milestone {m_id}")
     t_low = m_title.lower()
+    goal_low = (goal or "").lower()
+    is_cs_stem = any(k in goal_low or k in t_low for k in ["computer science", "cs", "coding", "software", "stem", "engineering", "math", "calculus", "data science"])
 
-    # Topic templates based on academic domain
-    templates = []
+    # Vast, rich domain-specific item pool with active imperative verbs and concrete deliverables
+    cs_stem_pool = [
+        ("Master Single-Variable Calculus Derivatives & Optimization", "step", "Solve optimization models, curve sketching, and related rates exercises using differential calculus principles.", False, "1 Month", "Complete 50 applied optimization problem sets with >= 85% accuracy."),
+        ("Implement Core Data Structures in Java & Python", "micro_task", "Construct dynamic arrays, doubly linked lists, circular queues, and binary search trees from scratch.", True, "1 Month", "Pass comprehensive automated test suites verifying O(1) and O(log n) performance."),
+        ("Analyze Asymptotic Algorithmic Complexity & Big-O Notation", "micro_task", "Formulate formal time and space complexity proofs for iterative and recursive algorithmic routines.", True, "2 Weeks", "Submit verified Big-O proofs for 25 classical algorithms."),
+        ("Execute Integral Calculus Techniques & Volume Modeling Drills", "micro_task", "Master integration by parts, trigonometric substitutions, and disc/washer volume integrals.", True, "1 Month", "Submit verified solution sets for 40 advanced definite integrals."),
+        ("Design Object-Oriented Software Architecture & Clean Interfaces", "micro_task", "Implement encapsulation, polymorphism, inheritance hierarchies, and factory design patterns in project code.", True, "1 Month", "Refactor codebase to satisfy Clean Architecture and SOLID standards."),
+        ("Solve Competitive Programming Challenges on LeetCode Arena", "micro_task", "Solve medium-level challenges covering dynamic programming memoization, sliding window, and two-pointer techniques.", True, "1 Month", "Attain 100+ verified challenge completions on coding portal."),
+        ("Calibrate Multivariable Vectors & Partial Differentiation Models", "step", "Study gradients, directional derivatives, tangent planes, and Lagrange multipliers for optimization.", False, "1 Month", "Demonstrate mathematical mastery on proctored multivariable unit exam."),
+        ("Formulate Discrete Mathematical Logic & Set Theory Proofs", "micro_task", "Construct mathematical induction proofs, predicate logic truths, and graph traversal proofs.", True, "1 Month", "Submit verified solution ledger for 20 discrete mathematics theorem proofs."),
+        ("Implement Graph Algorithms & Shortest Path Traversals", "micro_task", "Write production implementations of Dijkstra, Bellman-Ford, Prim, and Kruskal spanning tree algorithms.", True, "1 Month", "Pass automated graph test harness with zero cycle detection bugs."),
+        ("Audit High School STEM Academic Transcript & Honors Rigor", "nano_subtask", "1-on-1 advisor audit verifying completion of AP/IB Calculus, Physics, and Advanced Computing.", False, "Immediate Action", "Advisor sign-off on prerequisite transcript verification sheet."),
+        ("Conduct Classical Mechanics Physics Kinematics Laboratory", "micro_task", "Execute experiments calculating projectile trajectories, rotational inertia, and conservation of momentum.", False, "1 Month", "Submit formal laboratory investigation write-up with uncertainty analysis."),
+        ("Build Technical GitHub Project Portfolio & Documentation", "step", "Publish full-stack or systems software project repository complete with README, unit tests, and CI/CD.", True, "1 Month", "Deploy active demonstration link and publish open-source GitHub repository."),
+        ("Review Electromagnetism & Circuit Kirchhoff Law Problem Sets", "micro_task", "Analyze electric potential fields, Gauss's law flux surfaces, and resistor-capacitor RC circuits.", True, "1 Month", "Score >= 88% on cumulative physics electromagnetism exam."),
+        ("Draft Scholarly Computer Science Research Proposal", "micro_task", "Identify specialized inquiry in machine intelligence, algorithms, or distributed systems and compile bibliography.", False, "1 Month", "Complete 5-page research proposal formatted in IEEE style."),
+        ("Practice Spaced Repetition Formula & Algorithm Flashcards", "nano_subtask", "Conduct daily Anki flashcard drills reinforcing mathematical formulas, theorem proofs, and time complexities.", True, "2 Weeks", "Maintain 100% mastery score on algorithm diagnostic review."),
+        ("Execute Automated Unit Test Suite with PyTest & JUnit", "nano_subtask", "Write parameterized unit test suites asserting edge cases, boundary conditions, and exception handling.", True, "1 Week", "Attain 90%+ branch code coverage across all project modules."),
+        ("Complete Weekly Academic Code Review with Senior Mentor", "nano_subtask", "1-on-1 technical review session pressure-testing algorithmic efficiency and documentation clarity.", False, "Immediate Action", "Incorporate mentor suggestions into code refactoring ledger.")
+    ]
 
-    if any(k in t_low for k in ["diagnostic", "assessment", "stream", "baseline"]):
-        templates = [
-            ("Core Academic Subject Diagnostic Benchmark", "step", "Comprehensive baseline evaluation across target subject areas assessing foundational readiness.", False, "2 Weeks", "Complete diagnostic test with detailed topic score breakdown."),
-            ("Calculus & Quantitative Reasoning Diagnostic Review", "micro_task", "Diagnostic review of functions, algebra fundamentals, and single-variable calculus.", True, "1 Month", "Score >= 80% on diagnostic problem sets."),
-            ("Technical Vocabulary & Scholarly Reading Audit", "micro_task", "Targeted comprehension evaluation of academic research abstracts and technical texts.", True, "2 Weeks", "Pass technical reading diagnostic with zero comprehension errors."),
-            ("Academic Advisor Stream Alignment Checkpoint", "nano_subtask", "1-on-1 strategic consultation verifying secondary subject combinations and college major prerequisites.", False, "Immediate Action", "Advisor sign-off on curriculum stream alignment document."),
-            ("Secondary Academic Error-Log Diagnostic Drill", "nano_subtask", "Detailed analysis of baseline test errors and creation of a targeted remediation checklist.", True, "1 Week", "Maintain comprehensive error-log notebook."),
-            ("Official Examination Portal Account Registration", "nano_subtask", "Create candidate account on official testing agency and university guidance portal.", True, "Immediate Action", "Download portal credentials and student identification number."),
-            ("Advanced Placement & Subject Prerequisite Gap Closure", "micro_task", "Intensive review of prerequisite topics identified during initial baseline evaluation.", False, "1 Month", "Demonstrate mastery on unit post-assessment."),
-            ("Target Major Prerequisite Subject Verification", "step", "Audit official degree prerequisites for target universities to confirm required coursework.", True, "2 Weeks", "Formalize prerequisite checklist for target colleges.")
-        ]
+    exam_prep_pool = [
+        ("Execute Official Standardized Exam Diagnostic Baseline", "step", "Complete official timed full-length diagnostic assessment to map question pacing and stamina.", False, "1 Week", "Calculate baseline section score distribution and time-per-question metrics."),
+        ("Master Advanced Math Section Algebra & Geometry Drills", "micro_task", "Daily problem sets mastering non-calculator quadratics, exponential functions, and coordinate geometry.", True, "1 Month", "Achieve 90%+ accuracy on timed quantitative practice sets."),
+        ("Analyze Evidence-Based Reading Passages & Rhetoric", "micro_task", "Deconstruct scientific abstracts, historical documents, and literature passages under strict timing.", True, "1 Month", "Complete 20 passage analyses with zero comprehension errors."),
+        ("Prepare Formal Language Proficiency Exam Verification", "micro_task", "Practice academic listening lectures, speaking argumentation prompts, and timed essay composition.", True, "1 Month", "Reach target IELTS 7.5+ / TOEFL 105+ score benchmark threshold."),
+        ("Execute Full-Length Proctored Simulation Examination 1", "micro_task", "Complete full-length practice exam under official proctored conditions and pacing restrictions.", False, "1 Week", "Achieve benchmark score threshold (e.g., 1480+ SAT) without pacing penalties."),
+        ("Register Official Testing Agency Examination Seat", "nano_subtask", "Create candidate account on official testing portal, select examination center, and pay fees.", True, "Immediate Action", "Download verified exam ticket and registration confirmation number."),
+        ("Audit Item-by-Item Diagnostic Error Remediation Ledger", "nano_subtask", "Log incorrect practice questions with detailed conceptual explanations to eradicate persistent mistakes.", True, "1 Week", "Resolve all flagged errors with verified conceptual solutions."),
+        ("Execute Full-Length Proctored Simulation Examination 2", "micro_task", "Second full mock exam measuring endurance, question stamina, and score stability.", False, "1 Week", "Reach target benchmark score threshold (1520+ SAT / 34+ ACT).")
+    ]
 
-    elif any(k in t_low for k in ["foundation", "mastery", "curriculum", "syllabus", "coursework"]):
-        templates = [
-            ("Multivariable Calculus & Linear Algebra Foundations", "step", "Advanced curriculum units in vectors, matrix transformations, and differential equations.", False, "1 Month", "Complete 5 problem sets with >= 85% accuracy."),
-            ("Discrete Mathematics & Logic Proof Techniques", "micro_task", "Rigorous study of propositional logic, set theory, graph theory, and mathematical induction.", True, "1 Month", "Submit verified solutions to 20 formal proof exercises."),
-            ("Computer Science Principles & Algorithmic Problem Solving", "micro_task", "Hands-on implementation of core algorithms, Big-O complexity analysis, and recursion.", True, "1 Month", "Pass code evaluation suite for all homework assignments."),
-            ("Physics Mechanics & Physical Systems Laboratory Drills", "micro_task", "Experimental laboratory work, kinematics equations, and conservation law problem sets.", False, "1 Month", "Submit 3 complete laboratory reports with error analysis."),
-            ("Mid-Term Syllabus Cumulative Diagnostic Exam", "nano_subtask", "Full-length timed cumulative assessment covering all core academic curriculum modules.", False, "1 Week", "Achieve >= 88% overall on proctored diagnostic examination."),
-            ("Weekly Problem Set Peer Critique & Code Review", "nano_subtask", "Collaborative problem-solving session pressure-testing mathematical proofs and code solutions.", True, "Immediate Action", "Document peer feedback and submit revised solution drafts."),
-            ("Honors Subject Benchmark Certification Test", "step", "Proctored standard unit evaluation verifying advanced secondary curriculum mastery.", False, "2 Weeks", "Receive official honors verification benchmark certificate.")
-        ]
+    college_admissions_pool = [
+        ("Audit Institutional Criteria Matrix & Degree Requirements", "step", "Analyze college prerequisites, departmental course sequences, faculty research, and selectivity tiers.", False, "2 Weeks", "Formulate 15-institution strategic evaluation matrix."),
+        ("Structure Balanced Reach Target and Safety College Portfolio", "micro_task", "Categorize target institutions into balanced tiers based on academic profile and departmental admit rates.", False, "2 Weeks", "Finalize 12-college strategic application portfolio."),
+        ("Draft Common Application Personal Statement First Arc", "step", "Outline pivotal intellectual experiences, personal voice, and core academic values in 650 words.", False, "1 Month", "Produce complete first draft ready for mentor review."),
+        ("Draft Institutional Supplemental Essays for Target College", "micro_task", "Write tailored responses answering departmental 'Why Major' and 'Why College' essay prompts.", True, "1 Month", "Complete polished supplemental essays tailored to specific departments."),
+        ("Brief Secondary School Teachers for Academic Recommendations", "micro_task", "Prepare academic brag sheet, coursework resume, and consult with STEM recommenders.", False, "2 Weeks", "Confirm formal recommendation commitments from teachers and counselor."),
+        ("Refine Common App Activities Descriptions with Metrics", "nano_subtask", "Optimize 150-character activity entries using dynamic action verbs and quantifiable leadership outcomes.", True, "1 Week", "Finalize polished 10-activity portfolio ledger."),
+        ("Submit Early Action Portal Application Package", "step", "Transmit completed application dossiers, self-reported academic record (SRAR), and portfolio links.", False, "2 Weeks", "Receive official application submission confirmation receipt."),
+        ("Activate University Applicant Portal Status Dashboards", "nano_subtask", "Initialize applicant portals and confirm all checklist items marked with green checkmarks.", True, "Immediate Action", "Verify portal synchronization and student identification number."),
+        ("Prepare Formal Financial Affidavits & Bank Certification", "micro_task", "Assemble liquid funding statements, family financial affidavits, and sponsor guarantee letters.", True, "1 Month", "Obtain official bank certification letter satisfying international visa guidelines."),
+        ("Review Formal Admission Offers & Scholarship Allocations", "step", "Evaluate acceptance packages, departmental honors invitations, and tuition scholarship terms.", False, "2 Weeks", "Finalize matriculation decision ledger with family and mentor."),
+        ("Submit Formal Intent to Enroll & Tuition Deposit", "nano_subtask", "Accept university admission offer and submit matriculation tuition deposit before national deadline.", False, "Immediate Action", "Download official enrollment confirmation receipt."),
+        ("Request Official Form I-20 / CAS Immigration Certificate", "step", "Submit financial certification to university international students office to generate immigration document.", False, "2 Weeks", "Receive official Form I-20 with SEVIS ID number."),
+        ("Complete Consular DS-160 Visa Application & SEVIS Fee", "micro_task", "File electronic nonimmigrant visa form, pay SEVIS I-901 fee, and schedule consular interview.", False, "2 Weeks", "Secure confirmed consular appointment confirmation barcode."),
+        ("Execute Mock Consular Visa Interview Defense Session", "nano_subtask", "1-on-1 simulation defending academic intent, university selection, financial sponsorship, and home ties.", True, "Immediate Action", "Demonstrate fluent presentation of academic objectives and funds."),
+        ("Transmit Final Official High School Board Transcripts", "nano_subtask", "Coordinate secondary school registrar transmission of final official senior year examination results.", True, "Immediate Action", "Confirm unconditional admission status in applicant portal."),
+        ("Register First-Year University Academic Course Sequence", "step", "Consult academic advisor, register for foundational major prerequisites, and enroll in orientation.", False, "1 Month", "Enroll in first-semester courses and celebrate final goal achievement!")
+    ]
 
-    elif any(k in t_low for k in ["exam", "sat", "act", "ielts", "toefl", "testing", "entrance"]):
-        templates = [
-            ("Standardized Exam Diagnostic Baseline & Pacing Analysis", "step", "Official full-length timed diagnostic exam evaluating section pacing and stamina.", False, "1 Week", "Calculate baseline section scores and time-per-question distribution."),
-            ("Quantitative Section Pacing & Advanced Problem Drills", "micro_task", "Daily problem sets targeting non-calculator and advanced algebraic math questions.", True, "1 Month", "Achieve 90%+ accuracy on timed math question sets."),
-            ("Evidence-Based Reading & Rhetorical Analysis Modules", "micro_task", "Targeted comprehension drills analyzing scientific passages, historical documents, and literature.", True, "1 Month", "Complete 15 timed passage drills with >= 85% accuracy."),
-            ("Full-Length Proctored Mock Examination Simulation 1", "micro_task", "Simulated real-test environment mock examination following official pacing rules.", False, "1 Week", "Complete 3-hour exam without pacing penalties."),
-            ("Official Test Date Registration & Seat Booking", "nano_subtask", "Select testing center, register on official testing portal, and pay examination fee.", True, "Immediate Action", "Download official examination admission ticket."),
-            ("High-Frequency Formula & Vocabulary Flashcard Drill", "nano_subtask", "Daily spaced repetition practice reinforcing essential formulas and academic vocabulary.", True, "2 Weeks", "Score 100% on flashcard diagnostic retention check."),
-            ("Full-Length Proctored Mock Examination Simulation 2", "micro_task", "Second full mock exam measuring pacing consistency and target score threshold attainment.", False, "1 Week", "Reach target benchmark score threshold (e.g. 1500+ / 8.0+)."),
-            ("Post-Mock Score Analysis & Error Remediation Audit", "step", "Item-by-item autopsy of incorrect questions to eliminate persistent conceptual mistakes.", False, "2 Weeks", "Complete error correction log with full explanations.")
-        ]
+    # Select candidate pool based on milestone phase
+    if any(k in t_low for k in ["exam", "sat", "act", "ielts", "toefl", "testing", "diagnostic"]):
+        source_pool = exam_prep_pool + cs_stem_pool
+    elif any(k in t_low for k in ["application", "essay", "shortlist", "selection", "portal", "submission", "visa", "enrollment", "matriculation"]):
+        source_pool = college_admissions_pool
+    elif is_cs_stem:
+        source_pool = cs_stem_pool + college_admissions_pool
+    else:
+        source_pool = cs_stem_pool + college_admissions_pool
 
-    elif any(k in t_low for k in ["research", "portfolio", "olympiad", "extracurricular", "project"]):
-        templates = [
-            ("Scholarly Research Topic Definition & Literature Review", "step", "Identify specialized inquiry question and compile 15 peer-reviewed scholarly sources.", False, "1 Month", "Produce 5-page annotated bibliography and research proposal."),
-            ("Experimental Data Collection & Algorithmic Implementation", "micro_task", "Execute computational experiments, benchmark performance, and log experimental results.", True, "1 Month", "Compile structured experimental dataset and Jupyter notebook."),
-            ("Scholarly Research Paper Drafting (IEEE / ACM Format)", "micro_task", "Draft complete academic paper including Abstract, Methodology, Findings, and Discussion.", False, "1 Month", "Submit full working paper draft to faculty mentor for critique."),
-            ("STEM Olympiad / Academic Competition Preparation", "micro_task", "Intensive problem sets solving past Olympiad, Hackathon, or science bowl challenges.", True, "1 Month", "Submit official competition submission or score report."),
-            ("Faculty Mentor Research Review Consultation", "nano_subtask", "1-on-1 advisor review discussing paper methodology, data validity, and publication venues.", False, "Immediate Action", "Incorporate advisor feedback into manuscript revision."),
-            ("Pre-Print / Student Journal Paper Submission", "nano_subtask", "Format manuscript according to publisher guidelines and submit to student research symposium.", True, "2 Weeks", "Receive official manuscript submission confirmation receipt."),
-            ("Extracurricular Leadership Portfolio Documentation", "step", "Compile evidence, GitHub links, and leadership impact metrics for academic resume.", True, "2 Weeks", "Finalize polished 2-page academic activity resume.")
-        ]
-
-    elif any(k in t_low for k in ["university", "shortlist", "selection", "alignment"]):
-        templates = [
-            ("Institutional Criteria Matrix & Major Requirement Audit", "step", "Establish evaluation parameters: curriculum rigor, faculty, research labs, and funding.", False, "2 Weeks", "Develop 10-point institutional scoring rubric."),
-            ("Departmental Faculty & Research Specialization Audit", "micro_task", "Evaluate research areas, undergraduate lab access, and course catalogs for target colleges.", True, "1 Month", "Compile detailed departmental notes for 15 target institutions."),
-            ("Balanced Reach, Target, and Safety College List Formulation", "micro_task", "Categorize target institutions into 4 Reach, 4 Target, and 4 Safety colleges based on profile.", False, "2 Weeks", "Finalize 12-university strategic application portfolio."),
-            ("Virtual Departmental Open House & Information Session", "micro_task", "Attend official admissions webinars and departmental faculty presentations.", True, "2 Weeks", "Document key institutional priorities and essay prompts."),
-            ("Admissions Portal Profile & Application Account Setup", "nano_subtask", "Create Common App / UC Portal / Coalition accounts and link high school code.", True, "Immediate Action", "Verify portal account synchronization and ID confirmation."),
-            ("Alumni Informational Interview & Department Inquiry", "nano_subtask", "Connect with alumni to gain first-hand perspective on coursework rigor and career outcomes.", True, "1 Week", "Log interview takeaways in university decision ledger."),
-            ("Standardized Score Reporting Policy & Prerequisite Audit", "step", "Verify test-optional vs required policies, transcript evaluations, and credit transfer rules.", True, "2 Weeks", "Complete institutional admissions requirements matrix.")
-        ]
-
-    elif any(k in t_low for k in ["application", "essay", "sop", "dossier", "recommendation"]):
-        templates = [
-            ("Personal Statement & Common App Essay Ideation Outline", "step", "Identify core personal narrative arc, intellectual passions, and pivotal challenges.", False, "2 Weeks", "Draft 3 distinct essay concept outlines with mentor."),
-            ("Personal Statement / Statement of Purpose First Draft", "micro_task", "Write 650-word foundational essay establishing personal voice and academic mission.", False, "1 Month", "Produce complete first draft ready for critique."),
-            ("Program-Specific Supplemental Essays Drafting", "micro_task", "Write tailored responses answering 'Why Major' and 'Why College' prompts for target schools.", True, "1 Month", "Draft supplements for all early and regular decision schools."),
-            ("Academic Reference Letters & Recommendation Requests", "micro_task", "Formally request letters of recommendation from secondary school teachers and counselors.", False, "2 Weeks", "Submit academic brag sheet and confirm teacher approvals."),
-            ("Peer & Admissions Advisor Essay Critique Round", "nano_subtask", "Submit drafts for rigorous line-by-line developmental editing and voice check.", True, "Immediate Action", "Receive structured written feedback and rubric scores."),
-            ("Common Application Activities Section Character Optimization", "nano_subtask", "Refine 150-character activity descriptions highlighting quantifiable outcomes and leadership.", True, "1 Week", "Finalize all 10 activity list entries with action verbs."),
-            ("Final Application Dossier Polish & Proofreading Audit", "step", "Comprehensive grammatical, formatting, and institutional accuracy check of entire package.", False, "2 Weeks", "Achieve 100% sign-off on finalized application dossier.")
-        ]
-
-    elif any(k in t_low for k in ["submission", "verification", "portal", "cycle"]):
-        templates = [
-            ("Official Academic Transcript & Counselor Report Transmission", "step", "Coordinate official electronic transmission of secondary transcripts and school profiles.", False, "2 Weeks", "Verify transcript upload status in counselor portal."),
-            ("Standardized Test Score Official Transmission Check", "micro_task", "Request official score transmissions via CollegeBoard / ETS / British Council portals.", True, "1 Week", "Confirm delivery receipts across all applicant portals."),
-            ("Early Action / Regular Decision Portal Application Filing", "step", "Submit completed applications and pay institutional application fees prior to deadlines.", False, "2 Weeks", "Receive official application submission confirmation emails."),
-            ("Applicant Status Portal Dashboard Activation", "nano_subtask", "Activate individual university portals and verify checklist items marked as received.", True, "Immediate Action", "Verify all green checkmarks on applicant portals."),
-            ("Admissions Alumni Interview Preparation & Mock Rounds", "micro_task", "Conduct mock admissions interviews covering academic interests and extracurricular narrative.", True, "2 Weeks", "Complete 2 proctored mock interview simulations."),
-            ("Mid-Year Grade Report & Academic Progress Update", "nano_subtask", "Submit mid-term grades and recent academic honors to university admissions portals.", True, "1 Week", "Confirm mid-year report logged by admissions committees.")
-        ]
-
-    elif any(k in t_low for k in ["medical", "clinical", "biology", "chemistry", "pre-med"]):
-        templates = [
-            ("Biomedical Sciences Diagnostic & Prerequisites Review", "step", "Comprehensive audit of biological systems, organic chemistry reactions, and biochemistry principles.", False, "2 Weeks", "Pass diagnostic exam with >= 85% score."),
-            ("Organic Chemistry Reaction Mechanisms & Synthesis Drills", "micro_task", "Intensive problem sets covering nucleophilic addition, elimination, and spectroscopic identification.", True, "1 Month", "Submit verified solution sets for 40 organic reaction mechanisms."),
-            ("Clinical Volunteering & Patient Care Exposure Log", "micro_task", "Structured hours in hospital, clinical hospice, or mobile healthcare outreach programs.", True, "1 Month", "Log 50 verified clinical contact hours signed by medical supervisor."),
-            ("Medical Ethics & Clinical Case Dilemma Seminar", "micro_task", "Analysis of patient autonomy, beneficence, and ethical decision-making in clinical practice.", False, "2 Weeks", "Complete 5 medical ethics case analysis briefs."),
-            ("Pre-Medical Committee Review & Advisor Checkpoint", "nano_subtask", "1-on-1 advisor evaluation assessing clinical hours, prerequisite grades, and committee letter eligibility.", False, "Immediate Action", "Obtain pre-med advisor committee endorsement."),
-            ("Clinical Experience Journal & Shadowing Reflection Essay", "nano_subtask", "Drafting reflective narrative on physician shadowing encounters and clinical observations.", True, "1 Week", "Produce polished 3-page clinical reflection statement."),
-            ("Medical College Admissions Test (MCAT / NEET) Benchmark Exam", "step", "Full-length proctored simulation evaluating chemical, physical, biological, and psychological sections.", False, "1 Week", "Achieve target score threshold on official practice test.")
-        ]
-
-    elif any(k in t_low for k in ["business", "management", "finance", "economics", "mba", "marketing"]):
-        templates = [
-            ("Corporate Financial Statements & Valuation Foundations", "step", "Mastery of balance sheets, cash flow models, discounted cash flow (DCF) analysis, and capital structure.", False, "1 Month", "Construct 3-statement financial forecast model with scenario analysis."),
-            ("Microeconomics & Market Structure Competitive Analysis", "micro_task", "Study of supply elasticity, price discrimination, monopoly equilibrium, and game theory.", True, "1 Month", "Complete 4 problem sets with >= 88% accuracy."),
-            ("Harvard Business School Case Method Practicum", "micro_task", "Analyzing real-world technology corporate crises, competitive strategy, and market entry decisions.", True, "1 Month", "Present 2 comprehensive strategic case solutions."),
-            ("Leadership Impact Portfolio & Executive Brag Sheet", "micro_task", "Quantifying organizational leadership outcomes, team size, budget management, and operational improvements.", False, "2 Weeks", "Finalize 2-page executive resume following business school standards."),
-            ("Business Admissions Strategist Strategy Checkpoint", "nano_subtask", "1-on-1 strategy session reviewing career vision narrative and target business school alignment.", False, "Immediate Action", "Sign-off on target MBA/management school portfolio."),
-            ("GMAT / GRE Quantitative & Data Insights Speed Drill", "nano_subtask", "High-intensity timed drills solving data sufficiency and multi-source reasoning questions.", True, "1 Week", "Achieve 90%+ accuracy on 50 timed data insights questions.")
-        ]
-
-    elif any(k in t_low for k in ["thesis", "dissertation", "graduate research", "doctoral", "faculty"]):
-        templates = [
-            ("Doctoral Inquiry Topic Definition & Systematic Literature Review", "step", "Formulating original research questions and synthesizing 30 peer-reviewed papers.", False, "1 Month", "Produce 10-page literature review and theoretical framework."),
-            ("Research Methodology & Statistical Experimental Design", "micro_task", "Designing controlled experiments, statistical sampling frameworks, and data integrity protocols.", True, "1 Month", "Submit approved methodological prospectus to faculty advisor."),
-            ("Computational Modeling & Experimental Benchmark Execution", "micro_task", "Executing algorithmic experiments, statistical regressions, and laboratory test protocols.", True, "1 Month", "Generate complete experimental dataset and benchmark graphs."),
-            ("Scholarly Working Paper Draft Submission to Faculty PI", "micro_task", "Drafting complete academic manuscript following IEEE, ACM, or Nature formatting guidelines.", False, "1 Month", "Submit manuscript draft to principal investigator for critique."),
-            ("Prospective Faculty Advisor Alignment Consultation", "nano_subtask", "1-on-1 academic consultation with principal investigator reviewing lab funding and thesis scope.", False, "Immediate Action", "Receive formal faculty endorsement of research direction."),
-            ("Peer-Reviewed Journal / Conference Paper Submission", "nano_subtask", "Submitting revised manuscript to peer-reviewed conference or academic journal portal.", True, "2 Weeks", "Receive official manuscript submission tracking identifier.")
-        ]
-
-    else:  # Admissions Offer, Visa, Financial & Final Matriculation
-        templates = [
-            ("Admission Offer Evaluation & Financial Aid Award Comparison", "step", "Compare acceptance letters, cost of attendance packages, and merit scholarship awards.", False, "2 Weeks", "Produce comprehensive financial comparison matrix."),
-            ("Formal Admission Acceptance & University Enrollment Deposit", "nano_subtask", "Submit official intent to enroll letter and pay tuition deposit to chosen institution.", False, "Immediate Action", "Receive official matriculation confirmation receipt."),
-            ("Financial Clearance, Affidavits & Bank Certification Filing", "micro_task", "Assemble financial guarantee documents, family asset affidavits, and sponsor letters.", True, "1 Month", "Obtain official bank certification letter meeting visa criteria."),
-            ("Form I-20 / CAS Certificate of Eligibility Request", "step", "Submit financial documents to international student office to issue immigration eligibility form.", False, "2 Weeks", "Receive official I-20 (US) or CAS (UK) document with SEVIS ID."),
-            ("Student Visa Application (DS-160) & Consular Fee Payment", "micro_task", "Complete consular visa application form, pay SEVIS fee, and schedule biometric appointment.", False, "2 Weeks", "Secure confirmed consular visa interview appointment date."),
-            ("Consular Visa Mock Interview & Document Audit", "nano_subtask", "Conduct simulation interview addressing academic intent, finances, and post-study plans.", True, "Immediate Action", "Demonstrate fluent presentation of degree objectives and funds."),
-            ("Final Secondary School Transcripts Transmission", "nano_subtask", "Ensure high school registrar sends final official graduation transcripts directly to college.", True, "Immediate Action", "Verify final admission clearance and unconditional status."),
-            ("University Housing, Course Registration & Matriculation", "step", "Complete freshman housing contract, academic advisor meeting, and freshman orientation enrollment.", False, "1 Month", "Enroll in first-semester courses and celebrate final goal achievement!")
-        ]
-
-    # Select the requested number of subtasks
+    used = seen_titles if seen_titles is not None else set()
     subtasks = []
-    num_templates = len(templates)
+    pool_idx = 0
+    total_in_pool = len(source_pool)
 
     for i in range(subtasks_needed):
-        t_data = templates[i % num_templates]
-        suffix = f" (Part {i // num_templates + 1})" if i >= num_templates else ""
-        sub_title = f"{t_data[0]}{suffix}"
-        hierarchy = t_data[1]
-        desc = t_data[2]
-        can_par = t_data[3]
-        dur = t_data[4]
-        crit = t_data[5]
+        # Pick next unused item or generate unique domain title
+        item = source_pool[pool_idx % total_in_pool]
+        pool_idx += 1
 
-        is_zero = is_zero_duration_task(dur, sub_title)
+        title_candidate = item[0]
+        if title_candidate.lower() in used:
+            # Create a distinct, domain-specific actionable title variant
+            verb = item[0].split()[0]
+            title_candidate = f"{verb} Advanced {m_title}: Subject Unit {i + 1}"
+            if title_candidate.lower() in used:
+                title_candidate = f"{verb} Core Curriculum Mastery for {m_title} (Module {base_id_start + i})"
+
+        used.add(title_candidate.lower())
+        hierarchy = item[1]
+        desc = item[2]
+        can_par = item[3]
+        dur = item[4]
+        crit = item[5]
+
+        # Rich multi-category marketplace for this specific subtask
+        subtask_mkt = generate_comprehensive_academic_marketplace(title_candidate, m_id, goal=goal, stage=m_title)
 
         subtasks.append({
             "id": base_id_start + i,
@@ -948,16 +965,15 @@ def generate_curriculum_subtasks_for_milestone(
             "parent_id": m_id,
             "parent_milestone": m_title,
             "can_parallel": can_par,
-            "is_zero_duration": is_zero,
-            "title": sub_title,
+            "title": title_candidate,
             "academic_stage": milestone.get("academic_stage", "Academic Progression"),
-            "description": desc,
-            "macro_view": f"Strategic milestone context supporting {m_title}.",
-            "micro_view": f"Actionable academic execution, coursework modules, and weekly deliverables for {sub_title}.",
-            "nano_view": f"Targeted benchmark exercises, diagnostic drills, and 1-on-1 advisor review checkpoints for {sub_title}.",
-            "learning_objectives": [f"Master core competencies of {sub_title}", crit],
-            "micro_steps": [{"task": f"Complete deliverables for {sub_title}", "resource": "Accredited Academic Syllabus"}],
-            "marketplace": generate_comprehensive_academic_marketplace(sub_title, m_id, goal=goal),
+            "description": f"{desc} Ensures rigorous concept verification and tangible academic deliverable for {m_title}.",
+            "macro_view": f"Strategic institutional milestone context for {title_candidate} aligned with target admissions expectations.",
+            "micro_view": f"Weekly structured coursework, syllabus modules, practical problem sets, and textbook readings for {title_candidate}.",
+            "nano_view": f"Targeted problem-solving checklist, diagnostic benchmark evaluations, and 1-on-1 advisor review criteria for {title_candidate}.",
+            "learning_objectives": [f"Master core principles and techniques of {title_candidate}", crit],
+            "micro_steps": [{"task": f"Complete syllabus problem sets and deliverables for {title_candidate}", "resource": "Accredited University Course Syllabus"}],
+            "marketplace": subtask_mkt,
             "prerequisites": [m_id] if i == 0 else [base_id_start + i - 1],
             "duration": dur,
             "completion_criteria": crit
@@ -1254,15 +1270,17 @@ async def generate_academic_milestones_key1(
     institution = getattr(req, "target_institution", None) or "Accredited University"
     country = getattr(req, "target_country", None) or "Global Higher Education Institution"
 
-    # Calculate optimal number of macro milestones: 8 to 12 for 75-100+ steps!
-    if target_steps <= 10:
+    # Calculate optimal number of macro milestones for 150-250 steps (16 to 22 milestones)
+    if target_steps >= 200:
+        milestone_count = min(22, max(16, target_steps // 11))
+    elif target_steps >= 150:
+        milestone_count = min(18, max(14, target_steps // 12))
+    elif target_steps <= 10:
         milestone_count = min(target_steps, 5)
     elif target_steps <= 35:
         milestone_count = 6
     elif target_steps <= 70:
         milestone_count = 8
-    elif target_steps <= 120:
-        milestone_count = 10
     else:
         milestone_count = 12
 

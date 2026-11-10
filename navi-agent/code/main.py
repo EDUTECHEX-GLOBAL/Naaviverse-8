@@ -26,6 +26,11 @@ from duration_service import (
     schedule_academic_steps_timeline,
     validate_academic_step_timeline
 )
+try:
+    from rag_service import rag_engine
+except Exception as _rag_err:
+    print(f"[RAG Import Warning] {_rag_err}")
+    rag_engine = None
 from academic_generator import (
     DynamicAcademicRequest,
     AcademicMetricsCollector,
@@ -813,13 +818,13 @@ Stage Breakdown:
 CRITICAL: You MUST set total_duration to "{auth_dur_str}".
 STEP COUNT MANDATE: Generate 6 to 8 comprehensive milestones covering doctoral coursework, qualifying exams, advanced research, publications, and dissertation defense."""
     elif is_school and is_bachelor:
-        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (6 TO 8 MILESTONES):
+        step_scope_directive = f"""CRITICAL JOURNEY SCOPE & STEP COUNT MANDATE (12 TO 16 CHRONOLOGICAL MILESTONES):
 The student is in school ({current_position}) targeting a Bachelor's degree ({target_goal}).
 TIMELINE MANDATE: Total duration is EXACTLY {auth_dur_str} ({auth_months} months).
 Stage Breakdown:
 {stages_summary_text}
 CRITICAL: You MUST set total_duration to "{auth_dur_str}". NEVER output any other duration!
-STEP COUNT MANDATE: Generate 6 to 8 comprehensive milestones covering high school completion, college admissions, and undergraduate degree completion."""
+STEP COUNT MANDATE: Generate 12 to 16 distinct, chronologically phased milestones spanning academic coursework, STEM prerequisite foundations, competitive programming/projects, standardized testing (SAT/ACT), extracurricular leadership, university shortlisting, application dossiers, admissions decisions, student visa, and freshman matriculation."""
     else:
         step_scope_directive = f"""AUTONOMOUS & DYNAMIC STEP COUNT:
 Analyze the full distance from {current_position} to {target_goal}.
@@ -844,6 +849,8 @@ INPUT CONTEXT:
 {category_rules}
 
 {step_scope_directive}
+
+{rag_engine.build_grounded_prompt_augmentation(target_goal) if rag_engine else ""}
 
 SCHEMA REQUIREMENTS:
 Respond ONLY with valid JSON. No markdown backticks, no text explanation outside JSON.
@@ -2985,53 +2992,74 @@ def sse_payload(event: str, data: dict) -> str:
 
 
 def deduplicate_roadmap_marketplaces(steps: list) -> list:
-    """Ensure no marketplace item or provider name is duplicated across multiple milestones.
-    Deduplicates across step.marketplace AND any view-embedded marketplace items."""
+    """Ensures each step and view contains rich, diverse, verified marketplace recommendations
+    across Mentors, Vendors, Institutions, and Distributors without in-step duplication or empty categories."""
     if not isinstance(steps, list):
         return steps
-    seen_names = set()
 
-    def _dedup_items(items_list: list) -> list:
-        """Filter a list of marketplace item dicts, dropping duplicates by name."""
-        if not isinstance(items_list, list):
-            return items_list
-        deduped = []
-        for item in items_list:
-            if not isinstance(item, dict):
-                continue
-            name = str(item.get("name") or "").strip()
-            if not name:
-                continue
-            name_key = name.lower()
-            if name_key in seen_names:
-                # Drop duplicate — keep recommendations fresh and unique
-                continue
-            seen_names.add(name_key)
-            deduped.append(item)
-        return deduped
+    from academic_generator import generate_comprehensive_academic_marketplace
 
-    for step in steps:
+    for idx, step in enumerate(steps, start=1):
         if not isinstance(step, dict):
             continue
 
-        # 1. Deduplicate main step marketplace
-        m = step.get("marketplace")
-        if isinstance(m, dict):
-            for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
-                items = m.get(cat_key)
-                if isinstance(items, list):
-                    m[cat_key] = _dedup_items(items)
+        step_title = str(step.get("title") or f"Step {idx}").strip()
+        step_id = step.get("id", idx)
 
-        # 2. Deduplicate view-level embedded marketplaces (if views contain marketplace dicts)
-        for view_key in ["macro_view", "micro_view", "nano_view"]:
-            view_val = step.get(view_key)
-            if isinstance(view_val, dict) and "marketplace" in view_val:
-                vm = view_val["marketplace"]
-                if isinstance(vm, dict):
-                    for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
-                        vitems = vm.get(cat_key)
-                        if isinstance(vitems, list):
-                            vm[cat_key] = _dedup_items(vitems)
+        # Ensure base marketplace exists and is populated
+        m = step.get("marketplace")
+        if not isinstance(m, dict) or not m.get("all_recommendations") or len(m.get("all_recommendations", [])) < 3:
+            step["marketplace"] = generate_comprehensive_academic_marketplace(step_title, step_id)
+            m = step["marketplace"]
+
+        # Deduplicate within the individual step
+        seen_step_names = set()
+        for cat_key in ["mentors", "vendors", "institutions", "distributors"]:
+            items = m.get(cat_key)
+            if isinstance(items, list):
+                deduped = []
+                for it in items:
+                    if isinstance(it, dict):
+                        n = str(it.get("name") or "").strip().lower()
+                        if n and n not in seen_step_names:
+                            seen_step_names.add(n)
+                            deduped.append(it)
+                m[cat_key] = deduped
+
+        # Guarantee at least 1 item in every category by refilling from generator if empty
+        if any(len(m.get(ck) or []) == 0 for ck in ["mentors", "vendors", "institutions", "distributors"]):
+            fresh_mkt = generate_comprehensive_academic_marketplace(step_title, step_id)
+            for ck in ["mentors", "vendors", "institutions", "distributors"]:
+                if len(m.get(ck) or []) == 0 and fresh_mkt.get(ck):
+                    m[ck] = fresh_mkt[ck]
+
+        # Re-aggregate all_recommendations and section tiers
+        all_recs = []
+        for ck in ["mentors", "vendors", "institutions", "distributors"]:
+            all_recs.extend(m.get(ck) or [])
+        m["all_recommendations"] = all_recs
+        m["recommendations_count"] = len(all_recs)
+        m["macro_free"] = [it for it in all_recs if it.get("section") == "macro_free" or "free" in str(it.get("cost") or "").lower()]
+        m["micro_structured"] = [it for it in all_recs if it.get("section") == "micro_structured" or it.get("category") in ["vendor", "distributor"]]
+        m["nano_expert"] = [it for it in all_recs if it.get("section") == "nano_expert" or it.get("category") == "mentor"]
+
+        # Attach dedicated view-level recommendations
+        macro_text = str(step.get("macro_view") or f"Strategic institutional context for {step_title}.")
+        micro_text = str(step.get("micro_view") or f"Weekly structured syllabus coursework and problem sets for {step_title}.")
+        nano_text = str(step.get("nano_view") or f"Diagnostic review checklists and 1-on-1 advisor evaluations for {step_title}.")
+
+        step["macro_view"] = {
+            "strategic_context": macro_text if not isinstance(step.get("macro_view"), dict) else step["macro_view"].get("strategic_context", macro_text),
+            "marketplace": m.get("macro_free")[:2] or all_recs[:2]
+        }
+        step["micro_view"] = {
+            "coursework_context": micro_text if not isinstance(step.get("micro_view"), dict) else step["micro_view"].get("coursework_context", micro_text),
+            "marketplace": m.get("micro_structured")[:2] or all_recs[:2]
+        }
+        step["nano_view"] = {
+            "evaluation_context": nano_text if not isinstance(step.get("nano_view"), dict) else step["nano_view"].get("evaluation_context", nano_text),
+            "marketplace": m.get("nano_expert")[:2] or all_recs[:2]
+        }
 
     return steps
 
@@ -3530,7 +3558,17 @@ async def generate_path_stream(req: PathGenerationRequest):
 
             # Auto-expand into rich, actionable academic steps using all 4 Groq API keys in parallel!
             if cat == "academic":
-                target_steps_to_expand = getattr(req, "target_steps", None) or compute_expected_step_capacity(current, goal, profile)
+                target_steps_to_expand = getattr(req, "target_steps", None)
+                if not target_steps_to_expand and refine_prompt:
+                    _m = re.search(r'(\d+)\s*(?:step|milestone)', refine_prompt.lower())
+                    if _m:
+                        target_steps_to_expand = int(_m.group(1))
+                if not target_steps_to_expand and goal:
+                    _m = re.search(r'(\d+)\s*(?:step|milestone)', goal.lower())
+                    if _m:
+                        target_steps_to_expand = int(_m.group(1))
+                if not target_steps_to_expand:
+                    target_steps_to_expand = compute_expected_step_capacity(current, goal, profile)
                 yield sse_payload("status", {
                     "statuses": build_agent_statuses("agent3", completed),
                     "progress": 70,
@@ -4409,7 +4447,11 @@ async def expand_single_milestone_worker(
     client: AsyncGroq,
     key_id: str
 ) -> List[Dict[str, Any]]:
-    """4-Key Worker: Expands an approved milestone into detailed micro tasks and nano subtasks using the assigned Groq key."""
+    """4/5-Key Worker: Expands an approved milestone into detailed micro tasks and nano subtasks using the assigned Groq key."""
+    from academic_generator import (
+        generate_curriculum_subtasks_for_milestone,
+        generate_comprehensive_academic_marketplace
+    )
     async with semaphore:
         m_id = milestone.get("id", 1)
         m_title = milestone.get("title", "")
@@ -4418,7 +4460,7 @@ async def expand_single_milestone_worker(
         activities = milestone.get("key_academic_activities", [])
         goal = req.academic_goal or req.target_goal or "Bachelor's Degree"
 
-        prompt = f"""You are the Detail Academic Expansion Engine (API Key 2).
+        prompt = f"""You are the Detail Academic Expansion Engine ({key_id}).
 Expand the approved academic milestone into EXACTLY {subtasks_needed} distinct, granular, actionable academic tasks.
 
 PARENT MILESTONE:
@@ -4431,20 +4473,21 @@ PARENT MILESTONE:
 
 EXPANSION MANDATE:
 1. STRICTLY ACADEMIC: Decompose this milestone into deep, practical academic activities (e.g., specific curriculum modules, exam preparation benchmarks, laboratory experiments, research essay drafts, academic reference acquisition, diagnostic assessments).
-2. NO FILLER OR DUPLICATE TASKS: Every task must be unique, logically sequenced, and academically meaningful.
-3. DETAILED HIERARCHY: Label hierarchy_level as 'micro_task' or 'nano_subtask'.
-4. PARENT LINKING: Every subtask must set parent_id = {m_id}.
-5. PREREQUISITES: Explicitly link prerequisites (can reference parent milestone ID {m_id} or earlier subtasks).
-6. PARALLEL CAPABILITY: Set 'can_parallel': true for tasks that can run simultaneously with other studies (e.g. self-study test prep, university research, drafting letters).
-7. COMPLETION CRITERIA: Each subtask must have concrete, measurable academic completion criteria.
+2. ACTIVE IMPERATIVE VERBS: EVERY task title MUST begin with a strong active imperative verb (e.g. Master, Implement, Analyze, Execute, Audit, Design, Formulate, Synthesize, Evaluate, Refactor, Publish, Calibrate, Register, Submit, Solve, Practice, Prepare, Review, Build, Develop, Write).
+3. 100% UNIQUE TITLES: Every single title must be unique and concrete. ZERO generic placeholders (never output 'Module 1', 'Part 1', 'Task 1', 'Step 1').
+4. DETAILED HIERARCHY: Label hierarchy_level as 'micro_task' or 'nano_subtask'.
+5. PARENT LINKING: Every subtask must set parent_id = {m_id}.
+6. PREREQUISITES: Explicitly link prerequisites (can reference parent milestone ID {m_id} or earlier subtasks).
+7. PARALLEL CAPABILITY: Set 'can_parallel': true for tasks that can run simultaneously with other studies (e.g. self-study test prep, university research, drafting letters).
+8. COMPLETION CRITERIA: Each subtask must have concrete, measurable academic completion criteria.
 
 Respond ONLY with valid JSON:
 {{
   "expanded_tasks": [
     {{
-      "title": "Specific Academic Task Name",
+      "title": "Master Advanced Single-Variable Calculus Techniques",
       "hierarchy_level": "micro_task",
-      "description": "2-3 comprehensive sentences describing the exact coursework, practice, or academic deliverable.",
+      "description": "2-3 comprehensive sentences describing the exact coursework, practice problem sets, or academic deliverable.",
       "prerequisites": [{m_id}],
       "duration": "1 Month",
       "can_parallel": false,
@@ -4460,14 +4503,32 @@ Respond ONLY with valid JSON:
                 prompt=prompt,
                 preferred_model="openai/gpt-oss-120b",
                 fallback_model="qwen/qwen3.8-27b",
-                max_tokens=3072,
+                max_tokens=4096,
                 metrics=metrics
             )
             raw_tasks = res.get("expanded_tasks", []) if isinstance(res, dict) else []
+            if len(raw_tasks) < subtasks_needed:
+                # Top up with domain-specific curriculum subtasks
+                needed_more = subtasks_needed - len(raw_tasks)
+                curriculum_filler = generate_curriculum_subtasks_for_milestone(
+                    milestone=milestone,
+                    subtasks_needed=needed_more,
+                    base_id_start=base_id_start + len(raw_tasks),
+                    goal=goal
+                )
+                raw_tasks.extend(curriculum_filler)
+
             formatted_tasks = []
-            for idx, task in enumerate(raw_tasks):
-                t_title = task.get("title", f"Academic Subtask {idx + 1} for Milestone {m_id}")
+            for idx, task in enumerate(raw_tasks[:subtasks_needed]):
+                t_title = task.get("title", f"Master Curriculum Module {idx + 1} for {m_title}")
+                # Ensure title has an active verb
+                first_w = t_title.split()[0].lower() if t_title.split() else ""
+                if first_w not in ["master", "implement", "analyze", "execute", "audit", "design", "formulate", "synthesize", "evaluate", "refactor", "publish", "calibrate", "register", "submit", "solve", "practice", "prepare", "review", "build", "develop", "write"]:
+                    t_title = f"Master {t_title}"
+
                 t_desc = task.get("description", "")
+                subtask_mkt = generate_comprehensive_academic_marketplace(t_title, m_id, goal=goal, stage=m_title)
+
                 formatted_tasks.append({
                     "id": base_id_start + idx,
                     "hierarchy_level": task.get("hierarchy_level", "micro_task"),
@@ -4476,43 +4537,26 @@ Respond ONLY with valid JSON:
                     "can_parallel": task.get("can_parallel", False),
                     "title": t_title,
                     "academic_stage": milestone.get("academic_stage", "Academic Progression"),
-                    "description": t_desc,
+                    "description": t_desc or f"Comprehensive academic coursework and concept verification for {t_title}.",
                     "macro_view": task.get("macro_view") or f"High-level strategic milestone context for {t_title}.",
                     "micro_view": task.get("micro_view") or f"Weekly structured coursework, syllabus modules, and assignments for {t_title}.",
                     "nano_view": task.get("nano_view") or f"Granular problem-solving tasks, practice drills, and diagnostic benchmarks for {t_title}.",
                     "learning_objectives": task.get("learning_objectives") or [f"Master core concepts of {t_title}", "Pass diagnostic assessment with >= 85%"],
                     "micro_steps": task.get("micro_steps") or [{"task": f"Complete syllabus module for {t_title}", "resource": "Accredited University Course Syllabus"}],
-                    "marketplace": milestone.get("marketplace") or {},
+                    "marketplace": subtask_mkt,
                     "prerequisites": task.get("prerequisites", [m_id]),
                     "duration": task.get("duration", "1 Month"),
                     "completion_criteria": task.get("completion_criteria", f"Satisfactory completion and evaluation of {t_title}.")
                 })
             return formatted_tasks
         except Exception as e:
-            print(f"[{key_id} Expansion Warning] Milestone {m_id} expansion encountered error: {e}. Generating structured fallback subtasks.")
-            fallback_tasks = []
-            for idx in range(subtasks_needed):
-                mod_title = f"{m_title}: Academic Module {idx + 1}"
-                fallback_tasks.append({
-                    "id": base_id_start + idx,
-                    "hierarchy_level": "micro_task",
-                    "parent_id": m_id,
-                    "parent_milestone": m_title,
-                    "can_parallel": False,
-                    "title": mod_title,
-                    "academic_stage": milestone.get("academic_stage", "Academic Progression"),
-                    "description": f"Targeted academic coursework and diagnostic assessments focusing on core curriculum elements of {m_title}.",
-                    "macro_view": f"Foundational curriculum mastery for {mod_title}.",
-                    "micro_view": f"Weekly problem solving and diagnostic evaluation for {mod_title}.",
-                    "nano_view": f"Targeted academic practice sets and syllabus review for {mod_title}.",
-                    "learning_objectives": [f"Understand key principles of {mod_title}", "Complete assessment modules"],
-                    "micro_steps": [{"task": f"Review lecture materials for {mod_title}", "resource": "Academic Course Syllabus"}],
-                    "marketplace": milestone.get("marketplace") or {},
-                    "prerequisites": [m_id],
-                    "duration": "1 Month",
-                    "completion_criteria": "Demonstrate mastery on unit exam and coursework submission."
-                })
-            return fallback_tasks
+            print(f"[{key_id} Expansion Fallback] Milestone {m_id} using domain curriculum generator: {e}")
+            return generate_curriculum_subtasks_for_milestone(
+                milestone=milestone,
+                subtasks_needed=subtasks_needed,
+                base_id_start=base_id_start,
+                goal=goal
+            )
 
 
 async def expand_single_milestone_key2(
@@ -4537,7 +4581,7 @@ async def expand_academic_milestones_key2(
     target_steps: int,
     metrics: AcademicMetricsCollector
 ) -> List[Dict[str, Any]]:
-    """Coordinates parallel milestone expansions across all 4 Groq API keys to reach target step count."""
+    """Coordinates parallel milestone expansions across all 5 Groq API keys to reach target step count."""
     num_milestones = len(milestones)
     if num_milestones == 0:
         return []
@@ -4551,8 +4595,9 @@ async def expand_academic_milestones_key2(
     base_subtasks_per_m = subtasks_to_generate // num_milestones
     remainder = subtasks_to_generate % num_milestones
 
-    # 4-way parallel concurrency across all 4 Groq API keys
-    concurrency_limit = min(4, len(GROQ_4KEY_ASYNC_CLIENTS))
+    # 5-way parallel concurrency across all active Groq API keys
+    clients_pool = GROQ_5KEY_ASYNC_CLIENTS if GROQ_5KEY_ASYNC_CLIENTS else GROQ_4KEY_ASYNC_CLIENTS
+    concurrency_limit = min(5, len(clients_pool))
     semaphore = asyncio.Semaphore(concurrency_limit)
 
     tasks = []
@@ -4561,8 +4606,7 @@ async def expand_academic_milestones_key2(
     for idx, m in enumerate(milestones):
         needed = base_subtasks_per_m + (1 if idx < remainder else 0)
         if needed > 0:
-            # Round-robin dispatch across all 4 keys: Key 1, Key 2, Key 3, Key 4!
-            worker_client, worker_key_id = GROQ_4KEY_ASYNC_CLIENTS[idx % len(GROQ_4KEY_ASYNC_CLIENTS)]
+            worker_client, worker_key_id = clients_pool[idx % len(clients_pool)]
             tasks.append(
                 expand_single_milestone_worker(
                     milestone=m,
@@ -4577,7 +4621,7 @@ async def expand_academic_milestones_key2(
             )
             current_id_cursor += needed
 
-    print(f"[4-Key Parallel Engine] Concurrently expanding {len(tasks)} milestone batches across 4 Groq keys (target: {subtasks_to_generate} subtasks)...")
+    print(f"[5-Key Parallel Engine] Concurrently expanding {len(tasks)} milestone batches across {len(clients_pool)} Groq keys (target: {subtasks_to_generate} subtasks)...")
     batch_results = await asyncio.gather(*tasks, return_exceptions=True)
 
     expanded_subtasks = []
@@ -4585,18 +4629,17 @@ async def expand_academic_milestones_key2(
         if isinstance(res, list):
             expanded_subtasks.extend(res)
         elif isinstance(res, Exception):
-            print(f"[4-Key Batch Exception] {res}")
+            print(f"[5-Key Batch Exception] {res}")
 
     # Ensure precise step count fulfillment: fill any gap between generated subtasks and requested target
     current_total = len(expanded_subtasks) + num_milestones
     if current_total < target_steps:
         gap = target_steps - current_total
-        print(f"[4-Key Gap Fulfillment] Target: {target_steps}, current: {current_total} (Gap: {gap}). Expanding {gap} additional nano subtasks...")
+        print(f"[5-Key Gap Fulfillment] Target: {target_steps}, current: {current_total} (Gap: {gap}). Expanding {gap} additional nano subtasks...")
         from academic_generator import generate_curriculum_subtasks_for_milestone
         gap_tasks = []
         for i in range(gap):
             target_m = milestones[i % num_milestones]
-            m_id = target_m.get("id", 1)
             curriculum_generated = generate_curriculum_subtasks_for_milestone(
                 milestone=target_m,
                 subtasks_needed=1,
@@ -4605,26 +4648,9 @@ async def expand_academic_milestones_key2(
             )
             if curriculum_generated:
                 gap_tasks.append(curriculum_generated[0])
-            else:
-                t_name = f"{target_m.get('title')}: Academic Syllabus Mastery Phase {i + 1}"
-                gap_tasks.append({
-                    "id": current_id_cursor + i,
-                    "hierarchy_level": "nano_subtask",
-                    "parent_id": m_id,
-                    "title": t_name,
-                    "academic_stage": target_m.get("academic_stage", "Academic Progression"),
-                    "description": f"Focused academic problem sets, textbook problem verification, and syllabus evaluation for {target_m.get('title')}.",
-                    "macro_view": f"Strategic diagnostic milestone supporting {t_name}.",
-                    "micro_view": f"Structured evaluation drills and practice assessment for {t_name}.",
-                    "nano_view": f"Targeted problem-solving checklist for {t_name}.",
-                    "learning_objectives": [f"Review core components of {target_m.get('title')}", "Pass syllabus evaluation"],
-                    "micro_steps": [{"task": f"Complete syllabus problem sets for {t_name}", "resource": "Accredited University Course Syllabus"}],
-                    "marketplace": target_m.get("marketplace") or {},
-                    "prerequisites": [m_id],
-                    "duration": "1 Month",
-                    "completion_criteria": f"Score at or above benchmark on {target_m.get('title')} syllabus evaluation."
-                })
         expanded_subtasks.extend(gap_tasks)
+
+    return expanded_subtasks
 
     return expanded_subtasks
 
@@ -4705,7 +4731,7 @@ def validate_and_integrate_academic_steps(
         seen_titles.append(norm)
         deduped_steps.append(step)
 
-    # Post-deduplication step count alignment: ensure final steps match target_steps precisely
+    # Post-deduplication step count alignment: ensure final steps match target_steps precisely with unique, domain-rich tasks
     if len(deduped_steps) < target_steps and len(milestones) > 0:
         from academic_generator import generate_curriculum_subtasks_for_milestone
         gap = target_steps - len(deduped_steps)
@@ -4716,7 +4742,7 @@ def validate_and_integrate_academic_steps(
                 milestone=target_m,
                 subtasks_needed=1,
                 base_id_start=90000 + i,
-                goal=target_m.get("parent_milestone", "")
+                goal=target_m.get("parent_milestone", "") or target_m.get("title", "")
             )
             if curriculum_generated:
                 task = curriculum_generated[0]
@@ -4724,20 +4750,6 @@ def validate_and_integrate_academic_steps(
                 task["parent_milestone"] = target_m.get("title", "")
                 task["can_parallel"] = True
                 deduped_steps.append(task)
-            else:
-                deduped_steps.append({
-                    "id": 90000 + i,
-                    "hierarchy_level": "nano_subtask",
-                    "parent_id": m_id,
-                    "parent_milestone": target_m.get("title", ""),
-                    "can_parallel": True,
-                    "title": f"{target_m.get('title')}: Applied Academic Problem Set {i + 1}",
-                    "academic_stage": target_m.get("academic_stage", "Academic Progression"),
-                    "description": f"Rigorous problem sets, coursework exercises, and diagnostic evaluation supporting {target_m.get('title')}.",
-                    "prerequisites": [m_id],
-                    "duration": "1 Month",
-                    "completion_criteria": f"Achieve mastery benchmark score on {target_m.get('title')} evaluation."
-                })
     elif len(deduped_steps) > (target_steps + 10):
         # Only prune if generated subtasks significantly exceed safe upper bounds, preserving natural LLM variation
         preserved_milestones = [s for s in deduped_steps if s.get("hierarchy_level") == "milestone"]

@@ -610,7 +610,7 @@ def parse_goal_components(goal: str) -> Dict[str, str]:
     into structured metadata: {degree_level, program, university, country}.
     """
     g = (goal or "").strip()
-    parts = [p.strip() for p in re.split(r'[\u2022|\.]', g) if p.strip()]
+    parts = [p.strip() for p in re.split(r'[\u2022|\.,]', g) if p.strip()]
 
     parsed = {
         "degree_level": "Bachelor's",

@@ -193,6 +193,18 @@ function analyzeGoalParts(goalText) {
 
   const unassigned = [...rawParts];
 
+  // 0. Extract country from parentheses if present (e.g. University of Toronto (Canada))
+  const parenCountryMatch = goalText.match(/\(([^)]+)\)/);
+  if (parenCountryMatch) {
+    const candidateCountry = parenCountryMatch[1].trim().toLowerCase();
+    if (countryKeywords.includes(candidateCountry)) {
+      country = parenCountryMatch[1].trim();
+      for (let i = 0; i < unassigned.length; i++) {
+        unassigned[i] = unassigned[i].replace(/\s*\([^)]*\)/g, "").trim();
+      }
+    }
+  }
+
   // 1. Identify Degree Type FIRST (so PhD, MBA, etc. are never swallowed by country or program)
   const degreeIdx = unassigned.findIndex(p => isDegreeType(p));
   if (degreeIdx !== -1) {
