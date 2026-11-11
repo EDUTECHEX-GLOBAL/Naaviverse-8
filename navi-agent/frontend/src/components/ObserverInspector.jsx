@@ -114,7 +114,8 @@ export default function ObserverInspector({
   pathTitle = "",
   totalDuration = "",
   pathId = null,
-  onHumanReviewUpdated = null
+  onHumanReviewUpdated = null,
+  onApplyUniquenessRepair = null
 }) {
   const [activeSeverityFilter, setActiveSeverityFilter] = useState("all");
   const [expandedDimension, setExpandedDimension] = useState(null);
@@ -292,6 +293,18 @@ export default function ObserverInspector({
           </div>
         </div>
         <div className="obs-top-bar-right">
+          {onApplyUniquenessRepair && (
+            <button
+              type="button"
+              className="obs-repair-btn"
+              onClick={onApplyUniquenessRepair}
+              disabled={auditLoading}
+              title="Apply Path Uniqueness Agent corrections and deduplication"
+            >
+              <IconSparkles size={14} />
+              <span>Apply Uniqueness Repairs</span>
+            </button>
+          )}
           {onReAudit && (
             <button
               type="button"
@@ -540,6 +553,97 @@ export default function ObserverInspector({
           <span><strong>Platform Navigation:</strong> Direct partner links enabled. Click any marketplace card or "Visit Platform ↗" to view official offerings.</span>
         </div>
       </div>
+
+      {/* ── 4B. PATH UNIQUENESS & CONSISTENCY REPORT ── */}
+      {safeReport.uniqueness_report && (
+        <div className="obs-uniqueness-panel">
+          <div className="obs-uniqueness-header">
+            <div className="obs-uniqueness-title-group">
+              <IconSparkles size={18} className="obs-uniqueness-sparkle" />
+              <span className="obs-uniqueness-title">Path Uniqueness & Consistency Audit</span>
+              <span className={`obs-uniqueness-badge ${(safeReport.uniqueness_report.validation_status || "passed").toLowerCase()}`}>
+                {safeReport.uniqueness_report.status_label || safeReport.uniqueness_report.validation_status}
+              </span>
+            </div>
+            {onApplyUniquenessRepair && (safeReport.uniqueness_report.confirmed_duplicates_detected > 0 || safeReport.uniqueness_report.boilerplate_description_rate > 0) && (
+              <button
+                type="button"
+                className="obs-uniqueness-action-btn"
+                onClick={onApplyUniquenessRepair}
+                disabled={auditLoading}
+              >
+                <IconSparkles size={13} />
+                <span>Execute Auto-Corrections</span>
+              </button>
+            )}
+          </div>
+
+          <div className="obs-uniqueness-grid">
+            <div className="obs-u-stat">
+              <span className="obs-u-stat-label">Unique Activities</span>
+              <span className="obs-u-stat-val">{safeReport.uniqueness_report.total_unique_activities} / {safeReport.uniqueness_report.total_original_activities}</span>
+              <span className="obs-u-stat-sub">{Math.round((safeReport.uniqueness_report.uniqueness_ratio || 1) * 100)}% Distinct</span>
+            </div>
+            <div className="obs-u-stat">
+              <span className="obs-u-stat-label">Duplicates Identified</span>
+              <span className={`obs-u-stat-val ${safeReport.uniqueness_report.confirmed_duplicates_detected > 0 ? "warning" : "ok"}`}>
+                {safeReport.uniqueness_report.confirmed_duplicates_detected}
+              </span>
+              <span className="obs-u-stat-sub">{safeReport.uniqueness_report.confirmed_duplicates_resolved} Resolved</span>
+            </div>
+            <div className="obs-u-stat">
+              <span className="obs-u-stat-label">Descriptions Fixed</span>
+              <span className={`obs-u-stat-val ${safeReport.uniqueness_report.descriptions_regenerated > 0 ? "warning" : "ok"}`}>
+                {safeReport.uniqueness_report.descriptions_regenerated || (safeReport.uniqueness_report.description_defects || []).length}
+              </span>
+              <span className="obs-u-stat-sub">Boilerplate Synthesized</span>
+            </div>
+            <div className="obs-u-stat">
+              <span className="obs-u-stat-label">Valid Recurrences</span>
+              <span className="obs-u-stat-val ok">{safeReport.uniqueness_report.valid_recurrences_preserved || 0}</span>
+              <span className="obs-u-stat-sub">Periodic Diagnostics</span>
+            </div>
+            <div className="obs-u-stat">
+              <span className="obs-u-stat-label">Marketplace Filtered</span>
+              <span className="obs-u-stat-val ok">{safeReport.uniqueness_report.marketplace_duplicates_resolved || 0}</span>
+              <span className="obs-u-stat-sub">Diverse Offerings</span>
+            </div>
+          </div>
+
+          {/* Before & After Duplicate Groups Preview */}
+          {safeReport.uniqueness_report.candidate_pairs && safeReport.uniqueness_report.candidate_pairs.length > 0 && (
+            <div className="obs-u-candidates-drawer">
+              <div className="obs-u-drawer-title">
+                Duplicate Activity Analysis & Resolutions ({safeReport.uniqueness_report.candidate_pairs.length})
+              </div>
+              <div className="obs-u-pairs-list">
+                {safeReport.uniqueness_report.candidate_pairs.map((p, pIdx) => (
+                  <div key={pIdx} className="obs-u-pair-row">
+                    <div className="obs-u-pair-cols">
+                      <div className="obs-u-col before">
+                        <span className="obs-u-col-tag before">Original Activity</span>
+                        <div className="obs-u-col-title">{p.task_a_title}</div>
+                        {p.task_a_desc && <div className="obs-u-col-desc">{p.task_a_desc.slice(0, 110)}...</div>}
+                      </div>
+                      <div className="obs-u-vs-divider">⇄</div>
+                      <div className="obs-u-col after">
+                        <span className="obs-u-col-tag after">Detected Duplicate</span>
+                        <div className="obs-u-col-title">{p.task_b_title}</div>
+                        <div className="obs-u-col-meta">{p.classification} · {p.reason}</div>
+                      </div>
+                    </div>
+                    <div className="obs-u-pair-actions">
+                      <span className={`obs-u-res-badge ${p.recommended_action?.toLowerCase()}`}>
+                        {p.recommended_action === "REMOVE_DUPLICATE" ? "Safely Merged / Remapped" : p.recommended_action}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── 5. STRUCTURED FINDINGS & EVIDENCE SECTION ── */}
       <div className="obs-findings-section">

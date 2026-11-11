@@ -480,6 +480,60 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
     }
   };
 
+  const handleApplyUniquenessRepair = async () => {
+    if (!activePath) return;
+    try {
+      setAuditLoading(true);
+      const res = await fetch(`${API}/api/path/uniqueness/repair`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ roadmap_data: activePath })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const repaired = data.repaired_roadmap;
+        const uniqReport = data.uniqueness_report;
+
+        // Re-audit with observer agent
+        const obsRes = await fetch(`${API}/api/observer/observe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roadmap_data: repaired,
+            current_position: current || (userInput?.current || ""),
+            target_goal: goal || (userInput?.goal || ""),
+            profile: profile || {},
+            category: activeSegment,
+            sub_segment: activeSubSegment,
+          }),
+        });
+        if (obsRes.ok) {
+          const obsData = await obsRes.json();
+          obsData.uniqueness_report = uniqReport;
+          repaired.observer_evaluation = obsData;
+          repaired.observer_report = obsData;
+          repaired.accuracy_score = obsData.overall_quality_score;
+          repaired.accuracy_label = obsData.status_label;
+          setCustomAuditReport(obsData);
+        }
+
+        if (onPathGenerated && pathData) {
+          if (pathData.alternatives) {
+            const newAlts = [...pathData.alternatives];
+            newAlts[selectedAltIdx] = repaired;
+            onPathGenerated({ ...pathData, alternatives: newAlts }, userInput);
+          } else {
+            onPathGenerated(repaired, userInput);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Dashboard] Apply Uniqueness Repair Error:", err);
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   // Sync segment & autofill initial inputs from profile on mount
   useEffect(() => {
     if (profile?.activeSegment && !activeSegment) {
@@ -1611,6 +1665,7 @@ export default function Dashboard({ profile, pathData, userInput, initialCurrent
                           <ObserverInspector
                             report={activeReport}
                             onReAudit={handleReAudit}
+                            onApplyUniquenessRepair={handleApplyUniquenessRepair}
                             auditLoading={auditLoading}
                             pathTitle={activePath.path_title}
                             totalDuration={activePath.total_duration}

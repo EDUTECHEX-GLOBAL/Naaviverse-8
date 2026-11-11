@@ -462,8 +462,12 @@ class NaaviObserverAgent:
             text = f"{s.get('title', '')} {s.get('description', '')}".lower()
             detected_stage = 0
 
-            # Special check for Stage 7: ignore high school Advanced Placement (AP) and diagnostic placement tests
-            is_ap_or_course_placement = any(ap in text for ap in ["advanced placement", "ap calculus", "ap computer science", "ap physics", "placement test", "placement exam", "math placement", "course placement"])
+            # Special check for Stage 7: ignore high school AP, course placement, and university/visa admissions interviews
+            is_ap_or_course_placement = any(ap in text for ap in [
+                "advanced placement", "ap calculus", "ap computer science", "ap physics",
+                "placement test", "placement exam", "math placement", "course placement",
+                "visa interview", "consular interview", "admissions interview", "mock consular"
+            ])
             if any(kw in text for kw in STAGE_KEYWORDS[7]) and not is_ap_or_course_placement:
                 detected_stage = 7
             else:
@@ -576,26 +580,59 @@ class NaaviObserverAgent:
                     ))
                     score -= 30.0
 
-        # 2. Check for duplicate milestone titles
-        titles = [str(s.get("title", "")).strip().lower() for s in steps]
-        title_counts = {}
-        for t in titles:
-            if t:
-                title_counts[t] = title_counts.get(t, 0) + 1
+        # 2. Path Uniqueness & Consistency Audit (Five-Level Duplicate & Boilerplate Engine)
+        try:
+            from path_uniqueness_agent import path_uniqueness_agent
+            uniq_audit = path_uniqueness_agent.audit(roadmap)
+            
+            # Surface confirmed duplicate groups
+            for pair in uniq_audit.candidate_pairs:
+                if pair.classification.value in ["EXACT_DUPLICATE", "NEAR_DUPLICATE", "SEMANTIC_DUPLICATE"]:
+                    warnings.append(self._create_issue(
+                        dimension="academic_relevance",
+                        severity="medium",
+                        code="duplicate_milestone",
+                        what_is_wrong=f"Activity '{pair.task_a_title}' has duplicate/overlapping counterpart '{pair.task_b_title}'.",
+                        why_it_is_wrong="Every milestone and activity should represent a distinct, non-repetitive learning objective.",
+                        expected_order_or_correction="Differentiate learning outcomes or merge into a single rigorous module.",
+                        supporting_evidence=pair.reason,
+                        suggested_action="Apply Path Uniqueness Agent resolution to remove redundant tasks."
+                    ))
+                    score -= 5.0
 
-        for t, count in title_counts.items():
-            if count > 1:
+            # Surface boilerplate description defects
+            if uniq_audit.description_defects:
                 warnings.append(self._create_issue(
                     dimension="academic_relevance",
-                    severity="medium",
-                    code="duplicate_milestone",
-                    what_is_wrong=f"Step title '{t}' is repeated {count} times across the roadmap.",
-                    why_it_is_wrong="Every milestone should represent a distinct, unique phase in the academic journey.",
-                    expected_order_or_correction="Provide distinct, descriptive titles for each phase.",
-                    supporting_evidence=f"Title duplicated {count} times.",
-                    suggested_action="Differentiate milestone titles with specific semester or subject focus."
+                    severity="low",
+                    code="boilerplate_descriptions",
+                    what_is_wrong=f"Detected {len(uniq_audit.description_defects)} activities with repetitive boilerplate descriptions.",
+                    why_it_is_wrong="Descriptions must be domain-authentic and tailored specifically to the activity's deliverables.",
+                    expected_order_or_correction="Replace generic sentences with concrete concept explanations.",
+                    supporting_evidence=f"{len(uniq_audit.description_defects)} tasks share boilerplate phrasing.",
+                    suggested_action="Synthesize authentic concept-specific descriptions."
                 ))
-                score -= 10.0
+                score -= min(10.0, len(uniq_audit.description_defects) * 1.5)
+        except Exception as u_err:
+            # Fallback title count check
+            titles = [str(s.get("title", "")).strip().lower() for s in steps]
+            title_counts = {}
+            for t in titles:
+                if t:
+                    title_counts[t] = title_counts.get(t, 0) + 1
+            for t, count in title_counts.items():
+                if count > 1:
+                    warnings.append(self._create_issue(
+                        dimension="academic_relevance",
+                        severity="medium",
+                        code="duplicate_milestone",
+                        what_is_wrong=f"Step title '{t}' is repeated {count} times across the roadmap.",
+                        why_it_is_wrong="Every milestone should represent a distinct, unique phase in the academic journey.",
+                        expected_order_or_correction="Provide distinct, descriptive titles for each phase.",
+                        supporting_evidence=f"Title duplicated {count} times.",
+                        suggested_action="Differentiate milestone titles with specific semester or subject focus."
+                    ))
+                    score -= 10.0
 
         # 3. Check for vague filler language
         filler_words = ["learn something", "do something", "various topics", "general study", "study hard", "etc.", "tbd"]
@@ -1468,8 +1505,16 @@ class NaaviObserverAgent:
                 "reviewed_at": None,
                 "reviewer_email": None
             },
-            "comparison": comparison
+            "comparison": comparison,
+            "uniqueness_report": roadmap.get("uniqueness_report")
         }
+
+        if report["uniqueness_report"] is None:
+            try:
+                from path_uniqueness_agent import path_uniqueness_agent
+                report["uniqueness_report"] = path_uniqueness_agent.audit(roadmap).model_dump()
+            except Exception:
+                report["uniqueness_report"] = None
 
         # Persist versioned evaluation record to research dataset
         record = {

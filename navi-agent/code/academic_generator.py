@@ -274,32 +274,32 @@ def compute_expected_step_capacity(
       so the step count dynamically varies on every single generation.
     """
     if requested_steps and requested_steps > 0:
-        return max(150, min(250, requested_steps))
+        return max(205, min(250, requested_steps))
 
     dur_info = duration_info or calculate_path_duration(current_position, target_goal, profile, category="academic")
     total_months = dur_info.get("total_duration_months", 24)
     goal_low = (target_goal or "").lower()
     is_complex_domain = any(k in goal_low for k in ["computer science", "engineering", "stem", "medicine", "pre-med", "data science", "physics", "ai", "machine learning", "doctoral", "phd"])
 
-    # Base step capacity mapped proportionally to journey duration within the 150-250 range
+    # Base step capacity mapped proportionally to journey duration to dynamically guarantee > 200 steps
     if total_months >= 36:
-        base = 210
+        base = 230
     elif total_months >= 20:
-        base = 185
+        base = 222
     elif total_months >= 10:
-        base = 162
+        base = 214
     else:
-        base = 152
+        base = 208
 
     if is_complex_domain:
-        base += 12
+        base += 4
 
     # Dynamic variance derived from student input characteristics and run-time entropy so count is never static
-    seed_offset = (len(current_position or "") * 13 + len(target_goal or "") * 19) % 17
-    run_jitter = random.randint(-8, 14)
+    seed_offset = (len(current_position or "") * 13 + len(target_goal or "") * 19) % 7
+    run_jitter = random.randint(0, 8)
     effective_steps = base + seed_offset + run_jitter
 
-    return max(150, min(250, effective_steps))
+    return max(205, min(248, effective_steps))
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -888,7 +888,18 @@ def generate_curriculum_subtasks_for_milestone(
         ("Draft Scholarly Computer Science Research Proposal", "micro_task", "Identify specialized inquiry in machine intelligence, algorithms, or distributed systems and compile bibliography.", False, "1 Month", "Complete 5-page research proposal formatted in IEEE style."),
         ("Practice Spaced Repetition Formula & Algorithm Flashcards", "nano_subtask", "Conduct daily Anki flashcard drills reinforcing mathematical formulas, theorem proofs, and time complexities.", True, "2 Weeks", "Maintain 100% mastery score on algorithm diagnostic review."),
         ("Execute Automated Unit Test Suite with PyTest & JUnit", "nano_subtask", "Write parameterized unit test suites asserting edge cases, boundary conditions, and exception handling.", True, "1 Week", "Attain 90%+ branch code coverage across all project modules."),
-        ("Complete Weekly Academic Code Review with Senior Mentor", "nano_subtask", "1-on-1 technical review session pressure-testing algorithmic efficiency and documentation clarity.", False, "Immediate Action", "Incorporate mentor suggestions into code refactoring ledger.")
+        ("Complete Weekly Academic Code Review with Senior Mentor", "nano_subtask", "1-on-1 technical review session pressure-testing algorithmic efficiency and documentation clarity.", False, "Immediate Action", "Incorporate mentor suggestions into code refactoring ledger."),
+        ("Implement Memory-Managed Pointer Routines in C and C++", "micro_task", "Construct dynamic memory allocators, pointer arithmetic buffers, and custom string libraries.", True, "1 Month", "Pass Valgrind memory leak audits with zero memory leaks or segmentation faults."),
+        ("Deconstruct Linux Kernel System Calls & Process Scheduling", "micro_task", "Analyze fork-exec lifecycle, POSIX signals, inter-process pipes, and shared memory synchronization.", True, "1 Month", "Implement command shell pipeline reproducing standard UNIX utilities."),
+        ("Formulate Relational Database Schema & Third Normal Form Models", "micro_task", "Design entity-relationship diagrams, B-tree indexes, ACID transactions, and complex SQL joins.", True, "1 Month", "Execute query execution plan optimization reducing full-table scans."),
+        ("Construct RESTful Microservice Architecture with FastAPI & Docker", "micro_task", "Develop modular microservices with structured Pydantic validation, JWT authentication, and Dockerfiles.", True, "1 Month", "Deploy containerized service passing automated integration test pipelines."),
+        ("Analyze Linear Algebra Matrix Decompositions & Eigenvalues", "step", "Master Gaussian elimination, vector spaces, nullity rank theorem, and singular value decomposition.", False, "1 Month", "Solve 30 eigenvalue and principal component reduction problem sets with >= 90% accuracy."),
+        ("Implement Convolutional Neural Networks & Image Classifiers", "micro_task", "Construct convolutional layers, pooling filters, and dropout regularization in PyTorch.", True, "1 Month", "Attain >= 92% validation accuracy on benchmark vision classification dataset."),
+        ("Benchmark Network Transport Protocols & TCP Sockets", "micro_task", "Implement non-blocking socket servers, packet serialization, and sliding window flow control.", True, "1 Month", "Benchmark socket server handling 10,000 concurrent client connections."),
+        ("Model Discrete Probability Distributions & Bayesian Priors", "micro_task", "Calculate Poisson arrivals, binomial variances, and conditional probability Bayes updates.", True, "1 Month", "Submit verified mathematical solutions for 25 Bayesian inference case studies."),
+        ("Formulate Cryptographic Key Exchange & Digital Signatures", "micro_task", "Implement Diffie-Hellman key exchange, RSA encryption math, and SHA-256 HMAC verification.", True, "2 Weeks", "Deliver verified zero-knowledge mathematical protocol demonstration."),
+        ("Optimize Dynamic Programming Bitmask State Transitions", "micro_task", "Solve NP-hard subset sum and traveling salesperson variants using memoized bit manipulation.", True, "1 Month", "Complete 20 advanced dynamic programming challenges on competitive coding platforms."),
+        ("Construct Self-Balancing Red-Black & AVL Search Trees", "micro_task", "Implement tree rotation algorithms, balance factor invariants, and node recoloring routines.", True, "1 Month", "Pass automated tree balance validation suite under random insertion workloads.")
     ]
 
     exam_prep_pool = [
@@ -899,7 +910,9 @@ def generate_curriculum_subtasks_for_milestone(
         ("Execute Full-Length Proctored Simulation Examination 1", "micro_task", "Complete full-length practice exam under official proctored conditions and pacing restrictions.", False, "1 Week", "Achieve benchmark score threshold (e.g., 1480+ SAT) without pacing penalties."),
         ("Register Official Testing Agency Examination Seat", "nano_subtask", "Create candidate account on official testing portal, select examination center, and pay fees.", True, "Immediate Action", "Download verified exam ticket and registration confirmation number."),
         ("Audit Item-by-Item Diagnostic Error Remediation Ledger", "nano_subtask", "Log incorrect practice questions with detailed conceptual explanations to eradicate persistent mistakes.", True, "1 Week", "Resolve all flagged errors with verified conceptual solutions."),
-        ("Execute Full-Length Proctored Simulation Examination 2", "micro_task", "Second full mock exam measuring endurance, question stamina, and score stability.", False, "1 Week", "Reach target benchmark score threshold (1520+ SAT / 34+ ACT).")
+        ("Execute Full-Length Proctored Simulation Examination 2", "micro_task", "Second full mock exam measuring endurance, question stamina, and score stability.", False, "1 Week", "Reach target benchmark score threshold (1520+ SAT / 34+ ACT)."),
+        ("Practice Advanced Quantitative Speed Drills & Trap Identification", "micro_task", "Master rapid mental math shortcuts, graphical slope estimations, and standardized test trap patterns.", True, "2 Weeks", "Attain 100% accuracy on 60-second quantitative rapid-fire drills."),
+        ("Calibrate Grammar & Rhetorical Sentence Structure Mechanics", "micro_task", "Review modifier placement, parallel structure, punctuation rules, and logical transition words.", True, "2 Weeks", "Score >= 95% on comprehensive grammar diagnostic section.")
     ]
 
     college_admissions_pool = [
@@ -918,7 +931,9 @@ def generate_curriculum_subtasks_for_milestone(
         ("Complete Consular DS-160 Visa Application & SEVIS Fee", "micro_task", "File electronic nonimmigrant visa form, pay SEVIS I-901 fee, and schedule consular interview.", False, "2 Weeks", "Secure confirmed consular appointment confirmation barcode."),
         ("Execute Mock Consular Visa Interview Defense Session", "nano_subtask", "1-on-1 simulation defending academic intent, university selection, financial sponsorship, and home ties.", True, "Immediate Action", "Demonstrate fluent presentation of academic objectives and funds."),
         ("Transmit Final Official High School Board Transcripts", "nano_subtask", "Coordinate secondary school registrar transmission of final official senior year examination results.", True, "Immediate Action", "Confirm unconditional admission status in applicant portal."),
-        ("Register First-Year University Academic Course Sequence", "step", "Consult academic advisor, register for foundational major prerequisites, and enroll in orientation.", False, "1 Month", "Enroll in first-semester courses and celebrate final goal achievement!")
+        ("Register First-Year University Academic Course Sequence", "step", "Consult academic advisor, register for foundational major prerequisites, and enroll in orientation.", False, "1 Month", "Enroll in first-semester courses and celebrate final goal achievement!"),
+        ("Coordinate International Credential Evaluation with WES / ECE", "micro_task", "Submit secondary transcripts for formal course-by-course equivalency conversion and GPA verification.", False, "2 Weeks", "Obtain verified official course equivalency evaluation report."),
+        ("Design Academic Honors & Extracurricular Leadership Portfolio", "micro_task", "Assemble publication links, competition medals, independent research artifacts, and project demonstrations.", True, "1 Month", "Publish curated digital candidate profile ready for admissions review.")
     ]
 
     # Select candidate pool based on milestone phase
@@ -933,31 +948,94 @@ def generate_curriculum_subtasks_for_milestone(
 
     used = seen_titles if seen_titles is not None else set()
     subtasks = []
-    pool_idx = 0
     total_in_pool = len(source_pool)
+    # Stagger pool index by milestone ID and base_id_start so milestones never start with identical activities
+    pool_idx = (int(m_id) * 7 + (base_id_start % total_in_pool)) % total_in_pool
+
+    # Dynamic generative topics matrix guaranteeing infinite unique, non-colliding tasks
+    synth_verbs = [
+        "Master", "Implement", "Analyze", "Execute", "Audit", "Design", "Formulate",
+        "Synthesize", "Evaluate", "Benchmark", "Construct", "Refactor", "Calibrate",
+        "Validate", "Model", "Deconstruct", "Optimize", "Deploy", "Author", "Simulate"
+    ]
+    synth_topics = [
+        "Differential Limits and Continuity Principles", "Implicit Differentiation and Related Rates",
+        "Multivariable Gradient Vectors and Lagrange Multipliers", "Double and Triple Iterated Integrals",
+        "Stokes and Gauss Divergence Theorem Applications", "Ordinary Differential Equations and Phase Planes",
+        "Eigenvalue Decompositions and Matrix Diagonalization", "Vector Space Projections and Orthogonality",
+        "Discrete Markov Chains and Transition Probabilities", "Asymptotic Algorithmic Analysis and Invariants",
+        "Self-Balancing AVL and Red-Black Search Trees", "Dynamic Programming Bitmask Optimization",
+        "Disjoint Set Union-Find Connectivity Routines", "Shortest Path Dijkstra and Bellman-Ford Traversals",
+        "Trie and Radix Tree Lexicographical Indexing", "Segment Tree Range Minimum Query Computations",
+        "Linux POSIX Sockets and Network Protocols", "Multi-Threaded Concurrency Locks and Semaphores",
+        "Relational Database Schema 3NF Normalization", "Distributed Cache Invalidation Architectures",
+        "Microservices Event-Driven Messaging Contracts", "Cryptographic RSA and SHA-256 Hashing Primitives",
+        "Memory Allocation Heap Fragmentation Profiles", "Automated Continuous Integration Build Pipelines",
+        "Systematic Literature Review and Evidence Matrix", "Peer-Reviewed Scholarly Manuscript Drafting",
+        "Statistical Significance Hypothesis Testing", "Secondary School Academic Transcript Verification",
+        "Target Department Why-Major Personal Essay", "Consular Nonimmigrant Student Visa Simulation",
+        "Algorithmic Complexity Lower Bounds and Reductions", "Divide and Conquer Recurrence Tree Solutions",
+        "B-Tree Multi-Way Storage Index Implementations", "A* Heuristic Search and Path Planning Algorithms",
+        "Compiler Lexical Analysis and Context-Free Grammars", "Finite State Automata and Regular Expression Engines",
+        "Floating Point Precision and Numerical Stability", "Computer Vision Feature Extraction Kernels",
+        "Natural Language Semantic Embeddings and Tokenizers", "Bayesian Networks and Conditional Independence"
+    ]
 
     for i in range(subtasks_needed):
-        # Pick next unused item or generate unique domain title
-        item = source_pool[pool_idx % total_in_pool]
-        pool_idx += 1
+        # Scan forward in pool for an unused authentic item
+        item = None
+        for attempt in range(total_in_pool):
+            candidate_item = source_pool[(pool_idx + attempt) % total_in_pool]
+            if candidate_item[0].lower() not in used:
+                item = candidate_item
+                pool_idx = (pool_idx + attempt + 1) % total_in_pool
+                break
 
-        title_candidate = item[0]
-        if title_candidate.lower() in used:
-            # Create a distinct, domain-specific actionable title variant
-            verb = item[0].split()[0]
-            title_candidate = f"{verb} Advanced {m_title}: Subject Unit {i + 1}"
-            if title_candidate.lower() in used:
-                title_candidate = f"{verb} Core Curriculum Mastery for {m_title} (Module {base_id_start + i})"
+        if item is None:
+            # All static items visited; synthesize a concrete, guaranteed unique domain task
+            cand_title = ""
+            cand_desc = ""
+            cand_crit = ""
+            for v in synth_verbs:
+                for top in synth_topics:
+                    candidate = f"{v} {top}"
+                    if candidate.lower() not in used:
+                        cand_title = candidate
+                        cand_desc = f"Execute hands-on laboratory exercises, formal proofs, and rigorous problem analysis for {top.lower()}."
+                        cand_crit = f"Submit verified solutions and problem sets for {top.lower()} with satisfactory accuracy."
+                        break
+                if cand_title:
+                    break
+
+            if not cand_title:
+                counter = len(used) + i + 1
+                cand_title = f"Master Academic Research and Laboratory Module {counter} in {m_title}"
+                cand_desc = f"Advanced theoretical and practical coursework module focused on key competencies of {m_title}."
+                cand_crit = f"Attain >= 85% on unit evaluation assessment."
+
+            title_candidate = cand_title
+            hierarchy = "micro_task"
+            desc = cand_desc
+            can_par = True
+            dur = "1 Month"
+            crit = cand_crit
+        else:
+            title_candidate = item[0]
+            hierarchy = item[1]
+            desc = item[2]
+            can_par = item[3]
+            dur = item[4]
+            crit = item[5]
 
         used.add(title_candidate.lower())
-        hierarchy = item[1]
-        desc = item[2]
-        can_par = item[3]
-        dur = item[4]
-        crit = item[5]
 
         # Rich multi-category marketplace for this specific subtask
         subtask_mkt = generate_comprehensive_academic_marketplace(title_candidate, m_id, goal=goal, stage=m_title)
+
+        # High-quality description without generic boilerplate suffix
+        authentic_description = desc.strip()
+        if not authentic_description.endswith("."):
+            authentic_description += "."
 
         subtasks.append({
             "id": base_id_start + i,
@@ -967,7 +1045,7 @@ def generate_curriculum_subtasks_for_milestone(
             "can_parallel": can_par,
             "title": title_candidate,
             "academic_stage": milestone.get("academic_stage", "Academic Progression"),
-            "description": f"{desc} Ensures rigorous concept verification and tangible academic deliverable for {m_title}.",
+            "description": authentic_description,
             "macro_view": f"Strategic institutional milestone context for {title_candidate} aligned with target admissions expectations.",
             "micro_view": f"Weekly structured coursework, syllabus modules, practical problem sets, and textbook readings for {title_candidate}.",
             "nano_view": f"Targeted problem-solving checklist, diagnostic benchmark evaluations, and 1-on-1 advisor review criteria for {title_candidate}.",
@@ -1161,84 +1239,29 @@ def validate_and_integrate_academic_steps(
         for ch in children:
             combined.append(ch)
 
-    # Semantic & Token Deduplication
-    seen_titles = []
-    deduped_steps = []
+    # Comprehensive multi-level deduplication and DAG repair via PathUniquenessAgent
+    from path_uniqueness_agent import path_uniqueness_agent
 
-    def normalize_title(t: str) -> str:
-        return re.sub(r"[^a-zA-Z0-9\s]", "", t.lower()).strip()
+    temp_roadmap = {
+        "path_title": goal or "Academic Pathway",
+        "steps": combined
+    }
+    repaired_roadmap, uniqueness_rep = path_uniqueness_agent.audit_and_repair(temp_roadmap)
+    deduped_steps = repaired_roadmap.get("steps") or []
 
-    def jaccard_similarity(a: str, b: str) -> float:
-        set_a = set(a.split())
-        set_b = set(b.split())
-        if not set_a or not set_b:
-            return 0.0
-        return len(set_a & set_b) / len(set_a | set_b)
+    if metrics and uniqueness_rep:
+        metrics.duplicate_steps += uniqueness_rep.confirmed_duplicates_resolved
 
-    for step in combined:
-        title = step.get("title", "").strip()
-        norm = normalize_title(title)
-        is_dup = False
-        for prev in seen_titles:
-            if norm == prev or jaccard_similarity(norm, prev) > 0.72:
-                is_dup = True
-                break
-        if is_dup:
-            if metrics:
-                metrics.duplicate_steps += 1
-            continue
-        seen_titles.append(norm)
-        deduped_steps.append(step)
-
-    # Gap Fulfillment without generic filler
-    if len(deduped_steps) < target_steps and len(milestones) > 0:
-        gap = target_steps - len(deduped_steps)
-        for i in range(gap):
-            target_m = milestones[i % len(milestones)]
-            extra_list = generate_curriculum_subtasks_for_milestone(target_m, 1, 95000 + i, goal=goal)
-            if extra_list:
-                deduped_steps.append(extra_list[0])
-
-    # Re-index sequential IDs (1..N) and validate prerequisite DAG
     final_steps = []
-    old_to_new_id: Dict[int, int] = {}
-
-    for new_idx, step in enumerate(deduped_steps, start=1):
-        old_id = step.get("id")
-        old_to_new_id[old_id] = new_idx
+    for step in deduped_steps:
         step_copy = dict(step)
-        step_copy["id"] = new_idx
         step_copy["category"] = "academic"
         step_copy["parent_milestone"] = step.get("parent_milestone") or step.get("academic_stage") or ""
         step_copy["can_parallel"] = step.get("can_parallel", False)
         step_copy["is_zero_duration"] = step.get("is_zero_duration", False) or is_zero_duration_task(step.get("duration"), step.get("title"))
+        if not step_copy.get("completion_criteria"):
+            step_copy["completion_criteria"] = f"Successful completion and evaluation of {step_copy['title']} requirements."
         final_steps.append(step_copy)
-
-    # Remap prerequisites and parent_ids
-    for step in final_steps:
-        old_pid = step.get("parent_id")
-        if old_pid in old_to_new_id:
-            step["parent_id"] = old_to_new_id[old_pid]
-        elif old_pid is not None and step.get("hierarchy_level") != "milestone":
-            step["parent_id"] = None
-
-        old_prereqs = step.get("prerequisites", [])
-        new_prereqs = []
-        for p in old_prereqs:
-            if isinstance(p, int) and p in old_to_new_id:
-                mapped = old_to_new_id[p]
-                if mapped < step["id"] and mapped not in new_prereqs:
-                    new_prereqs.append(mapped)
-
-        if not new_prereqs and step["id"] > 1 and step.get("hierarchy_level") != "milestone":
-            fallback_prereq = step.get("parent_id") or (step["id"] - 1)
-            if fallback_prereq < step["id"]:
-                new_prereqs.append(fallback_prereq)
-
-        step["prerequisites"] = new_prereqs
-
-        if not step.get("completion_criteria"):
-            step["completion_criteria"] = f"Successful completion and evaluation of {step['title']} requirements."
 
     if metrics:
         metrics.successful_steps = len(final_steps)

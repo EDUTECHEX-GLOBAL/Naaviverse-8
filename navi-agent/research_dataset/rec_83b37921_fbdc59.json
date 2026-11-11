@@ -1,0 +1,94 @@
+{
+  "record_id": "rec_83b37921_fbdc59",
+  "timestamp": "2026-11-11T05:15:38.588750",
+  "student_profile_snapshot": {},
+  "target_goal": "Computer Science",
+  "current_position": "Grade 11",
+  "generator_version": "2.1-uniqueness-agent",
+  "raw_pathway_snapshot": {
+    "path_title": "Test Pathway",
+    "total_duration": null,
+    "total_steps": 2,
+    "steps": [
+      {
+        "id": 1,
+        "title": "Intro Limits",
+        "description": "Limits overview.",
+        "prerequisites": []
+      },
+      {
+        "id": 2,
+        "title": "Calculus Derivatives",
+        "description": "Derivatives practice.",
+        "prerequisites": [
+          1
+        ]
+      }
+    ]
+  },
+  "repaired_pathway_snapshot": {
+    "path_title": "Test Pathway",
+    "total_duration": null,
+    "total_steps": 2,
+    "steps": [
+      {
+        "id": 1,
+        "title": "Intro Limits",
+        "description": "Limits overview.",
+        "prerequisites": [],
+        "marketplace": {
+          "mentors": [],
+          "vendors": [],
+          "institutions": [],
+          "distributors": []
+        }
+      },
+      {
+        "id": 2,
+        "title": "Calculus Derivatives",
+        "description": "Derivatives practice.",
+        "prerequisites": [
+          1
+        ],
+        "marketplace": {
+          "mentors": [],
+          "vendors": [],
+          "institutions": [],
+          "distributors": []
+        }
+      }
+    ]
+  },
+  "uniqueness_report": {
+    "path_id": "",
+    "path_title": "Test Pathway",
+    "generation_id": "fe2984069a3f",
+    "timestamp": "2026-11-11T05:15:38.586179+00:00",
+    "agent_version": "2.0-uniqueness",
+    "total_original_activities": 2,
+    "total_unique_activities": 2,
+    "confirmed_duplicates_detected": 0,
+    "confirmed_duplicates_resolved": 0,
+    "descriptions_regenerated": 0,
+    "valid_recurrences_preserved": 0,
+    "marketplace_duplicates_resolved": 0,
+    "unresolved_candidate_pairs": 0,
+    "dependency_repairs_completed": 0,
+    "uniqueness_ratio": 1.0,
+    "duplicate_rate": 0.0,
+    "boilerplate_description_rate": 0.0,
+    "validation_status": "REPAIRED",
+    "status_label": "Repaired: 0 Duplicates Removed, 0 Descriptions Fixed",
+    "candidate_pairs": [],
+    "description_defects": [],
+    "marketplace_duplicates": [],
+    "repaired_dependency_edges": [],
+    "resolution_log": [],
+    "human_review_items": []
+  },
+  "detector_config_version": "v2.0-calibrated",
+  "human_confirmed_duplicates": [],
+  "human_rejected_duplicates": [],
+  "human_overrides": [],
+  "review_status": "unreviewed"
+}
